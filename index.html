@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Customer Solutions — Team Schedule</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;color:#1e293b;font-size:14px}
+  .btn{cursor:pointer;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;transition:all .15s}
+  .btn-primary{background:#4f46e5;color:#fff}.btn-primary:hover{background:#4338ca}
+  .btn-danger{background:#ef4444;color:#fff}.btn-danger:hover{background:#dc2626}
+  .btn-ghost{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}.btn-ghost:hover{background:#e2e8f0}
+  .btn-success{background:#10b981;color:#fff}.btn-success:hover{background:#059669}
+  input,select{border:1px solid #e2e8f0;border-radius:6px;padding:5px 8px;font-size:12px;outline:none;width:100%}
+  input:focus,select:focus{border-color:#4f46e5;box-shadow:0 0 0 2px #4f46e520}
+  .modal-overlay{position:fixed;inset:0;background:#00000055;z-index:100;display:flex;align-items:center;justify-content:center}
+  .modal{background:#fff;border-radius:16px;padding:28px;width:420px;max-width:95vw;box-shadow:0 20px 60px #0003}
+  table{border-collapse:collapse;width:100%}
+  th,td{padding:8px 10px;text-align:left;font-size:12px}
+  tr:hover td{background:#f8fafc}
+  .tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+  .tag-office{background:#dcfce7;color:#166534}
+  .tag-wfh{background:#dbeafe;color:#1e40af}
+  .tag-off{background:#f1f5f9;color:#94a3b8}
+  .tag-new{background:#fef9c3;color:#854d0e}
+  ::-webkit-scrollbar{width:6px;height:6px}
+  ::-webkit-scrollbar-track{background:#f1f5f9}
+  ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useRef} = React;
+
+const MANAGER_PASSWORD = "jiffymgr2026";
+const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+const defaultAgents = [
+  {id:1, name:"Ananya SenthilKumar", shift:"6:00–2:30",  supervisor:"Shelby Coldiron", workDays:["Monday","Tuesday","Wednesday","Saturday","Friday"], officeDays:["Monday","Tuesday","Wednesday"], wfhDays:["Saturday","Friday"], isNew:false},
+  {id:2, name:"Bianca Vernando",     shift:"6:00–2:30",  supervisor:"Shelby Coldiron", workDays:["Monday","Tuesday","Friday","Saturday","Thursday"], officeDays:["Monday","Tuesday","Friday"], wfhDays:["Saturday","Thursday"], isNew:false},
+  {id:3, name:"Blanca Berumen",      shift:"11:30–8:00", supervisor:"Shelby Coldiron", workDays:["Monday","Tuesday","Friday","Saturday","Thursday"], officeDays:["Monday","Tuesday","Friday"], wfhDays:["Saturday","Thursday"], isNew:false},
+  {id:4, name:"Chassidy Williams",   shift:"6:00–2:30",  supervisor:"Shelby Coldiron", workDays:["Monday","Tuesday","Friday","Wednesday","Thursday"], officeDays:["Monday","Tuesday","Friday"], wfhDays:["Wednesday","Thursday"], isNew:false},
+  {id:5, name:"Cristie Avant",       shift:"8:00–4:30",  supervisor:"Shelby Coldiron", workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"], officeDays:["Wednesday","Thursday","Friday"], wfhDays:["Monday","Tuesday"], isNew:false},
+  {id:6, name:"Michael Nguyen",      shift:"6:00–2:30",  supervisor:"Shelby Coldiron", workDays:["Tuesday","Wednesday","Friday","Saturday","Thursday"], officeDays:["Tuesday","Wednesday","Friday"], wfhDays:["Saturday","Thursday"], isNew:false},
+  {id:7, name:"Morgan Lankford",     shift:"6:00–2:30",  supervisor:"Shelby Coldiron", workDays:["Monday","Wednesday","Thursday","Saturday","Friday"], officeDays:["Monday","Wednesday","Thursday"], wfhDays:["Saturday","Friday"], isNew:false},
+  {id:8, name:"Hiam Hajiali",        shift:"6:00–2:30",  supervisor:"Shelby Coldiron", workDays:["Monday","Tuesday","Wednesday","Thursday","Saturday"], officeDays:["Monday","Tuesday","Wednesday"], wfhDays:["Thursday","Saturday"], isNew:true},
+  {id:9, name:"Chisa Ordu",          shift:"11:30–8:00", supervisor:"Neyat Abraha",    workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"], officeDays:["Monday","Tuesday","Friday"], wfhDays:["Wednesday","Thursday"], isNew:false},
+  {id:10,name:"Jessie Gregory",      shift:"11:30–8:00", supervisor:"Neyat Abraha",    workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"], officeDays:["Tuesday","Wednesday","Thursday"], wfhDays:["Monday","Friday"], isNew:false},
+  {id:11,name:"Jeremy Carillo",      shift:"11:30–8:00", supervisor:"Neyat Abraha",    workDays:["Monday","Wednesday","Thursday","Friday","Saturday"], officeDays:["Monday","Thursday","Friday"], wfhDays:["Wednesday","Saturday"], isNew:false},
+  {id:12,name:"Ramila Chaulagain",   shift:"8:00–4:30",  supervisor:"Neyat Abraha",    workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"], officeDays:["Wednesday","Thursday"], wfhDays:["Tuesday","Friday","Saturday"], isNew:false},
+  {id:13,name:"Rosa Nuno",           shift:"6:00–2:30",  supervisor:"Neyat Abraha",    workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"], officeDays:["Tuesday","Wednesday","Thursday"], wfhDays:["Friday","Saturday"], isNew:false},
+  {id:14,name:"Sarah Al-Obaidi",     shift:"11:30–8:00", supervisor:"Neyat Abraha",    workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"], officeDays:["Monday","Thursday","Friday"], wfhDays:["Tuesday","Wednesday"], isNew:false},
+  {id:15,name:"Servando Morales",    shift:"8:00–4:30",  supervisor:"Neyat Abraha",    workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"], officeDays:["Monday","Thursday","Friday"], wfhDays:["Tuesday","Wednesday"], isNew:false},
+  {id:16,name:"Zhane Alexander",     shift:"9:00–5:30",  supervisor:"Neyat Abraha",    workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"], officeDays:["Monday","Tuesday","Wednesday"], wfhDays:["Thursday","Friday"], isNew:false},
+  {id:17,name:"Damian Doubrava",     shift:"8:00–4:30",  supervisor:"Alex Blair",      workDays:["Monday","Wednesday","Thursday","Friday","Saturday"], officeDays:["Monday","Thursday","Friday"], wfhDays:["Wednesday","Saturday"], isNew:false},
+  {id:18,name:"Denia Bradley",       shift:"11:30–8:00", supervisor:"Alex Blair",      workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"], officeDays:["Wednesday","Thursday","Friday"], wfhDays:["Tuesday","Saturday"], isNew:false},
+  {id:19,name:"Eri Dotson",          shift:"8:00–4:30",  supervisor:"Alex Blair",      workDays:["Monday","Tuesday","Wednesday","Friday","Saturday"], officeDays:["Monday","Tuesday","Wednesday"], wfhDays:["Friday","Saturday"], isNew:false},
+  {id:20,name:"Preston Panetti",     shift:"8:00–4:30",  supervisor:"Alex Blair",      workDays:["Monday","Tuesday","Thursday","Friday","Saturday"], officeDays:["Monday","Tuesday","Friday"], wfhDays:["Thursday","Saturday"], isNew:false},
+  {id:21,name:"Sam De Castro",       shift:"6:00–2:30",  supervisor:"Alex Blair",      workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"], officeDays:["Wednesday","Thursday"], wfhDays:["Monday","Tuesday","Friday"], isNew:false},
+  {id:22,name:"Michael Chavez",      shift:"6:00–2:30",  supervisor:"Alex Blair",      workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"], officeDays:["Monday","Thursday"], wfhDays:["Tuesday","Wednesday","Friday"], isNew:false},
+  {id:23,name:"Andre Cordero",       shift:"8:00–4:30",  supervisor:"Alex Blair",      workDays:["Monday","Wednesday","Thursday","Friday","Saturday"], officeDays:["Monday","Wednesday","Thursday"], wfhDays:["Friday","Saturday"], isNew:true},
+  {id:24,name:"Ariashe Lowery",      shift:"9:00–5:30",  supervisor:"Lauren Montanye", workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"], officeDays:["Monday","Tuesday","Wednesday"], wfhDays:["Thursday","Friday"], isNew:false},
+  {id:25,name:"Rachel Dunlap",       shift:"9:00–5:30",  supervisor:"Lauren Montanye", workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"], officeDays:["Monday","Tuesday","Wednesday"], wfhDays:["Thursday","Friday"], isNew:false},
+  {id:26,name:"Taylor Amos",         shift:"9:00–5:30",  supervisor:"Lauren Montanye", workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"], officeDays:["Monday","Tuesday","Wednesday"], wfhDays:["Thursday","Friday"], isNew:false},
+  {id:27,name:"Unaisa Aslam",        shift:"8:00–4:30",  supervisor:"Lauren Montanye", workDays:["Monday","Tuesday","Wednesday","Friday","Saturday"], officeDays:["Monday","Tuesday","Wednesday"], wfhDays:["Friday","Saturday"], isNew:false},
+  {id:28,name:"Bo Repko",            shift:"6:00–2:30",  supervisor:"Lauren Montanye", workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"], officeDays:["Tuesday","Wednesday","Thursday"], wfhDays:["Friday","Saturday"], isNew:true},
+  {id:29,name:"Amber Bailey",        shift:"8:00–4:30",  supervisor:"Lauren Montanye", workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"], officeDays:["Wednesday","Thursday","Friday"], wfhDays:["Tuesday","Saturday"], isNew:true},
+  {id:30,name:"Enrico Davis",        shift:"11:30–8:00", supervisor:"Lauren Montanye", workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"], officeDays:["Monday","Tuesday","Thursday"], wfhDays:["Wednesday","Friday"], isNew:true},
+];
+
+const SUPERVISORS = ["Shelby Coldiron","Neyat Abraha","Alex Blair","Lauren Montanye"];
+const SHIFTS = ["6:00–2:30","8:00–4:30","9:00–5:30","10:30–8:00","11:30–8:00"];
+const SUP_COLORS = {
+  "Shelby Coldiron": {bg:"#059669",light:"#ecfdf5",border:"#6ee7b7"},
+  "Neyat Abraha":    {bg:"#7c3aed",light:"#f5f3ff",border:"#c4b5fd"},
+  "Alex Blair":      {bg:"#d97706",light:"#fffbeb",border:"#fcd34d"},
+  "Lauren Montanye": {bg:"#e11d48",light:"#fff1f2",border:"#fda4af"},
+};
+
+function loadAgents() {
+  try { const s = localStorage.getItem("scheduleAgents"); return s ? JSON.parse(s) : defaultAgents; } catch { return defaultAgents; }
+}
+function saveAgents(agents) {
+  try { localStorage.setItem("scheduleAgents", JSON.stringify(agents)); } catch {}
+}
+
+function DayCell({works, isOffice, isSat}) {
+  if (!works) return <span style={{color:"#cbd5e1"}}>—</span>;
+  if (isOffice) return <span className="tag tag-office">🏢 Office</span>;
+  return <span className="tag tag-wfh">🏠 WFH</span>;
+}
+
+function EditModal({agent, onSave, onClose}) {
+  const isNew = !agent.id;
+  const [form, setForm] = useState(agent ? {...agent,
+    workDays: [...(agent.workDays||[])],
+    officeDays: [...(agent.officeDays||[])],
+    wfhDays: [...(agent.wfhDays||[])],
+  } : {name:"",shift:"6:00–2:30",supervisor:"Shelby Coldiron",workDays:[],officeDays:[],wfhDays:[],isNew:true});
+
+  const toggleDay = (arr, day) => arr.includes(day) ? arr.filter(d=>d!==day) : [...arr,day];
+
+  const setWork = day => {
+    const wd = toggleDay(form.workDays, day);
+    const od = form.officeDays.filter(d=>wd.includes(d));
+    const wh = form.wfhDays.filter(d=>wd.includes(d));
+    setForm({...form, workDays:wd, officeDays:od, wfhDays:wh});
+  };
+
+  const setOffice = day => {
+    if (!form.workDays.includes(day)) return;
+    let od = toggleDay(form.officeDays, day);
+    let wh = form.wfhDays.filter(d=>d!==day);
+    if (od.includes(day)) wh = wh.filter(d=>d!==day);
+    setForm({...form, officeDays:od, wfhDays:wh});
+  };
+
+  const setWfh = day => {
+    if (!form.workDays.includes(day)) return;
+    let wh = toggleDay(form.wfhDays, day);
+    let od = form.officeDays.filter(d=>d!==day);
+    if (wh.includes(day)) od = od.filter(d=>d!==day);
+    setForm({...form, wfhDays:wh, officeDays:od});
+  };
+
+  const valid = form.name && form.workDays.length===5 && form.officeDays.length===3 && form.wfhDays.length===2
+    && form.officeDays.every(d=>!form.wfhDays.includes(d))
+    && form.officeDays.every(d=>!d.includes("Saturday") || true);
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={e=>e.stopPropagation()}>
+        <h2 style={{fontWeight:700,fontSize:16,marginBottom:16}}>{isNew?"Add New Agent":"Edit Agent"}</h2>
+        <div style={{display:"grid",gap:10,marginBottom:16}}>
+          <div>
+            <label style={{fontSize:11,color:"#64748b",fontWeight:600}}>NAME</label>
+            <input value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Full name"/>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+            <div>
+              <label style={{fontSize:11,color:"#64748b",fontWeight:600}}>SHIFT</label>
+              <select value={form.shift} onChange={e=>setForm({...form,shift:e.target.value})}>
+                {SHIFTS.map(s=><option key={s}>{s}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={{fontSize:11,color:"#64748b",fontWeight:600}}>SUPERVISOR</label>
+              <select value={form.supervisor} onChange={e=>setForm({...form,supervisor:e.target.value})}>
+                {SUPERVISORS.map(s=><option key={s}>{s}</option>)}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div style={{fontSize:11,color:"#64748b",fontWeight:600,marginBottom:6}}>SCHEDULE — click to toggle (need 5 work, 3 office, 2 WFH)</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:4,marginBottom:14}}>
+          {DAYS.map(day=>{
+            const works = form.workDays.includes(day);
+            const office = form.officeDays.includes(day);
+            const wfh = form.wfhDays.includes(day);
+            const isSat = day==="Saturday";
+            return (
+              <div key={day} style={{textAlign:"center",fontSize:11}}>
+                <div style={{fontWeight:600,color:"#475569",marginBottom:4}}>{day.slice(0,3)}</div>
+                <button onClick={()=>setWork(day)} style={{width:"100%",padding:"3px 0",borderRadius:4,border:`1px solid ${works?"#4f46e5":"#e2e8f0"}`,background:works?"#eef2ff":"#f8fafc",color:works?"#4f46e5":"#94a3b8",fontSize:10,cursor:"pointer",marginBottom:3,fontWeight:600}}>
+                  {works?"✓ Work":"Off"}
+                </button>
+                {works && !isSat && <button onClick={()=>setOffice(day)} style={{width:"100%",padding:"3px 0",borderRadius:4,border:`1px solid ${office?"#059669":"#e2e8f0"}`,background:office?"#dcfce7":"#f8fafc",color:office?"#059669":"#94a3b8",fontSize:10,cursor:"pointer",marginBottom:3,fontWeight:600}}>
+                  {office?"🏢 Off.":"Office?"}
+                </button>}
+                {works && isSat && <div style={{fontSize:9,color:"#94a3b8",padding:"3px 0"}}>No office<br/>on Sat</div>}
+                {works && <button onClick={()=>setWfh(day)} style={{width:"100%",padding:"3px 0",borderRadius:4,border:`1px solid ${wfh?"#1d4ed8":"#e2e8f0"}`,background:wfh?"#dbeafe":"#f8fafc",color:wfh?"#1d4ed8":"#94a3b8",fontSize:10,cursor:"pointer",fontWeight:600}}>
+                  {wfh?"🏠 WFH":"WFH?"}
+                </button>}
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{display:"flex",gap:8,justifyContent:"flex-end",marginTop:8}}>
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+          <button className="btn btn-primary" disabled={!valid} onClick={()=>onSave(form)} style={{opacity:valid?1:0.5}}>Save</button>
+        </div>
+        {!valid && <p style={{fontSize:11,color:"#ef4444",marginTop:8,textAlign:"center"}}>Need exactly 5 work days, 3 office days (no Saturday), 2 WFH days</p>}
+      </div>
+    </div>
+  );
+}
+
+function LoginModal({onLogin, onClose}) {
+  const [pw, setPw] = useState(""); const [err, setErr] = useState(false);
+  const submit = () => { if(pw===MANAGER_PASSWORD){onLogin();}else{setErr(true);setPw("");} };
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" style={{width:320}} onClick={e=>e.stopPropagation()}>
+        <h2 style={{fontWeight:700,fontSize:16,marginBottom:6}}>🔒 Manager Login</h2>
+        <p style={{fontSize:12,color:"#64748b",marginBottom:16}}>Enter your manager password to enable editing.</p>
+        <input type="password" placeholder="Password" value={pw} onChange={e=>{setPw(e.target.value);setErr(false);}} onKeyDown={e=>e.key==="Enter"&&submit()} style={{marginBottom:10}}/>
+        {err && <p style={{fontSize:11,color:"#ef4444",marginBottom:8}}>Incorrect password, please try again.</p>}
+        <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+          <button className="btn btn-primary" onClick={submit}>Login</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [agents, setAgents] = useState(loadAgents);
+  const [isManager, setIsManager] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [editAgent, setEditAgent] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [filterSup, setFilterSup] = useState("All");
+  const [filterNew, setFilterNew] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(()=>{ saveAgents(agents); },[agents]);
+
+  const persist = newAgents => { setAgents(newAgents); saveAgents(newAgents); showSaved(); };
+  const showSaved = () => { setSaved(true); setTimeout(()=>setSaved(false),2000); };
+
+  const handleSaveAgent = form => {
+    if(form.id) {
+      persist(agents.map(a=>a.id===form.id?form:a));
+    } else {
+      const newId = Math.max(0,...agents.map(a=>a.id))+1;
+      persist([...agents,{...form,id:newId}]);
+    }
+    setEditAgent(null); setShowAddModal(false);
+  };
+
+  const handleDelete = id => { persist(agents.filter(a=>a.id!==id)); setDeleteConfirm(null); };
+
+  const displayed = agents
+    .filter(a=>filterSup==="All"||a.supervisor===filterSup)
+    .filter(a=>!filterNew||a.isNew);
+
+  const grouped = SUPERVISORS.map(sup=>({
+    sup, agents: displayed.filter(a=>a.supervisor===sup),
+    total: agents.filter(a=>a.supervisor===sup).length,
+  })).filter(g=>g.agents.length>0);
+
+  const supStyle = sup => SUP_COLORS[sup]||{bg:"#64748b",light:"#f8fafc",border:"#e2e8f0"};
+
+  return (
+    <div style={{minHeight:"100vh",background:"#f8fafc"}}>
+      {/* Header */}
+      <div style={{background:"#1e293b",color:"#fff",padding:"14px 24px",display:"flex",alignItems:"center",justifyContent:"space-between",boxShadow:"0 2px 8px #0003"}}>
+        <div>
+          <div style={{fontWeight:700,fontSize:18}}>📋 Customer Solutions — Team Schedule</div>
+          <div style={{fontSize:11,color:"#94a3b8",marginTop:2}}>February 2026 &nbsp;·&nbsp; {agents.length} agents across {SUPERVISORS.length} teams</div>
+        </div>
+        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          {saved && <span style={{fontSize:11,color:"#4ade80",fontWeight:600}}>✓ Saved</span>}
+          {isManager
+            ? <><button className="btn btn-success" style={{fontSize:11}} onClick={()=>setShowAddModal(true)}>+ Add Agent</button>
+                <button className="btn btn-ghost" style={{fontSize:11}} onClick={()=>setIsManager(false)}>🔒 Lock</button></>
+            : <button className="btn btn-ghost" style={{fontSize:11}} onClick={()=>setShowLogin(true)}>🔑 Manager Login</button>
+          }
+        </div>
+      </div>
+
+      <div style={{padding:"20px 24px"}}>
+        {/* Team summary cards */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
+          {SUPERVISORS.map(sup=>{
+            const c = supStyle(sup); const t = agents.filter(a=>a.supervisor===sup).length;
+            const n = agents.filter(a=>a.supervisor===sup&&a.isNew).length;
+            return (
+              <div key={sup} onClick={()=>setFilterSup(filterSup===sup?"All":sup)}
+                style={{background:filterSup===sup?c.light:"#fff",border:`2px solid ${filterSup===sup?c.border:"#e2e8f0"}`,borderRadius:12,padding:"12px 16px",cursor:"pointer",transition:"all .15s"}}>
+                <div style={{fontSize:11,fontWeight:700,color:c.bg,marginBottom:4}}>{sup}</div>
+                <div style={{fontSize:28,fontWeight:800,color:"#1e293b"}}>{t}</div>
+                <div style={{fontSize:11,color:"#94a3b8"}}>agents{n>0?` · ${n} new`:""}</div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Filters */}
+        <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
+          <button className="btn btn-ghost" style={{background:filterSup==="All"?"#4f46e5":"",color:filterSup==="All"?"#fff":""}} onClick={()=>setFilterSup("All")}>All Teams</button>
+          <button className="btn" style={{background:filterNew?"#fbbf24":"#f1f5f9",color:filterNew?"#fff":"#475569",border:"1px solid #e2e8f0"}} onClick={()=>setFilterNew(!filterNew)}>✨ New agents only</button>
+          <div style={{marginLeft:"auto",display:"flex",gap:8,fontSize:11,color:"#64748b",alignItems:"center"}}>
+            <span className="tag tag-office">🏢 Office</span>
+            <span className="tag tag-wfh">🏠 WFH</span>
+            <span style={{color:"#cbd5e1"}}>— = Day off</span>
+          </div>
+        </div>
+
+        {/* Tables by team */}
+        {grouped.map(({sup,agents:team,total})=>{
+          const c = supStyle(sup);
+          return (
+            <div key={sup} style={{marginBottom:20,borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0",boxShadow:"0 1px 4px #0001"}}>
+              <div style={{background:c.bg,color:"#fff",padding:"10px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <span style={{fontWeight:700,fontSize:14}}>{sup}</span>
+                <span style={{fontSize:12,opacity:.85}}>{total} agents total</span>
+              </div>
+              <div style={{overflowX:"auto"}}>
+                <table>
+                  <thead>
+                    <tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}>
+                      <th style={{minWidth:160}}>Agent</th>
+                      <th style={{minWidth:90}}>Shift</th>
+                      {DAYS.map(d=><th key={d} style={{textAlign:"center",minWidth:80}}>{d.slice(0,3)}</th>)}
+                      {isManager && <th style={{textAlign:"center",minWidth:80}}>Actions</th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {team.map(agent=>(
+                      <tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",background:agent.isNew?"#fffbeb":"#fff"}}>
+                        <td style={{fontWeight:600}}>
+                          {agent.isNew&&<span style={{marginRight:4}}>✨</span>}
+                          {agent.name}
+                        </td>
+                        <td style={{color:"#64748b"}}>{agent.shift}</td>
+                        {DAYS.map(day=>(
+                          <td key={day} style={{textAlign:"center"}}>
+                            <DayCell works={agent.workDays.includes(day)} isOffice={agent.officeDays.includes(day)} isSat={day==="Saturday"}/>
+                          </td>
+                        ))}
+                        {isManager && (
+                          <td style={{textAlign:"center"}}>
+                            <button className="btn btn-ghost" style={{fontSize:11,padding:"3px 8px",marginRight:4}} onClick={()=>setEditAgent(agent)}>✏️ Edit</button>
+                            <button className="btn btn-danger" style={{fontSize:11,padding:"3px 8px"}} onClick={()=>setDeleteConfirm(agent.id)}>🗑</button>
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Modals */}
+      {showLogin && <LoginModal onLogin={()=>{setIsManager(true);setShowLogin(false);}} onClose={()=>setShowLogin(false)}/>}
+      {(editAgent||showAddModal) && <EditModal agent={editAgent||{workDays:[],officeDays:[],wfhDays:[],shift:"6:00–2:30",supervisor:"Shelby Coldiron",isNew:true}} onSave={handleSaveAgent} onClose={()=>{setEditAgent(null);setShowAddModal(false);}}/>}
+      {deleteConfirm && (
+        <div className="modal-overlay" onClick={()=>setDeleteConfirm(null)}>
+          <div className="modal" style={{width:340}} onClick={e=>e.stopPropagation()}>
+            <h2 style={{fontWeight:700,fontSize:16,marginBottom:8}}>Remove Agent?</h2>
+            <p style={{fontSize:13,color:"#64748b",marginBottom:20}}>This will permanently remove <strong>{agents.find(a=>a.id===deleteConfirm)?.name}</strong> from the schedule.</p>
+            <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
+              <button className="btn btn-ghost" onClick={()=>setDeleteConfirm(null)}>Cancel</button>
+              <button className="btn btn-danger" onClick={()=>handleDelete(deleteConfirm)}>Remove</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.render(<App/>, document.getElementById("root"));
+</script>
+</body>
+</html>
