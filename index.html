@@ -15,7 +15,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .btn-danger{background:#ef4444;color:#fff}.btn-danger:hover{background:#dc2626}
 .btn-ghost{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}.btn-ghost:hover{background:#e2e8f0}
 .btn-success{background:#10b981;color:#fff}.btn-success:hover{background:#059669}
-.btn-warn{background:#f59e0b;color:#fff}.btn-warn:hover{background:#d97706}
 input,select,textarea{border:1px solid #e2e8f0;border-radius:6px;padding:5px 8px;font-size:12px;outline:none;width:100%}
 input:focus,select:focus,textarea:focus{border-color:#4f46e5;box-shadow:0 0 0 2px #4f46e520}
 textarea{resize:vertical;min-height:60px}
@@ -55,16 +54,18 @@ th,td{padding:7px 10px;text-align:left;font-size:12px}
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const {useState, useMemo} = React;
+const {useState,useMemo} = React;
 const MANAGER_PASSWORD = "jiffymgr2026";
 const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-const SUPERVISORS = ["Shelby Coldiron","Neyat Abraha","Alex Blair","Lauren Montanye"];
+const SUPERVISORS = ["Shelby Coldiron","Neyat Abraha","Alex Blair","Lauren Montanye","Ainsley Reynolds","Angy Chang"];
 const SHIFTS = ["6:00–2:30","8:00–4:30","9:00–5:30","10:30–8:00","11:30–8:00"];
 const SUP_COLORS = {
-  "Shelby Coldiron":{bg:"#059669",light:"#ecfdf5",border:"#6ee7b7"},
-  "Neyat Abraha":   {bg:"#7c3aed",light:"#f5f3ff",border:"#c4b5fd"},
-  "Alex Blair":     {bg:"#d97706",light:"#fffbeb",border:"#fcd34d"},
-  "Lauren Montanye":{bg:"#e11d48",light:"#fff1f2",border:"#fda4af"},
+  "Shelby Coldiron": {bg:"#059669",light:"#ecfdf5",border:"#6ee7b7"},
+  "Neyat Abraha":    {bg:"#7c3aed",light:"#f5f3ff",border:"#c4b5fd"},
+  "Alex Blair":      {bg:"#d97706",light:"#fffbeb",border:"#fcd34d"},
+  "Lauren Montanye": {bg:"#e11d48",light:"#fff1f2",border:"#fda4af"},
+  "Ainsley Reynolds":{bg:"#0ea5e9",light:"#f0f9ff",border:"#7dd3fc"},
+  "Angy Chang":      {bg:"#8b5cf6",light:"#faf5ff",border:"#c4b5fd"},
 };
 const SHIFT_TIMES = {
   "6:00–2:30":  {start:360, end:870},
@@ -152,6 +153,16 @@ const timeOffData=[
   {name:"Sarah Hajali",       type:"Jiffy Day",     start:"3/20/26", end:"3/20/26", duration:1,   half:false, note:"Pending"},
 ];
 
+// Rylie/Jada/Lybah move from Angy Chang to a permanent sup on week of Mar 9
+function getAgentSupervisor(agent, dateS) {
+  if(["Rylie Walker","Jada Brown","Lybah Shah Nawz"].includes(agent.name)) {
+    const d = parseDate(dateS);
+    const mar9 = new Date(2026,2,9);
+    if(d && d >= mar9) return agent.permanentSup || "Lauren Montanye";
+  }
+  return agent.supervisor;
+}
+
 const defaultAgents=[
   // BATCH 1 – Jul 14, 2025
   {id:1, name:"Rosa Nuno",          shift:"6:00–2:30", supervisor:"Neyat Abraha",   workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Tuesday","Wednesday","Thursday"],wfhDays:["Friday","Saturday"],isNew:false,startDate:"7/14/25",skills:"Phone, Chat, Billing, Training"},
@@ -183,9 +194,8 @@ const defaultAgents=[
   {id:3, name:"Blanca Berumen",     shift:"11:30–8:00",supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Friday","Saturday","Thursday"],officeDays:["Monday","Tuesday","Friday"],wfhDays:["Saturday","Thursday"],isNew:false,startDate:"12/1/25",skills:"Chat, Email, Spanish"},
   {id:14,name:"Sarah Al-Obaidi",    shift:"8:00–4:30", supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Thursday","Friday"],wfhDays:["Tuesday","Wednesday"],isNew:false,startDate:"12/1/25",skills:"Email, Chat"},
   {id:18,name:"Denia Bradley",      shift:"11:30–8:00",supervisor:"Alex Blair",     workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Wednesday","Thursday","Friday"],wfhDays:["Tuesday","Saturday"],isNew:false,startDate:"12/1/25",skills:"Chat, Email, Tier 2"},
-  // BATCH 10 – Jan 5, 2026 (Ainsley Reynolds offboarded)
+  // BATCH 10 – Jan 5, 2026
   {id:27,name:"Unaisa Aslam",       shift:"8:00–4:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Friday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Friday","Saturday"],isNew:false,startDate:"1/5/26",skills:"Phone, Chat, Spanish"},
-
   // BATCH 11 – Jan 20, 2026
   {id:28,name:"Bo Repko",           shift:"6:00–2:30", supervisor:"Lauren Montanye",workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Tuesday","Wednesday","Thursday"],wfhDays:["Friday","Saturday"],isNew:false,startDate:"1/20/26",skills:"Chat, Email"},
   {id:23,name:"Andre Cordero",      shift:"8:00–4:30", supervisor:"Alex Blair",     workDays:["Monday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Monday","Wednesday","Thursday"],wfhDays:["Friday","Saturday"],isNew:false,startDate:"1/20/26",skills:"Chat, Phone"},
@@ -196,16 +206,16 @@ const defaultAgents=[
   {id:26,name:"Taylor Amos",        shift:"9:00–5:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"2/2/26",skills:"Chat, Email, Training"},
   {id:24,name:"Ariashe Lowery",     shift:"9:00–5:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"2/2/26",skills:"Email, Chat, Billing"},
   {id:30,name:"Enrico Davis",       shift:"11:30–8:00",supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Thursday"],wfhDays:["Wednesday","Friday"],isNew:false,startDate:"2/2/26",skills:"Chat, Email, Billing"},
-  // BATCH 12b – Feb 23, 2026
-  {id:1003,name:"Rylie Walker",     shift:"8:00–4:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"2/23/26",skills:"Chat, Email"},
-  {id:1004,name:"Jada Brown",       shift:"8:00–4:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"2/23/26",skills:"Chat, Email"},
-  {id:1005,name:"Lybah Shah Nawz",  shift:"8:00–4:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"2/23/26",skills:"Chat, Email"},
-  // BATCH 13 – Mar 9, 2026
-  {id:1006,name:"Vitria Pinkston",  shift:"8:00–4:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"3/9/26",skills:"Chat, Email"},
-  {id:1007,name:"Brianna Miller",   shift:"8:00–4:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"3/9/26",skills:"Chat, Email"},
-  {id:1008,name:"Erick Garcia Cardenas",shift:"8:00–4:30",supervisor:"Alex Blair",  workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"3/9/26",skills:"Chat, Email"},
-  {id:1009,name:"Salia Kibibi",     shift:"8:00–4:30", supervisor:"Alex Blair",     workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"3/9/26",skills:"Chat, Email"},
-  // OFFBOARDED (attrition from doc — no schedule days, just for roster record)
+  // BATCH 12b – Feb 23, 2026 (Angy Chang → permanent sup from Mar 9)
+  {id:1003,name:"Rylie Walker",     shift:"9:00–5:30", supervisor:"Angy Chang",     permanentSup:"Lauren Montanye", workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"2/23/26",skills:"Chat, Email"},
+  {id:1004,name:"Jada Brown",       shift:"9:00–5:30", supervisor:"Angy Chang",     permanentSup:"Lauren Montanye", workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"2/23/26",skills:"Chat, Email"},
+  {id:1005,name:"Lybah Shah Nawz",  shift:"9:00–5:30", supervisor:"Angy Chang",     permanentSup:"Neyat Abraha",    workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"2/23/26",skills:"Chat, Email"},
+  // BATCH 13 – Mar 9, 2026 (Angy Chang training sup, 9:00–5:30)
+  {id:1006,name:"Vitria Pinkston",  shift:"9:00–5:30", supervisor:"Angy Chang",     permanentSup:"Shelby Coldiron", workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"3/9/26",skills:"Chat, Email"},
+  {id:1007,name:"Brianna Miller",   shift:"9:00–5:30", supervisor:"Angy Chang",     permanentSup:"Shelby Coldiron", workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"3/9/26",skills:"Chat, Email"},
+  {id:1008,name:"Erick Garcia Cardenas",shift:"9:00–5:30",supervisor:"Angy Chang",  permanentSup:"Alex Blair",      workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"3/9/26",skills:"Chat, Email"},
+  {id:1009,name:"Salia Kibibi",     shift:"9:00–5:30", supervisor:"Angy Chang",     permanentSup:"Neyat Abraha",    workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"3/9/26",skills:"Chat, Email"},
+  // OFFBOARDED
   {id:2001,name:"Allen Good",       shift:"8:00–4:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"7/14/25",lastDay:"10/31/25",skills:"Chat, Email",notes:"Attrition"},
   {id:2002,name:"Clarissa Watson",  shift:"8:00–4:30", supervisor:"Alex Blair",     workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"12/1/25",lastDay:"1/31/26",skills:"Chat, Email",notes:"Attrition"},
   {id:2003,name:"Shalvi Dalal",     shift:"8:00–4:30", supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"12/1/25",lastDay:"1/31/26",skills:"Chat, Email",notes:"Attrition"},
@@ -223,6 +233,7 @@ function fmtFull(s){const d=parseDate(s);return d?d.toLocaleDateString("en-US",{
 function dateRange(start,end){const dates=[];let d=new Date(parseDate(start));const e=parseDate(end);while(d<=e){dates.push(dateStr(new Date(d)));d.setDate(d.getDate()+1);}return dates;}
 function getTimeOff(name,dateS){return timeOffData.find(r=>r.name===name&&dateRange(r.start,r.end).includes(dateS))||null;}
 function hasDeparted(agent,dateS){if(!agent.lastDay)return false;const last=parseDate(agent.lastDay),d=parseDate(dateS);return last&&d&&d>last;}
+function hasNotStarted(agent,dateS){if(!agent.startDate)return false;const start=parseDate(agent.startDate),d=parseDate(dateS);return start&&d&&d<start;}
 function getAgentForDate(agent,dateS){
   if(agent.name==="Unaisa Aslam"){const d=parseDate(dateS),c=new Date(2026,2,19);if(d&&d>=c)return{...agent,shift:"11:30–8:00"};}
   return agent;
@@ -231,6 +242,7 @@ function getCellStatus(agent,day,weekDates){
   const dateS=weekDates[DAYS.indexOf(day)];
   const ea=getAgentForDate(agent,dateS);
   if(hasDeparted(agent,dateS))return{type:"departed",dateS,shift:ea.shift};
+  if(hasNotStarted(agent,dateS))return{type:"notstarted",dateS,shift:ea.shift};
   if(!agent.workDays.includes(day))return{type:"dayoff",dateS,shift:ea.shift};
   const to=getTimeOff(agent.name,dateS);
   if(to)return{type:to.half?"half":"pto",label:to.type,dateS,to,shift:ea.shift};
@@ -239,377 +251,49 @@ function getCellStatus(agent,day,weekDates){
 function timeToMin(t){if(!t)return 0;const p=t.trim().split(":");return parseInt(p[0])*60+(parseInt(p[1])||0);}
 function minToTime(m){const h=Math.floor(m/60),mn=m%60;return`${h}:${String(mn).padStart(2,"0")}`;}
 function getDayOfWeek(dateS){const d=parseDate(dateS);if(!d)return null;return["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][d.getDay()];}
+function loadAgents(){try{const s=localStorage.getItem("schedAgents7");return s?JSON.parse(s):defaultAgents;}catch{return defaultAgents;}}
+function saveAgents(a){try{localStorage.setItem("schedAgents7",JSON.stringify(a));}catch{}}
 
-function loadAgents(){try{const s=localStorage.getItem("schedAgents6");return s?JSON.parse(s):defaultAgents;}catch{return defaultAgents;}}
-function saveAgents(a){try{localStorage.setItem("schedAgents6",JSON.stringify(a));}catch{}}
-
-// Today = March 1, 2026 (Sunday) — use Monday Mar 2 as "today" for business day context
-const TODAY_STR = "3/2/26";
-const TODAY_DATE = parseDate(TODAY_STR);
-const TODAY_DAY = getDayOfWeek(TODAY_STR); // Monday
+const TODAY_STR="3/2/26";
+const TODAY_DATE=parseDate(TODAY_STR);
+const TODAY_DAY=getDayOfWeek(TODAY_STR);
 
 function CellTag({status}){
-  if(status.type==="departed")return<span className="tag tag-departed">🚪 Departed</span>;
-  if(status.type==="dayoff")  return<span className="tag tag-dayoff">—</span>;
-  if(status.type==="office")  return<span className="tag tag-office">🏢 Office</span>;
-  if(status.type==="wfh")     return<span className="tag tag-wfh">🏠 WFH</span>;
-  if(status.type==="half")    return<span className="tag tag-half">½ {status.to?.type==="Vacation"?"Vac":"Jiffy"}</span>;
+  if(status.type==="departed")   return<span className="tag tag-departed">🚪 Dep.</span>;
+  if(status.type==="notstarted") return<span className="tag tag-incoming">⏳ N/A</span>;
+  if(status.type==="dayoff")     return<span className="tag tag-dayoff">—</span>;
+  if(status.type==="office")     return<span className="tag tag-office">🏢</span>;
+  if(status.type==="wfh")        return<span className="tag tag-wfh">🏠</span>;
+  if(status.type==="half")       return<span className="tag tag-half">½{status.to?.type==="Vacation"?" Vac":" Jiffy"}</span>;
   if(status.type==="pto"){
-    if(status.to?.type==="Vacation")      return<span className="tag tag-vacation">✈️ Vacation</span>;
-    if(status.to?.type==="Parental Leave")return<span className="tag tag-parental">👶 Parental</span>;
-    return<span className="tag tag-jiffy">🌟 Jiffy Day</span>;
+    if(status.to?.type==="Vacation")      return<span className="tag tag-vacation">✈️</span>;
+    if(status.to?.type==="Parental Leave")return<span className="tag tag-parental">👶</span>;
+    return<span className="tag tag-jiffy">🌟</span>;
   }
   return<span className="tag tag-dayoff">—</span>;
 }
 
-// ---- TODAY SUMMARY TAB ----
-function TodayTab({agents}){
-  const todayDateS = TODAY_STR;
-  const todayDay   = TODAY_DAY;
-  const weekDates  = WEEKS[4].dates; // Mar 2–7
-
-  // Active agents (not fully departed before today)
-  const active = agents.filter(a=>{
-    if(!a.lastDay)return true;
-    const last=parseDate(a.lastDay);
-    return last&&last>=TODAY_DATE;
-  });
-
-  // Who's working today
-  const working=[], pto=[], dayoff=[], halfDay=[], wfh=[], inOffice=[];
-  active.forEach(a=>{
-    const s=getCellStatus(a,todayDay,weekDates);
-    if(s.type==="dayoff"||s.type==="departed"){dayoff.push(a);return;}
-    if(s.type==="pto"){pto.push({agent:a,to:s.to});return;}
-    if(s.type==="half"){halfDay.push({agent:a,to:s.to});return;}
-    if(s.type==="office"){inOffice.push(a);working.push(a);}
-    if(s.type==="wfh"){wfh.push(a);working.push(a);}
-  });
-
-  // Chat coverage today (Monday)
-  const chatToday = chatAgents.filter(a=>a["Mon"]==="X"||a["Mon"]==="B");
-  const chatPrimary = chatAgents.filter(a=>a["Mon"]==="X").length;
-  const chatBackup  = chatAgents.filter(a=>a["Mon"]==="B").length;
-
-  // Departing soon (within 14 days)
-  const soon14 = agents.filter(a=>{
-    if(!a.lastDay)return false;
-    const last=parseDate(a.lastDay);
-    const diff=(last-TODAY_DATE)/(1000*60*60*24);
-    return diff>=0&&diff<=14;
-  });
-
-  // Starting soon (within 7 days)
-  const starting7 = agents.filter(a=>{
-    if(!a.startDate)return false;
-    const sd=parseDate(a.startDate);
-    const diff=(sd-TODAY_DATE)/(1000*60*60*24);
-    return diff>=0&&diff<=7;
-  });
-
-  // Upcoming time off this week
-  const upcomingTO = timeOffData.filter(r=>{
-    const s=parseDate(r.start),e=parseDate(r.end);
-    const wEnd=parseDate(weekDates[weekDates.length-1]);
-    return s&&e&&s>=TODAY_DATE&&s<=wEnd;
-  });
-
-  // Staffing risk: <70% of expected headcount
-  const expectedHeadcount = active.filter(a=>a.workDays.includes(todayDay)).length;
-  const actualWorking = working.length + halfDay.length;
-  const coveragePct = expectedHeadcount>0?Math.round(actualWorking/expectedHeadcount*100):100;
-  const riskLevel = coveragePct<70?"HIGH":coveragePct<85?"MEDIUM":"OK";
-
-  // Shift coverage gaps
-  const shiftGroups={};
-  working.forEach(a=>{
-    const sh=getAgentForDate(a,todayDateS).shift;
-    shiftGroups[sh]=(shiftGroups[sh]||0)+1;
-  });
-
-  const StatCard=({icon,label,value,sub,colorClass})=>(
-    <div className={`card ${colorClass||""}`} style={{textAlign:"center",padding:"16px 10px"}}>
-      <div style={{fontSize:22}}>{icon}</div>
-      <div style={{fontSize:28,fontWeight:800,color:"#1e293b",margin:"4px 0"}}>{value}</div>
-      <div style={{fontSize:12,fontWeight:700,color:"#475569"}}>{label}</div>
-      {sub&&<div style={{fontSize:11,color:"#94a3b8",marginTop:2}}>{sub}</div>}
-    </div>
-  );
-
+// ---- LOGIN MODAL ----
+function LoginModal({onLogin,onClose}){
+  const[pw,setPw]=useState("");const[err,setErr]=useState(false);
+  const submit=()=>{pw===MANAGER_PASSWORD?onLogin():(setErr(true),setPw(""));};
   return(
-    <div>
-      <div style={{background:"linear-gradient(135deg,#1e293b,#334155)",borderRadius:16,padding:"20px 24px",color:"#fff",marginBottom:24}}>
-        <div style={{fontSize:12,color:"#94a3b8",fontWeight:600,marginBottom:4,textTransform:"uppercase",letterSpacing:1}}>Daily Briefing</div>
-        <div style={{fontSize:22,fontWeight:800}}>Monday, March 2, 2026</div>
-        <div style={{fontSize:13,color:"#94a3b8",marginTop:4}}>Week of Mar 2–7 · {active.length} active agents</div>
-        <div style={{marginTop:14,display:"flex",gap:10,flexWrap:"wrap"}}>
-          <span className={`tag tag-${riskLevel==="HIGH"?"risk":riskLevel==="MEDIUM"?"warn":"ok"}`} style={{fontSize:13,padding:"4px 12px"}}>
-            {riskLevel==="HIGH"?"🔴 HIGH RISK":riskLevel==="MEDIUM"?"🟡 MEDIUM RISK":"🟢 STAFFING OK"}
-          </span>
-          <span className="tag" style={{background:"#ffffff22",color:"#fff",fontSize:13,padding:"4px 12px"}}>{coveragePct}% coverage today</span>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" style={{width:320}} onClick={e=>e.stopPropagation()}>
+        <h2 style={{fontWeight:700,fontSize:16,marginBottom:6}}>🔒 Manager Login</h2>
+        <p style={{fontSize:12,color:"#64748b",marginBottom:16}}>Enter your manager password to access the Roster.</p>
+        <input type="password" value={pw} onChange={e=>{setPw(e.target.value);setErr(false);}} onKeyDown={e=>e.key==="Enter"&&submit()} style={{marginBottom:10}}/>
+        {err&&<p style={{fontSize:11,color:"#ef4444",marginBottom:8}}>Incorrect password.</p>}
+        <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+          <button className="btn btn-primary" onClick={submit}>Login</button>
         </div>
-      </div>
-
-      {/* Stat cards */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:12,marginBottom:24}}>
-        <StatCard icon="👥" label="Working Today" value={working.length} sub={`+${halfDay.length} half day`}/>
-        <StatCard icon="🏢" label="In Office" value={inOffice.length} colorClass="ok-card"/>
-        <StatCard icon="🏠" label="WFH" value={wfh.length}/>
-        <StatCard icon="🌟" label="Out / PTO" value={pto.length} colorClass={pto.length>3?"risk-card":""}/>
-        <StatCard icon="💬" label="Chat Coverage" value={chatPrimary} sub={`+${chatBackup} backup`}/>
-      </div>
-
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,marginBottom:24}}>
-        {/* Who's out today */}
-        <div className="card">
-          <div style={{fontWeight:700,fontSize:14,marginBottom:12}}>🌟 Out Today</div>
-          {pto.length===0&&halfDay.length===0
-            ?<p style={{fontSize:12,color:"#94a3b8"}}>No time off today ✓</p>
-            :[...pto,...halfDay].map((item,i)=>{
-              const sup=item.agent.supervisor;const c=SUP_COLORS[sup]||{bg:"#64748b"};
-              return(
-                <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid #f1f5f9"}}>
-                  <div>
-                    <div style={{fontWeight:600,fontSize:12}}>{item.agent.name}</div>
-                    <div style={{fontSize:11,color:c.bg}}>{sup}</div>
-                  </div>
-                  <div style={{textAlign:"right"}}>
-                    {item.to?.half
-                      ?<span className="tag tag-half">½ {item.to.type==="Vacation"?"Vac":"Jiffy"}</span>
-                      :item.to?.type==="Vacation"?<span className="tag tag-vacation">✈️ Vacation</span>
-                      :item.to?.type==="Parental Leave"?<span className="tag tag-parental">👶 Parental</span>
-                      :<span className="tag tag-jiffy">🌟 Jiffy Day</span>}
-                  </div>
-                </div>
-              );
-            })}
-        </div>
-
-        {/* In-office today */}
-        <div className="card">
-          <div style={{fontWeight:700,fontSize:14,marginBottom:12}}>🏢 In Office Today ({inOffice.length})</div>
-          {inOffice.length===0?<p style={{fontSize:12,color:"#94a3b8"}}>No in-office agents today</p>
-          :inOffice.map((a,i)=>{
-            const c=SUP_COLORS[a.supervisor]||{bg:"#64748b"};
-            return(
-              <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",borderBottom:"1px solid #f1f5f9"}}>
-                <div style={{fontWeight:600,fontSize:12}}>{a.name}</div>
-                <div style={{fontSize:11,color:c.bg}}>{getAgentForDate(a,todayDateS).shift}</div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Risks & Alerts */}
-      <div style={{fontWeight:700,fontSize:15,marginBottom:12}}>⚠️ Risks & Alerts</div>
-      <div style={{display:"grid",gap:10,marginBottom:24}}>
-        {riskLevel!=="OK"&&(
-          <div className={`card ${riskLevel==="HIGH"?"risk-card":"warn-card"}`}>
-            <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>{riskLevel==="HIGH"?"🔴 Staffing Risk":"🟡 Coverage Watch"}</div>
-            <p style={{fontSize:12,color:"#475569"}}>Today's working headcount ({working.length}) is {100-coveragePct}% below expected ({expectedHeadcount} scheduled). {pto.length>0?`${pto.length} agent${pto.length>1?"s are":" is"} out on PTO.`:""} Consider activating backup coverage.</p>
-          </div>
-        )}
-        {soon14.length>0&&(
-          <div className="card warn-card">
-            <div style={{fontWeight:700,fontSize:13,marginBottom:6}}>🚪 Upcoming Departures (next 14 days)</div>
-            {soon14.map(a=>(
-              <div key={a.id} style={{fontSize:12,padding:"3px 0",display:"flex",justifyContent:"space-between"}}>
-                <span style={{fontWeight:600}}>{a.name}</span>
-                <span style={{color:"#b45309"}}>Last day: {fmtFull(a.lastDay)}</span>
-              </div>
-            ))}
-            <p style={{fontSize:11,color:"#94a3b8",marginTop:6}}>Ensure knowledge transfer and backfill planning is underway.</p>
-          </div>
-        )}
-        {starting7.length>0&&(
-          <div className="card ok-card">
-            <div style={{fontWeight:700,fontSize:13,marginBottom:6}}>✨ New Agents Starting This Week</div>
-            {starting7.map(a=>(
-              <div key={a.id} style={{fontSize:12,padding:"3px 0",display:"flex",justifyContent:"space-between"}}>
-                <span style={{fontWeight:600}}>{a.name}</span>
-                <span style={{color:"#059669"}}>Starts: {fmtFull(a.startDate)} · {a.supervisor}</span>
-              </div>
-            ))}
-          </div>
-        )}
-        {upcomingTO.length>0&&(
-          <div className="card warn-card">
-            <div style={{fontWeight:700,fontSize:13,marginBottom:6}}>📅 Time Off This Week</div>
-            {[...new Map(upcomingTO.map(r=>[r.name+r.start,r])).values()].map((r,i)=>(
-              <div key={i} style={{fontSize:12,padding:"3px 0",display:"flex",justifyContent:"space-between",borderBottom:"1px solid #fef3c7"}}>
-                <span style={{fontWeight:600}}>{r.name}</span>
-                <span style={{color:"#92400e"}}>{r.type} · {r.start===r.end?fmtShort(r.start):`${fmtShort(r.start)}–${fmtShort(r.end)}`}{r.note?` (${r.note})`:""}</span>
-              </div>
-            ))}
-          </div>
-        )}
-        {riskLevel==="OK"&&soon14.length===0&&upcomingTO.filter(r=>parseDate(r.start)<=TODAY_DATE).length===0&&(
-          <div className="card ok-card">
-            <div style={{fontWeight:700,fontSize:13}}>✅ All Clear</div>
-            <p style={{fontSize:12,color:"#475569",marginTop:4}}>No major staffing risks today. Coverage is at expected levels.</p>
-          </div>
-        )}
-      </div>
-
-      {/* Shift breakdown */}
-      <div style={{fontWeight:700,fontSize:15,marginBottom:12}}>🕐 Shift Breakdown Today</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:10,marginBottom:24}}>
-        {Object.entries(shiftGroups).sort((a,b)=>a[0].localeCompare(b[0])).map(([sh,count])=>(
-          <div key={sh} className="card" style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <div>
-              <div style={{fontWeight:700,fontSize:13}}>{sh}</div>
-              <div style={{fontSize:11,color:"#94a3b8"}}>shift</div>
-            </div>
-            <div style={{fontSize:28,fontWeight:800,color:"#4f46e5"}}>{count}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* By supervisor */}
-      <div style={{fontWeight:700,fontSize:15,marginBottom:12}}>👤 By Supervisor</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:12}}>
-        {SUPERVISORS.map(sup=>{
-          const c=SUP_COLORS[sup];
-          const team=working.filter(a=>a.supervisor===sup);
-          const teamPTO=pto.filter(i=>i.agent.supervisor===sup);
-          return(
-            <div key={sup} className="card" style={{borderLeft:`4px solid ${c.bg}`}}>
-              <div style={{fontWeight:700,fontSize:13,color:c.bg,marginBottom:8}}>{sup}</div>
-              <div style={{display:"flex",gap:16,fontSize:12}}>
-                <div><span style={{fontWeight:700,fontSize:18,color:"#1e293b"}}>{team.length}</span><div style={{color:"#94a3b8"}}>working</div></div>
-                <div><span style={{fontWeight:700,fontSize:18,color:"#ef4444"}}>{teamPTO.length}</span><div style={{color:"#94a3b8"}}>out</div></div>
-              </div>
-              {teamPTO.length>0&&<div style={{marginTop:6,fontSize:11,color:"#64748b"}}>{teamPTO.map(i=>i.agent.name).join(", ")} out</div>}
-            </div>
-          );
-        })}
       </div>
     </div>
   );
 }
 
-// ---- ROSTER TAB ----
-function RosterTab({agents,setAgents,isManager}){
-  const[search,setSearch]=useState("");
-  const[filterSup,setFilterSup]=useState("All");
-  const[filterStatus,setFilterStatus]=useState("All");
-  const[editAgent,setEditAgent]=useState(null);
-  const[saved,setSaved]=useState(false);
-  const persist=a=>{setAgents(a);saveAgents(a);setSaved(true);setTimeout(()=>setSaved(false),2000);};
-
-  function getStatus(a){
-    if(a.lastDay){const d=parseDate(a.lastDay);if(d&&d<TODAY_DATE)return"departed";}
-    if(a.startDate){const d=parseDate(a.startDate);if(d&&d>TODAY_DATE)return"incoming";}
-    return"active";
-  }
-
-  const filtered=agents.filter(a=>{
-    const st=getStatus(a);
-    const supOk=filterSup==="All"||a.supervisor===filterSup;
-    const stOk=filterStatus==="All"||st===filterStatus;
-    const srOk=!search||a.name.toLowerCase().includes(search.toLowerCase())||(a.skills||"").toLowerCase().includes(search.toLowerCase());
-    return supOk&&stOk&&srOk;
-  });
-
-  const statusCounts={active:0,incoming:0,departed:0};
-  agents.forEach(a=>statusCounts[getStatus(a)]++);
-
-  function tenure(sd){
-    if(!sd)return"—";
-    const d=parseDate(sd);if(!d)return"—";
-    const diff=(TODAY_DATE-d)/(1000*60*60*24*365);
-    if(diff<0)return"Not started";
-    if(diff<1)return`${Math.floor(diff*12)}mo`;
-    return`${diff.toFixed(1)}yr`;
-  }
-
-  return(
-    <div>
-      {saved&&<div style={{background:"#dcfce7",color:"#166534",padding:"8px 14px",borderRadius:8,marginBottom:12,fontSize:12,fontWeight:600}}>✓ Saved</div>}
-
-      {/* Summary cards */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
-        {[["All","All","#4f46e5",agents.length],["Active","active","#059669",statusCounts.active],["Incoming","incoming","#7c3aed",statusCounts.incoming],["Departed","departed","#ef4444",statusCounts.departed]].map(([label,val,color,count])=>(
-          <div key={label} onClick={()=>setFilterStatus(val)} style={{background:filterStatus===val?color+"15":"#fff",border:`2px solid ${filterStatus===val?color:"#e2e8f0"}`,borderRadius:12,padding:"14px",cursor:"pointer"}}>
-            <div style={{fontSize:11,fontWeight:700,color,marginBottom:2,textTransform:"uppercase"}}>{label}</div>
-            <div style={{fontSize:28,fontWeight:800,color:"#1e293b"}}>{count}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Filters */}
-      <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
-        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search name or skill..." style={{maxWidth:240}}/>
-        <select value={filterSup} onChange={e=>setFilterSup(e.target.value)} style={{width:"auto",minWidth:160}}>
-          <option value="All">All Supervisors</option>
-          {SUPERVISORS.map(s=><option key={s}>{s}</option>)}
-        </select>
-        {isManager&&<button className="btn btn-success" style={{marginLeft:"auto"}} onClick={()=>setEditAgent({workDays:[],officeDays:[],wfhDays:[],shift:"6:00–2:30",supervisor:"Shelby Coldiron",isNew:true,skills:"",startDate:"",lastDay:""})}>+ Add Agent</button>}
-      </div>
-
-      {/* Table */}
-      <div style={{borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0",boxShadow:"0 1px 4px #0001"}}>
-        <div style={{overflowX:"auto"}}>
-          <table>
-            <thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}>
-              <th style={{minWidth:160}}>Agent</th>
-              <th style={{minWidth:100}}>Status</th>
-              <th style={{minWidth:130}}>Supervisor</th>
-              <th style={{minWidth:90}}>Shift</th>
-              <th style={{minWidth:90}}>Start Date</th>
-              <th style={{minWidth:90}}>Tenure</th>
-              <th style={{minWidth:90}}>Last Day</th>
-              <th style={{minWidth:220}}>Skills</th>
-              {isManager&&<th style={{minWidth:80,textAlign:"center"}}>Edit</th>}
-            </tr></thead>
-            <tbody>
-              {filtered.length===0&&<tr><td colSpan={9} style={{textAlign:"center",color:"#94a3b8",padding:24}}>No agents found</td></tr>}
-              {filtered.map(a=>{
-                const st=getStatus(a);
-                const c=SUP_COLORS[a.supervisor]||{bg:"#64748b"};
-                const skills=(a.skills||"").split(",").map(s=>s.trim()).filter(Boolean);
-                return(
-                  <tr key={a.id} style={{borderBottom:"1px solid #f1f5f9",background:st==="departed"?"#fff5f5":st==="incoming"?"#f5f3ff":a.isNew?"#f0fdf4":"#fff"}}>
-                    <td style={{fontWeight:600}}>
-                      {a.isNew&&<span style={{marginRight:4}}>✨</span>}
-                      {a.name}
-                    </td>
-                    <td>
-                      {st==="active"&&<span className="tag tag-active">● Active</span>}
-                      {st==="incoming"&&<span className="tag tag-incoming">⏳ Incoming</span>}
-                      {st==="departed"&&<span className="tag tag-departed">🚪 Departed</span>}
-                    </td>
-                    <td><span style={{fontSize:11,fontWeight:600,color:c.bg}}>{a.supervisor}</span></td>
-                    <td style={{fontSize:11,color:"#64748b"}}>{a.shift}</td>
-                    <td style={{fontSize:11,color:"#475569"}}>{a.startDate?fmtShort(a.startDate):"—"}</td>
-                    <td style={{fontSize:11,color:"#64748b"}}>{tenure(a.startDate)}</td>
-                    <td style={{fontSize:11,color:a.lastDay?"#ef4444":"#94a3b8"}}>{a.lastDay?fmtShort(a.lastDay):"—"}</td>
-                    <td>
-                      {skills.length>0
-                        ?skills.map((sk,i)=><span key={i} className="skill-chip">{sk}</span>)
-                        :<span style={{fontSize:11,color:"#94a3b8"}}>—</span>}
-                    </td>
-                    {isManager&&<td style={{textAlign:"center"}}>
-                      <button className="btn btn-ghost" style={{fontSize:11,padding:"3px 8px"}} onClick={()=>setEditAgent(a)}>✏️ Edit</button>
-                    </td>}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <p style={{fontSize:11,color:"#94a3b8",marginTop:8}}>{filtered.length} of {agents.length} agents shown.</p>
-
-      {editAgent&&<RosterEditModal agent={editAgent} onSave={form=>{
-        form.id?persist(agents.map(a=>a.id===form.id?form:a)):persist([...agents,{...form,id:Math.max(0,...agents.map(a=>a.id))+1}]);
-        setEditAgent(null);
-      }} onClose={()=>setEditAgent(null)}/>}
-    </div>
-  );
-}
-
+// ---- ROSTER EDIT MODAL ----
 function RosterEditModal({agent,onSave,onClose}){
   const[form,setForm]=useState({...agent,workDays:[...(agent.workDays||[])],officeDays:[...(agent.officeDays||[])],wfhDays:[...(agent.wfhDays||[])],skills:agent.skills||"",startDate:agent.startDate||"",lastDay:agent.lastDay||""});
   const tog=(arr,d)=>arr.includes(d)?arr.filter(x=>x!==d):[...arr,d];
@@ -638,7 +322,7 @@ function RosterEditModal({agent,onSave,onClose}){
               {form.lastDay&&parseDate(form.lastDay)&&<p style={{fontSize:10,color:"#ef4444",marginTop:3}}>⚠️ Departs after {fmtShort(form.lastDay)}</p>}</div>
           </div>
           <div><label style={{fontSize:11,color:"#64748b",fontWeight:600,display:"block",marginBottom:3}}>SKILLS <span style={{color:"#94a3b8",fontWeight:400}}>(comma separated)</span></label>
-            <textarea value={form.skills} onChange={e=>setForm({...form,skills:e.target.value})} placeholder="e.g. Chat, Phone, Billing, Spanish, QA, Tier 2, Escalations" style={{height:60}}/></div>
+            <textarea value={form.skills} onChange={e=>setForm({...form,skills:e.target.value})} placeholder="e.g. Chat, Phone, Billing, Spanish, QA, Tier 2" style={{height:55}}/></div>
         </div>
         <div style={{fontSize:11,color:"#64748b",fontWeight:600,marginBottom:6}}>SCHEDULE (5 work · 3 office · 2 WFH · no Sat office)</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:4,marginBottom:14}}>
@@ -661,52 +345,393 @@ function RosterEditModal({agent,onSave,onClose}){
   );
 }
 
-// ---- REMAINING TABS (condensed) ----
-function LoginModal({onLogin,onClose}){
-  const[pw,setPw]=useState("");const[err,setErr]=useState(false);
-  const submit=()=>{pw===MANAGER_PASSWORD?onLogin():(setErr(true),setPw(""));};
+// ---- ROSTER TAB (manager-only) ----
+function RosterTab({agents,setAgents,onRequestLogin}){
+  const[search,setSearch]=useState("");
+  const[filterSup,setFilterSup]=useState("All");
+  const[filterStatus,setFilterStatus]=useState("Active");
+  const[editAgent,setEditAgent]=useState(null);
+  const[saved,setSaved]=useState(false);
+  const persist=a=>{setAgents(a);saveAgents(a);setSaved(true);setTimeout(()=>setSaved(false),2000);};
+
+  function getStatus(a){
+    if(a.lastDay){const d=parseDate(a.lastDay);if(d&&d<TODAY_DATE)return"departed";}
+    if(a.startDate){const d=parseDate(a.startDate);if(d&&d>TODAY_DATE)return"incoming";}
+    return"active";
+  }
+
+  const filtered=agents.filter(a=>{
+    const st=getStatus(a);
+    const supOk=filterSup==="All"||a.supervisor===filterSup;
+    const stOk=filterStatus==="All"||st===filterStatus;
+    const srOk=!search||a.name.toLowerCase().includes(search.toLowerCase())||(a.skills||"").toLowerCase().includes(search.toLowerCase());
+    return supOk&&stOk&&srOk;
+  });
+
+  const counts={active:0,incoming:0,departed:0};
+  agents.forEach(a=>counts[getStatus(a)]++);
+
+  // Only count active + incoming for "total on roster"
+  const rosterTotal = counts.active + counts.incoming;
+
+  function tenure(sd){
+    if(!sd)return"—";const d=parseDate(sd);if(!d)return"—";
+    const diff=(TODAY_DATE-d)/(1000*60*60*24*365);
+    if(diff<0)return"Not started";
+    if(diff<1)return`${Math.floor(diff*12)}mo`;
+    return`${diff.toFixed(1)}yr`;
+  }
+
+  // Upcoming departures (lastDay >= today)
+  const upcomingDepartures=agents.filter(a=>{
+    if(!a.lastDay)return false;
+    const d=parseDate(a.lastDay);
+    return d&&d>=TODAY_DATE;
+  }).sort((a,b)=>parseDate(a.lastDay)-parseDate(b.lastDay));
+
   return(
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" style={{width:320}} onClick={e=>e.stopPropagation()}>
-        <h2 style={{fontWeight:700,fontSize:16,marginBottom:6}}>🔒 Manager Login</h2>
-        <p style={{fontSize:12,color:"#64748b",marginBottom:16}}>Enter your manager password.</p>
-        <input type="password" value={pw} onChange={e=>{setPw(e.target.value);setErr(false);}} onKeyDown={e=>e.key==="Enter"&&submit()} style={{marginBottom:10}}/>
-        {err&&<p style={{fontSize:11,color:"#ef4444",marginBottom:8}}>Incorrect password.</p>}
-        <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
-          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" onClick={submit}>Login</button>
+    <div>
+      {saved&&<div style={{background:"#dcfce7",color:"#166534",padding:"8px 14px",borderRadius:8,marginBottom:12,fontSize:12,fontWeight:600}}>✓ Saved</div>}
+
+      {/* Upcoming departures banner */}
+      {upcomingDepartures.length>0&&(
+        <div style={{background:"#fff5f5",border:"1px solid #fca5a5",borderRadius:10,padding:"12px 16px",marginBottom:20}}>
+          <div style={{fontWeight:700,fontSize:13,color:"#991b1b",marginBottom:8}}>🚪 Upcoming Departures</div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            {upcomingDepartures.map(a=>(
+              <div key={a.id} style={{background:"#fff",border:"1px solid #fca5a5",borderRadius:8,padding:"5px 12px",fontSize:12}}>
+                <span style={{fontWeight:600}}>{a.name}</span>
+                <span style={{color:"#94a3b8",margin:"0 4px"}}>·</span>
+                <span style={{color:"#991b1b",fontWeight:600}}>{fmtShort(a.lastDay)}</span>
+              </div>
+            ))}
+          </div>
         </div>
+      )}
+
+      {/* Summary cards */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
+        {[["Total Roster","All","#4f46e5",rosterTotal],["Active","active","#059669",counts.active],["Incoming","incoming","#7c3aed",counts.incoming],["Departed","departed","#ef4444",counts.departed]].map(([label,val,color,count])=>(
+          <div key={label} onClick={()=>setFilterStatus(val)} style={{background:filterStatus===val?color+"15":"#fff",border:`2px solid ${filterStatus===val?color:"#e2e8f0"}`,borderRadius:12,padding:"14px",cursor:"pointer",transition:"all .15s"}}>
+            <div style={{fontSize:11,fontWeight:700,color,marginBottom:2,textTransform:"uppercase"}}>{label}</div>
+            <div style={{fontSize:28,fontWeight:800,color:"#1e293b"}}>{count}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Filters */}
+      <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search name or skill..." style={{maxWidth:240}}/>
+        <select value={filterSup} onChange={e=>setFilterSup(e.target.value)} style={{width:"auto",minWidth:160}}>
+          <option value="All">All Supervisors</option>
+          {SUPERVISORS.map(s=><option key={s}>{s}</option>)}
+        </select>
+        <button className="btn btn-success" style={{marginLeft:"auto"}} onClick={()=>setEditAgent({workDays:[],officeDays:[],wfhDays:[],shift:"6:00–2:30",supervisor:"Shelby Coldiron",isNew:true,skills:"",startDate:"",lastDay:""})}>+ Add Agent</button>
+      </div>
+
+      {/* Table */}
+      <div style={{borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0",boxShadow:"0 1px 4px #0001"}}>
+        <div style={{overflowX:"auto"}}>
+          <table>
+            <thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}>
+              <th style={{minWidth:170}}>Agent</th>
+              <th style={{minWidth:90}}>Status</th>
+              <th style={{minWidth:140}}>Supervisor</th>
+              <th style={{minWidth:90}}>Shift</th>
+              <th style={{minWidth:90}}>Start Date</th>
+              <th style={{minWidth:70}}>Tenure</th>
+              <th style={{minWidth:90}}>Last Day</th>
+              <th style={{minWidth:230}}>Skills</th>
+              <th style={{minWidth:80,textAlign:"center"}}>Edit</th>
+            </tr></thead>
+            <tbody>
+              {filtered.length===0&&<tr><td colSpan={9} style={{textAlign:"center",color:"#94a3b8",padding:24}}>No agents found</td></tr>}
+              {filtered.map(a=>{
+                const st=getStatus(a);
+                const c=SUP_COLORS[a.supervisor]||{bg:"#64748b"};
+                const skills=(a.skills||"").split(",").map(s=>s.trim()).filter(Boolean);
+                return(
+                  <tr key={a.id} style={{borderBottom:"1px solid #f1f5f9",background:st==="departed"?"#fff5f5":st==="incoming"?"#f5f3ff":a.isNew?"#f0fdf4":"#fff"}}>
+                    <td style={{fontWeight:600}}>
+                      {a.isNew&&<span style={{marginRight:4}}>✨</span>}
+                      {a.name}
+                    </td>
+                    <td>
+                      {st==="active"  &&<span className="tag tag-active">● Active</span>}
+                      {st==="incoming"&&<span className="tag tag-incoming">⏳ Incoming</span>}
+                      {st==="departed"&&<span className="tag tag-departed">🚪 Departed</span>}
+                    </td>
+                    <td><span style={{fontSize:11,fontWeight:600,color:c.bg}}>{a.supervisor}</span></td>
+                    <td style={{fontSize:11,color:"#64748b"}}>{a.shift}</td>
+                    <td style={{fontSize:11,color:"#475569"}}>{a.startDate?fmtShort(a.startDate):"—"}</td>
+                    <td style={{fontSize:11,color:"#64748b"}}>{tenure(a.startDate)}</td>
+                    <td style={{fontSize:11,color:a.lastDay?"#ef4444":"#94a3b8"}}>{a.lastDay?fmtShort(a.lastDay):"—"}</td>
+                    <td>{skills.length>0?skills.map((sk,i)=><span key={i} className="skill-chip">{sk}</span>):<span style={{fontSize:11,color:"#94a3b8"}}>—</span>}</td>
+                    <td style={{textAlign:"center"}}>
+                      <button className="btn btn-ghost" style={{fontSize:11,padding:"3px 8px"}} onClick={()=>setEditAgent(a)}>✏️</button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p style={{fontSize:11,color:"#94a3b8",marginTop:8}}>{filtered.length} of {agents.length} agents shown.</p>
+
+      {editAgent&&<RosterEditModal agent={editAgent} onSave={form=>{
+        form.id?persist(agents.map(a=>a.id===form.id?form:a)):persist([...agents,{...form,id:Math.max(0,...agents.map(a=>a.id))+1}]);
+        setEditAgent(null);
+      }} onClose={()=>setEditAgent(null)}/>}
+    </div>
+  );
+}
+
+// ---- TODAY TAB ----
+function TodayTab({agents}){
+  const weekDates=WEEKS[4].dates;
+  const active=agents.filter(a=>{if(!a.lastDay)return true;const last=parseDate(a.lastDay);return last&&last>=TODAY_DATE;});
+  const working=[],pto=[],halfDay=[],wfh=[],inOffice=[];
+  active.forEach(a=>{
+    const s=getCellStatus(a,TODAY_DAY,weekDates);
+    if(s.type==="dayoff"||s.type==="departed"||s.type==="notstarted")return;
+    if(s.type==="pto"){pto.push({agent:a,to:s.to});return;}
+    if(s.type==="half"){halfDay.push({agent:a,to:s.to});return;}
+    if(s.type==="office"){inOffice.push(a);working.push(a);}
+    if(s.type==="wfh"){wfh.push(a);working.push(a);}
+  });
+  const chatPrimary=chatAgents.filter(a=>a["Mon"]==="X").length;
+  const chatBackup=chatAgents.filter(a=>a["Mon"]==="B").length;
+  const expected=active.filter(a=>a.workDays.includes(TODAY_DAY)&&!hasNotStarted(a,TODAY_STR)).length;
+  const actual=working.length+halfDay.length;
+  const pct=expected>0?Math.round(actual/expected*100):100;
+  const risk=pct<70?"HIGH":pct<85?"MEDIUM":"OK";
+  const soon14=agents.filter(a=>{if(!a.lastDay)return false;const last=parseDate(a.lastDay);const diff=(last-TODAY_DATE)/(1000*60*60*24);return diff>=0&&diff<=14;});
+  const starting7=agents.filter(a=>{if(!a.startDate)return false;const sd=parseDate(a.startDate);const diff=(sd-TODAY_DATE)/(1000*60*60*24);return diff>=0&&diff<=7;});
+  const upcomingTO=timeOffData.filter(r=>{const s=parseDate(r.start),e=parseDate(r.end),wEnd=parseDate(weekDates[5]);return s&&e&&s>=TODAY_DATE&&s<=wEnd;});
+  const shiftGroups={};working.forEach(a=>{const sh=getAgentForDate(a,TODAY_STR).shift;shiftGroups[sh]=(shiftGroups[sh]||0)+1;});
+  return(
+    <div>
+      <div style={{background:"linear-gradient(135deg,#1e293b,#334155)",borderRadius:16,padding:"20px 24px",color:"#fff",marginBottom:24}}>
+        <div style={{fontSize:11,color:"#94a3b8",fontWeight:600,marginBottom:4,textTransform:"uppercase",letterSpacing:1}}>Daily Briefing</div>
+        <div style={{fontSize:22,fontWeight:800}}>Monday, March 2, 2026</div>
+        <div style={{fontSize:13,color:"#94a3b8",marginTop:4}}>Week of Mar 2–7 · {active.length} active agents</div>
+        <div style={{marginTop:14,display:"flex",gap:10,flexWrap:"wrap"}}>
+          <span className={`tag tag-${risk==="HIGH"?"risk":risk==="MEDIUM"?"warn":"ok"}`} style={{fontSize:13,padding:"4px 12px"}}>
+            {risk==="HIGH"?"🔴 HIGH RISK":risk==="MEDIUM"?"🟡 MEDIUM RISK":"🟢 STAFFING OK"}
+          </span>
+          <span className="tag" style={{background:"#ffffff22",color:"#fff",fontSize:13,padding:"4px 12px"}}>{pct}% coverage today</span>
+        </div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:12,marginBottom:24}}>
+        {[["👥","Working",working.length,`+${halfDay.length} half`,""],["🏢","In Office",inOffice.length,"","ok-card"],["🏠","WFH",wfh.length,"",""],["🌟","Out / PTO",pto.length,"",pto.length>3?"risk-card":""],["💬","Chat Primary",chatPrimary,`+${chatBackup} backup`,""]].map(([icon,label,val,sub,cls])=>(
+          <div key={label} className={`card ${cls}`} style={{textAlign:"center",padding:"16px 10px"}}>
+            <div style={{fontSize:22}}>{icon}</div>
+            <div style={{fontSize:28,fontWeight:800,color:"#1e293b",margin:"4px 0"}}>{val}</div>
+            <div style={{fontSize:12,fontWeight:700,color:"#475569"}}>{label}</div>
+            {sub&&<div style={{fontSize:11,color:"#94a3b8",marginTop:2}}>{sub}</div>}
+          </div>
+        ))}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,marginBottom:24}}>
+        <div className="card">
+          <div style={{fontWeight:700,fontSize:14,marginBottom:12}}>🌟 Out Today</div>
+          {pto.length===0&&halfDay.length===0?<p style={{fontSize:12,color:"#94a3b8"}}>No time off today ✓</p>
+          :[...pto,...halfDay].map((item,i)=>{const c=SUP_COLORS[item.agent.supervisor]||{bg:"#64748b"};return(
+            <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid #f1f5f9"}}>
+              <div><div style={{fontWeight:600,fontSize:12}}>{item.agent.name}</div><div style={{fontSize:11,color:c.bg}}>{item.agent.supervisor}</div></div>
+              <div>{item.to?.half?<span className="tag tag-half">½ {item.to.type==="Vacation"?"Vac":"Jiffy"}</span>:item.to?.type==="Vacation"?<span className="tag tag-vacation">✈️ Vacation</span>:item.to?.type==="Parental Leave"?<span className="tag tag-parental">👶 Parental</span>:<span className="tag tag-jiffy">🌟 Jiffy Day</span>}</div>
+            </div>);})}
+        </div>
+        <div className="card">
+          <div style={{fontWeight:700,fontSize:14,marginBottom:12}}>🏢 In Office ({inOffice.length})</div>
+          {inOffice.length===0?<p style={{fontSize:12,color:"#94a3b8"}}>No in-office agents</p>
+          :inOffice.map((a,i)=>{const c=SUP_COLORS[a.supervisor]||{bg:"#64748b"};return(
+            <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",borderBottom:"1px solid #f1f5f9"}}>
+              <div style={{fontWeight:600,fontSize:12}}>{a.name}</div>
+              <div style={{fontSize:11,color:c.bg}}>{getAgentForDate(a,TODAY_STR).shift}</div>
+            </div>);})}
+        </div>
+      </div>
+      <div style={{fontWeight:700,fontSize:15,marginBottom:12}}>⚠️ Risks & Alerts</div>
+      <div style={{display:"grid",gap:10,marginBottom:24}}>
+        {risk!=="OK"&&<div className={`card ${risk==="HIGH"?"risk-card":"warn-card"}`}><div style={{fontWeight:700,fontSize:13,marginBottom:4}}>{risk==="HIGH"?"🔴 Staffing Risk":"🟡 Coverage Watch"}</div><p style={{fontSize:12,color:"#475569"}}>Today's working headcount ({working.length}) is {100-pct}% below expected ({expected} scheduled).{pto.length>0?` ${pto.length} agent${pto.length>1?"s":" "} out on PTO.`:""} Consider activating backup coverage.</p></div>}
+        {soon14.length>0&&<div className="card warn-card"><div style={{fontWeight:700,fontSize:13,marginBottom:6}}>🚪 Upcoming Departures (14 days)</div>{soon14.map(a=><div key={a.id} style={{fontSize:12,padding:"3px 0",display:"flex",justifyContent:"space-between"}}><span style={{fontWeight:600}}>{a.name}</span><span style={{color:"#b45309"}}>Last day: {fmtFull(a.lastDay)}</span></div>)}<p style={{fontSize:11,color:"#94a3b8",marginTop:6}}>Ensure knowledge transfer is underway.</p></div>}
+        {starting7.length>0&&<div className="card ok-card"><div style={{fontWeight:700,fontSize:13,marginBottom:6}}>✨ Starting This Week</div>{starting7.map(a=><div key={a.id} style={{fontSize:12,padding:"3px 0",display:"flex",justifyContent:"space-between"}}><span style={{fontWeight:600}}>{a.name}</span><span style={{color:"#059669"}}>Starts: {fmtFull(a.startDate)} · {a.supervisor}</span></div>)}</div>}
+        {upcomingTO.length>0&&<div className="card warn-card"><div style={{fontWeight:700,fontSize:13,marginBottom:6}}>📅 Time Off This Week</div>{[...new Map(upcomingTO.map(r=>[r.name+r.start,r])).values()].map((r,i)=><div key={i} style={{fontSize:12,padding:"3px 0",display:"flex",justifyContent:"space-between",borderBottom:"1px solid #fef3c7"}}><span style={{fontWeight:600}}>{r.name}</span><span style={{color:"#92400e"}}>{r.type} · {r.start===r.end?fmtShort(r.start):`${fmtShort(r.start)}–${fmtShort(r.end)}`}{r.note?` (${r.note})`:""}</span></div>)}</div>}
+        {risk==="OK"&&soon14.length===0&&<div className="card ok-card"><div style={{fontWeight:700,fontSize:13}}>✅ All Clear</div><p style={{fontSize:12,color:"#475569",marginTop:4}}>No major staffing risks today.</p></div>}
+      </div>
+      <div style={{fontWeight:700,fontSize:15,marginBottom:12}}>🕐 Shift Breakdown</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:10,marginBottom:24}}>
+        {Object.entries(shiftGroups).sort().map(([sh,count])=>(
+          <div key={sh} className="card" style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div><div style={{fontWeight:700,fontSize:13}}>{sh}</div><div style={{fontSize:11,color:"#94a3b8"}}>shift</div></div>
+            <div style={{fontSize:28,fontWeight:800,color:"#4f46e5"}}>{count}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{fontWeight:700,fontSize:15,marginBottom:12}}>👤 By Supervisor</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:12}}>
+        {SUPERVISORS.map(sup=>{
+          const c=SUP_COLORS[sup]||{bg:"#64748b"};
+          const team=working.filter(a=>a.supervisor===sup);
+          const teamPTO=pto.filter(i=>i.agent.supervisor===sup);
+          return(<div key={sup} className="card" style={{borderLeft:`4px solid ${c.bg}`}}>
+            <div style={{fontWeight:700,fontSize:13,color:c.bg,marginBottom:8}}>{sup}</div>
+            <div style={{display:"flex",gap:16,fontSize:12}}>
+              <div><span style={{fontWeight:700,fontSize:18,color:"#1e293b"}}>{team.length}</span><div style={{color:"#94a3b8"}}>working</div></div>
+              <div><span style={{fontWeight:700,fontSize:18,color:"#ef4444"}}>{teamPTO.length}</span><div style={{color:"#94a3b8"}}>out</div></div>
+            </div>
+            {teamPTO.length>0&&<div style={{marginTop:6,fontSize:11,color:"#64748b"}}>{teamPTO.map(i=>i.agent.name).join(", ")} out</div>}
+          </div>);
+        })}
       </div>
     </div>
   );
 }
 
+// ---- SCHEDULE TAB (flat list, supervisor filter via cards) ----
+function ScheduleTab({agents,setAgents,isManager}){
+  const[weekIdx,setWeekIdx]=useState(4);
+  const[filterSup,setFilterSup]=useState("All");
+  const[editAgent,setEditAgent]=useState(null);
+  const[delConfirm,setDelConfirm]=useState(null);
+  const[saved,setSaved]=useState(false);
+  const week=WEEKS[weekIdx];
+  const persist=a=>{setAgents(a);saveAgents(a);setSaved(true);setTimeout(()=>setSaved(false),2000);};
+  const weekStart=parseDate(week.dates[0]);
+  const weekEnd=parseDate(week.dates[5]);
+
+  // Active for this week
+  const weekAgents=agents.filter(a=>{
+    if(a.lastDay){const last=parseDate(a.lastDay);if(last&&last<weekStart)return false;}
+    if(a.startDate){const start=parseDate(a.startDate);if(start&&start>weekEnd)return false;}
+    return true;
+  });
+
+  const displayed=weekAgents.filter(a=>filterSup==="All"||a.supervisor===filterSup).sort((a,b)=>a.name.localeCompare(b.name));
+
+  // Supervisor headcount cards
+  const supCounts=SUPERVISORS.map(sup=>({sup,count:weekAgents.filter(a=>a.supervisor===sup).length})).filter(s=>s.count>0);
+
+  const departingThisWeek=weekAgents.filter(a=>{if(!a.lastDay)return false;const last=parseDate(a.lastDay);return last&&last>=weekStart&&last<=weekEnd;});
+
+  const daySummary=DAYS.map((day,di)=>{
+    let w=0,p=0,h=0;
+    weekAgents.forEach(a=>{const s=getCellStatus(a,day,week.dates);if(s.type==="pto")p++;else if(s.type==="half")h++;else if(s.type==="office"||s.type==="wfh")w++;});
+    return{day,date:week.dates[di],working:w,pto:p,half:h};
+  });
+
+  return(
+    <div>
+      {saved&&<div style={{background:"#dcfce7",color:"#166534",padding:"8px 14px",borderRadius:8,marginBottom:12,fontSize:12,fontWeight:600}}>✓ Saved</div>}
+      {/* Week picker */}
+      <div style={{marginBottom:16}}>{["February","March"].map(month=>{const mw=WEEKS.filter(w=>w.month===month);return(
+        <div key={month} style={{marginBottom:8}}>
+          <div style={{fontSize:11,fontWeight:700,color:"#94a3b8",marginBottom:5,textTransform:"uppercase",letterSpacing:1}}>{month}</div>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{mw.map(w=>{const gi=WEEKS.indexOf(w);return(
+            <button key={gi} onClick={()=>setWeekIdx(gi)} className="btn" style={{background:weekIdx===gi?"#4f46e5":"#fff",color:weekIdx===gi?"#fff":"#475569",border:`1px solid ${weekIdx===gi?"#4f46e5":"#e2e8f0"}`}}>
+              {w.label} <span style={{opacity:.7,fontSize:11}}>({w.display})</span>
+            </button>);})}</div>
+        </div>);})}</div>
+
+      {/* Alerts */}
+      {departingThisWeek.length>0&&<div style={{background:"#fee2e2",border:"1px solid #fca5a5",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#991b1b",marginBottom:10}}>🚪 {departingThisWeek.map(a=><strong key={a.id}>{a.name}</strong>).reduce((a,b)=>[a,", ",b])} — last day this week</div>}
+      {week.month==="March"&&weekIdx>=5&&<div style={{background:"#ffedd5",border:"1px solid #fdba74",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#9a3412",marginBottom:8}}>👶 <strong>Jeremy Carillo</strong> on Parental Leave Mar 16–31.</div>}
+      {week.month==="March"&&(weekIdx===6||weekIdx===7)&&<div style={{background:"#ede9fe",border:"1px solid #c4b5fd",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#5b21b6",marginBottom:8}}>✈️ <strong>Unaisa Aslam</strong> vacation Mar 18–29. Reverts to 11:30–8:00 from Mar 19.</div>}
+
+      {/* Daily headcount row */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:8,marginBottom:20}}>
+        {daySummary.map(d=>(
+          <div key={d.day} style={{background:"#fff",borderRadius:10,border:"1px solid #e2e8f0",padding:"10px 8px",textAlign:"center"}}>
+            <div style={{fontWeight:700,fontSize:12,color:"#475569"}}>{d.day.slice(0,3)}</div>
+            <div style={{fontSize:10,color:"#94a3b8",marginBottom:4}}>{fmtShort(d.date)}</div>
+            <div style={{fontSize:22,fontWeight:800}}>{d.working+d.half}</div>
+            {d.pto>0&&<div style={{marginTop:2}}><span className="tag tag-vacation" style={{fontSize:10}}>{d.pto} out</span></div>}
+          </div>
+        ))}
+      </div>
+
+      {/* Supervisor filter cards — clickable to drill down */}
+      <div style={{fontSize:12,fontWeight:700,color:"#64748b",marginBottom:8,textTransform:"uppercase",letterSpacing:.5}}>Filter by Supervisor — click to drill down</div>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
+        <div onClick={()=>setFilterSup("All")} style={{background:filterSup==="All"?"#4f46e5":"#fff",color:filterSup==="All"?"#fff":"#475569",border:`2px solid ${filterSup==="All"?"#4f46e5":"#e2e8f0"}`,borderRadius:10,padding:"8px 14px",cursor:"pointer",fontSize:12,fontWeight:700,display:"flex",gap:8,alignItems:"center"}}>
+          <span>All Agents</span><span style={{background:filterSup==="All"?"#ffffff33":"#f1f5f9",padding:"1px 7px",borderRadius:10,fontWeight:800}}>{weekAgents.length}</span>
+        </div>
+        {supCounts.map(({sup,count})=>{const c=SUP_COLORS[sup]||{bg:"#64748b",light:"#f8fafc",border:"#e2e8f0"};const sel=filterSup===sup;return(
+          <div key={sup} onClick={()=>setFilterSup(sel?"All":sup)} style={{background:sel?c.bg:c.light,color:sel?"#fff":c.bg,border:`2px solid ${sel?c.bg:c.border}`,borderRadius:10,padding:"8px 14px",cursor:"pointer",fontSize:12,fontWeight:700,display:"flex",gap:8,alignItems:"center",transition:"all .15s"}}>
+            <span>{sup}</span><span style={{background:sel?"#ffffff33":c.bg+"22",padding:"1px 7px",borderRadius:10,fontWeight:800}}>{count}</span>
+          </div>);})}
+      </div>
+
+      {isManager&&<div style={{marginBottom:14}}><button className="btn btn-success" onClick={()=>setEditAgent({workDays:[],officeDays:[],wfhDays:[],shift:"6:00–2:30",supervisor:"Shelby Coldiron",isNew:true,skills:"",startDate:"",lastDay:""})}>+ Add Agent</button></div>}
+
+      {/* Flat agent table */}
+      <div style={{borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0",boxShadow:"0 1px 4px #0001"}}>
+        <div style={{overflowX:"auto"}}>
+          <table>
+            <thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}>
+              <th style={{minWidth:160,position:"sticky",left:0,background:"#f8fafc",zIndex:2}}>Agent</th>
+              <th style={{minWidth:90}}>Shift</th>
+              <th style={{minWidth:120}}>Supervisor</th>
+              {DAYS.map((d,di)=><th key={d} style={{textAlign:"center",minWidth:80}}><div>{d.slice(0,3)}</div><div style={{fontWeight:400,color:"#94a3b8",fontSize:10}}>{fmtShort(week.dates[di])}</div></th>)}
+              {isManager&&<th style={{textAlign:"center",minWidth:80}}>Actions</th>}
+            </tr></thead>
+            <tbody>
+              {displayed.length===0&&<tr><td colSpan={10} style={{textAlign:"center",color:"#94a3b8",padding:24}}>No agents found</td></tr>}
+              {displayed.map(agent=>{
+                const isDep=departingThisWeek.some(a=>a.id===agent.id);
+                const hasPto=DAYS.some(d=>{const s=getCellStatus(agent,d,week.dates);return s.type==="pto"||s.type==="half";});
+                const ea=getAgentForDate(agent,week.dates[2]);
+                const c=SUP_COLORS[agent.supervisor]||{bg:"#64748b"};
+                return(<tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",background:isDep?"#fff5f5":hasPto?"#fffbeb":agent.isNew?"#f0fdf4":"#fff"}}>
+                  <td style={{fontWeight:600,position:"sticky",left:0,background:"inherit",zIndex:1}}>
+                    {agent.isNew&&<span style={{marginRight:4}}>✨</span>}
+                    {agent.name}
+                    {agent.lastDay&&<span style={{marginLeft:6,fontSize:10,background:"#fee2e2",color:"#991b1b",padding:"1px 5px",borderRadius:10,fontWeight:600}}>Last: {fmtShort(agent.lastDay)}</span>}
+                  </td>
+                  <td style={{fontSize:11,color:"#64748b"}}>{ea.shift}</td>
+                  <td><span style={{fontSize:11,fontWeight:600,color:c.bg}}>{agent.supervisor}</span></td>
+                  {DAYS.map(day=>{const st=getCellStatus(agent,day,week.dates);return<td key={day} style={{textAlign:"center",padding:"6px 4px"}}><CellTag status={st}/></td>;})}
+                  {isManager&&<td style={{textAlign:"center"}}>
+                    <button className="btn btn-ghost" style={{fontSize:11,padding:"3px 8px",marginRight:4}} onClick={()=>setEditAgent(agent)}>✏️</button>
+                    <button className="btn btn-danger" style={{fontSize:11,padding:"3px 8px"}} onClick={()=>setDelConfirm(agent.id)}>🗑</button>
+                  </td>}
+                </tr>);
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p style={{fontSize:11,color:"#94a3b8",marginTop:6}}>{displayed.length} agents shown</p>
+
+      {editAgent&&<RosterEditModal agent={editAgent} onSave={form=>{form.id?persist(agents.map(a=>a.id===form.id?form:a)):persist([...agents,{...form,id:Math.max(0,...agents.map(a=>a.id))+1}]);setEditAgent(null);}} onClose={()=>setEditAgent(null)}/>}
+      {delConfirm&&<div className="modal-overlay" onClick={()=>setDelConfirm(null)}><div className="modal" style={{width:340}} onClick={e=>e.stopPropagation()}>
+        <h2 style={{fontWeight:700,fontSize:16,marginBottom:8}}>Remove Agent?</h2>
+        <p style={{fontSize:13,color:"#64748b",marginBottom:20}}>Remove <strong>{agents.find(a=>a.id===delConfirm)?.name}</strong>?</p>
+        <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button className="btn btn-ghost" onClick={()=>setDelConfirm(null)}>Cancel</button><button className="btn btn-danger" onClick={()=>{persist(agents.filter(a=>a.id!==delConfirm));setDelConfirm(null);}}>Remove</button></div>
+      </div></div>}
+    </div>
+  );
+}
+
+// ---- CHAT TAB ----
 const CHAT_INTERVALS=[];
 for(let m=360;m<=1200;m+=30){const h=Math.floor(m/60),mn=m%60;CHAT_INTERVALS.push({label:`${String(h).padStart(2,"0")}:${String(mn).padStart(2,"0")}`,minutes:m});}
 const CHAT_DAY_KEYS=["Mon","Tue","Wed","Thu","Fri"];
 const CHAT_DAY_FULL={Mon:"Monday",Tue:"Tuesday",Wed:"Wednesday",Thu:"Thursday",Fri:"Friday"};
 
 function ChatScheduleTab(){
-  const[dayKey,setDayKey]=useState("Mon");
-  const[showBackups,setShowBackups]=useState(true);
-  function parseShift(s){const p=s.split("-");return{startMin:timeToMin(p[0]),endMin:timeToMin(p[1])};}
+  const[dayKey,setDayKey]=useState("Mon");const[showBackups,setShowBackups]=useState(true);
+  function pShift(s){const p=s.split("-");return{startMin:timeToMin(p[0]),endMin:timeToMin(p[1])};}
   const dayAgents=chatAgents.filter(a=>a[dayKey]==="X"||(showBackups&&a[dayKey]==="B"));
-  const intervalCounts=CHAT_INTERVALS.filter(({minutes})=>minutes>=360&&minutes<1200).map(({label,minutes})=>{
-    let primary=0,backup=0;
-    chatAgents.forEach(a=>{const{startMin,endMin}=parseShift(a.shift);if(minutes>=startMin&&minutes<endMin){if(a[dayKey]==="X")primary++;else if(a[dayKey]==="B")backup++;}});
-    return{label,minutes,primary,backup,total:primary+backup};
-  });
-  const agentRows=dayAgents.map(a=>{
-    const{startMin,endMin}=parseShift(a.shift);
-    const mid=Math.round((startMin+endMin)/2/30)*30;
-    return{name:a.name,shift:a.shift.replace("-","–"),role:a[dayKey],lunchLabel:`${minToTime(mid)}–${minToTime(mid+30)}`,startMin};
-  }).sort((a,b)=>a.startMin-b.startMin);
-  const maxTotal=Math.max(...intervalCounts.map(r=>r.total),1);
-  const allDayCounts=CHAT_DAY_KEYS.map(dk=>CHAT_INTERVALS.filter(({minutes})=>minutes>=360&&minutes<1200).map(({label,minutes})=>{
-    let pri=0,bkp=0;
-    chatAgents.forEach(a=>{const{startMin,endMin}=parseShift(a.shift);if(minutes>=startMin&&minutes<endMin){if(a[dk]==="X")pri++;else if(a[dk]==="B")bkp++;}});
+  const iCounts=CHAT_INTERVALS.filter(({minutes})=>minutes>=360&&minutes<1200).map(({label,minutes})=>{
+    let pri=0,bkp=0;chatAgents.forEach(a=>{const{startMin,endMin}=pShift(a.shift);if(minutes>=startMin&&minutes<endMin){if(a[dayKey]==="X")pri++;else if(a[dayKey]==="B")bkp++;}});
     return{label,minutes,pri,bkp,total:pri+bkp};
-  }));
+  });
+  const rows=dayAgents.map(a=>{const{startMin,endMin}=pShift(a.shift);const mid=Math.round((startMin+endMin)/2/30)*30;return{name:a.name,shift:a.shift.replace("-","–"),role:a[dayKey],lunch:`${minToTime(mid)}–${minToTime(mid+30)}`,startMin};}).sort((a,b)=>a.startMin-b.startMin);
+  const maxT=Math.max(...iCounts.map(r=>r.total),1);
+  const allDC=CHAT_DAY_KEYS.map(dk=>CHAT_INTERVALS.filter(({minutes})=>minutes>=360&&minutes<1200).map(({label,minutes})=>{let p=0,b=0;chatAgents.forEach(a=>{const{startMin,endMin}=pShift(a.shift);if(minutes>=startMin&&minutes<endMin){if(a[dk]==="X")p++;else if(a[dk]==="B")b++;}});return{label,minutes,pri:p,bkp:b,total:p+b};}));
   return(
     <div>
       <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
@@ -715,21 +740,16 @@ function ChatScheduleTab(){
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,marginBottom:24}}>
         <div>
-          <div style={{fontWeight:700,fontSize:14,marginBottom:8}}>💬 {CHAT_DAY_FULL[dayKey]} — Chat Agents</div>
+          <div style={{fontWeight:700,fontSize:14,marginBottom:8}}>💬 {CHAT_DAY_FULL[dayKey]}</div>
           <div style={{borderRadius:12,border:"1px solid #e2e8f0",overflow:"hidden",background:"#fff"}}>
             <table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th>Agent</th><th style={{textAlign:"center"}}>Shift</th><th style={{textAlign:"center"}}>Role</th><th style={{textAlign:"center"}}>Lunch</th></tr></thead>
-            <tbody>
-              {agentRows.length===0&&<tr><td colSpan={4} style={{textAlign:"center",color:"#94a3b8",padding:20}}>No agents</td></tr>}
-              {agentRows.map((a,i)=>(
-                <tr key={i} style={{borderBottom:"1px solid #f1f5f9",background:a.role==="B"?"#fafafa":"#fff"}}>
-                  <td style={{fontWeight:600,fontSize:12}}>{a.name}</td>
-                  <td style={{textAlign:"center",fontSize:11,color:"#64748b"}}>{a.shift}</td>
-                  <td style={{textAlign:"center"}}>{a.role==="X"?<span className="tag tag-primary">Primary</span>:<span className="tag tag-backup">Backup</span>}</td>
-                  <td style={{textAlign:"center"}}><span className="tag tag-lunch">🍽 {a.lunchLabel}</span></td>
-                </tr>
-              ))}
-            </tbody></table>
-            {agentRows.length>0&&<div style={{padding:"6px 12px",background:"#f8fafc",fontSize:11,color:"#94a3b8"}}>{agentRows.filter(a=>a.role==="X").length} primary · {agentRows.filter(a=>a.role==="B").length} backup</div>}
+            <tbody>{rows.length===0&&<tr><td colSpan={4} style={{textAlign:"center",color:"#94a3b8",padding:20}}>No agents</td></tr>}
+            {rows.map((a,i)=><tr key={i} style={{borderBottom:"1px solid #f1f5f9",background:a.role==="B"?"#fafafa":"#fff"}}>
+              <td style={{fontWeight:600,fontSize:12}}>{a.name}</td><td style={{textAlign:"center",fontSize:11,color:"#64748b"}}>{a.shift}</td>
+              <td style={{textAlign:"center"}}>{a.role==="X"?<span className="tag tag-primary">Primary</span>:<span className="tag tag-backup">Backup</span>}</td>
+              <td style={{textAlign:"center"}}><span className="tag tag-lunch">🍽 {a.lunch}</span></td>
+            </tr>)}</tbody></table>
+            {rows.length>0&&<div style={{padding:"6px 12px",background:"#f8fafc",fontSize:11,color:"#94a3b8"}}>{rows.filter(a=>a.role==="X").length} primary · {rows.filter(a=>a.role==="B").length} backup</div>}
           </div>
         </div>
         <div>
@@ -741,25 +761,15 @@ function ChatScheduleTab(){
               {showBackups&&<th style={{width:45,textAlign:"center",fontWeight:600,color:"#6b7280"}}>Bkp</th>}
               <th style={{width:45,textAlign:"center",fontWeight:600}}>Tot</th>
             </tr></thead>
-            <tbody>{intervalCounts.map((row,i)=>{
-              const pct=row.total/maxTotal,pctP=row.total>0?row.primary/row.total:0;
-              return(<tr key={i} style={{borderBottom:"1px solid #f8fafc"}}>
+            <tbody>{iCounts.map((row,i)=>{const pct=row.total/maxT,pP=row.total>0?row.pri/row.total:0;return(
+              <tr key={i} style={{borderBottom:"1px solid #f8fafc"}}>
                 <td style={{fontWeight:600,fontSize:11,color:"#475569"}}>{row.label}</td>
-                <td style={{padding:"3px 8px"}}>
-                  <div style={{position:"relative",height:14,background:"#f1f5f9",borderRadius:3,overflow:"hidden"}}>
-                    <div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pct*100}%`,background:"#93c5fd",borderRadius:3}}/>
-                    <div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pct*pctP*100}%`,background:"#4f46e5",borderRadius:3}}/>
-                  </div>
-                </td>
-                <td style={{textAlign:"center",fontWeight:700,fontSize:12,color:row.primary>0?"#4f46e5":"#e2e8f0"}}>{row.primary||"–"}</td>
-                {showBackups&&<td style={{textAlign:"center",fontWeight:600,fontSize:12,color:row.backup>0?"#6b7280":"#e2e8f0"}}>{row.backup||"–"}</td>}
+                <td style={{padding:"3px 8px"}}><div style={{position:"relative",height:14,background:"#f1f5f9",borderRadius:3,overflow:"hidden"}}><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pct*100}%`,background:"#93c5fd",borderRadius:3}}/><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pct*pP*100}%`,background:"#4f46e5",borderRadius:3}}/></div></td>
+                <td style={{textAlign:"center",fontWeight:700,fontSize:12,color:row.pri>0?"#4f46e5":"#e2e8f0"}}>{row.pri||"–"}</td>
+                {showBackups&&<td style={{textAlign:"center",fontWeight:600,fontSize:12,color:row.bkp>0?"#6b7280":"#e2e8f0"}}>{row.bkp||"–"}</td>}
                 <td style={{textAlign:"center",fontWeight:700,fontSize:12,color:row.total>0?"#1e293b":"#e2e8f0"}}>{row.total||"–"}</td>
-              </tr>);
-            })}</tbody></table>
-            <div style={{padding:"6px 12px",background:"#f8fafc",display:"flex",gap:12,fontSize:11,color:"#64748b"}}>
-              <span><span style={{display:"inline-block",width:9,height:9,background:"#4f46e5",borderRadius:2,marginRight:3,verticalAlign:"middle"}}/>Primary</span>
-              <span><span style={{display:"inline-block",width:9,height:9,background:"#93c5fd",borderRadius:2,marginRight:3,verticalAlign:"middle"}}/>Backup</span>
-            </div>
+              </tr>);})}
+            </tbody></table>
           </div>
         </div>
       </div>
@@ -770,28 +780,23 @@ function ChatScheduleTab(){
           {CHAT_DAY_KEYS.map(d=><th key={d} style={{textAlign:"center",minWidth:90}}>{CHAT_DAY_FULL[d]}</th>)}
         </tr></thead>
         <tbody>{CHAT_INTERVALS.filter(r=>r.minutes>=360&&r.minutes<1200).map(({label,minutes},ri)=>{
-          const dayCounts=allDayCounts.map(dc=>dc.find(r=>r.minutes===minutes)||{pri:0,bkp:0,total:0});
-          if(dayCounts.every(c=>c.total===0))return null;
+          const dc=allDC.map(d=>d.find(r=>r.minutes===minutes)||{pri:0,bkp:0,total:0});
+          if(dc.every(c=>c.total===0))return null;
           return(<tr key={ri} style={{borderBottom:"1px solid #f1f5f9"}}>
             <td style={{fontWeight:600,fontSize:11,color:"#475569",position:"sticky",left:0,background:"#fff"}}>{label}</td>
-            {dayCounts.map((c,ci)=>{
-              const bg=c.total===0?"#f8fafc":c.total<4?"#dbeafe":c.total<8?"#93c5fd":c.total<12?"#3b82f6":"#1d4ed8";
-              const tc=["#3b82f6","#1d4ed8"].includes(bg)?"#fff":"#1e293b";
-              return<td key={ci} style={{textAlign:"center",background:bg,color:tc,fontWeight:700,fontSize:12,padding:"5px 4px"}} title={`${c.pri} pri, ${c.bkp} bkp`}>{c.total>0?c.total:"–"}</td>;
-            })}
-          </tr>);
-        })}</tbody></table>
+            {dc.map((c,ci)=>{const bg=c.total===0?"#f8fafc":c.total<4?"#dbeafe":c.total<8?"#93c5fd":c.total<12?"#3b82f6":"#1d4ed8";const tc=["#3b82f6","#1d4ed8"].includes(bg)?"#fff":"#1e293b";return<td key={ci} style={{textAlign:"center",background:bg,color:tc,fontWeight:700,fontSize:12,padding:"5px 4px"}} title={`${c.pri} pri, ${c.bkp} bkp`}>{c.total>0?c.total:"–"}</td>;})}
+          </tr>);})}
+        </tbody></table>
       </div>
     </div>
   );
 }
 
+// ---- OVERVIEW TAB ----
 function OverviewTab({agents}){
-  const[weekIdx,setWeekIdx]=useState(4);
-  const[view,setView]=useState("all");
-  const[dayFilter,setDayFilter]=useState("Monday");
+  const[weekIdx,setWeekIdx]=useState(4);const[view,setView]=useState("all");const[dayFilter,setDayFilter]=useState("Monday");
   const week=WEEKS[weekIdx];
-  function buildData(agents,week){return INTERVALS.map(({label,minutes})=>{const row={label};DAYS.forEach(day=>{let total=0,office=0;agents.forEach(a=>{const dateS=week.dates[DAYS.indexOf(day)];const ea=getAgentForDate(a,dateS);const st=getCellStatus(a,day,week.dates);if(st.type==="dayoff"||st.type==="pto"||st.type==="departed")return;const sh=SHIFT_TIMES[ea.shift];if(!sh)return;if(minutes>=sh.start&&minutes<sh.end){total++;if(st.type==="office")office++;}});row[day]={total,office};});return row;});}
+  function buildData(agents,week){return INTERVALS.map(({label,minutes})=>{const row={label};DAYS.forEach(day=>{let total=0,office=0;agents.forEach(a=>{const dateS=week.dates[DAYS.indexOf(day)];const ea=getAgentForDate(a,dateS);const st=getCellStatus(a,day,week.dates);if(st.type==="dayoff"||st.type==="pto"||st.type==="departed"||st.type==="notstarted")return;const sh=SHIFT_TIMES[ea.shift];if(!sh)return;if(minutes>=sh.start&&minutes<sh.end){total++;if(st.type==="office")office++;}});row[day]={total,office};});return row;});}
   const data=buildData(agents,week);
   const maxT=Math.max(...data.map(r=>DAYS.reduce((m,d)=>Math.max(m,r[d].total),0)));
   const maxO=Math.max(...data.map(r=>DAYS.reduce((m,d)=>Math.max(m,r[d].office),0)));
@@ -800,43 +805,25 @@ function OverviewTab({agents}){
   const tc=bg=>["#3b82f6","#1d4ed8","#22c55e","#15803d"].includes(bg)?"#fff":"#1e293b";
   return(
     <div>
-      <div style={{marginBottom:16}}>{["February","March"].map(month=>{const mw=WEEKS.filter(w=>w.month===month);return(<div key={month} style={{marginBottom:8}}>
-        <div style={{fontSize:11,fontWeight:700,color:"#94a3b8",marginBottom:5,textTransform:"uppercase",letterSpacing:1}}>{month}</div>
-        <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{mw.map(w=>{const gi=WEEKS.indexOf(w);return(<button key={gi} onClick={()=>setWeekIdx(gi)} className="btn" style={{background:weekIdx===gi?"#4f46e5":"#fff",color:weekIdx===gi?"#fff":"#475569",border:`1px solid ${weekIdx===gi?"#4f46e5":"#e2e8f0"}`}}>{w.label} <span style={{opacity:.7,fontSize:11}}>({w.display})</span></button>);})}</div>
-      </div>);})}
-      </div>
+      <div style={{marginBottom:16}}>{["February","March"].map(month=>{const mw=WEEKS.filter(w=>w.month===month);return(<div key={month} style={{marginBottom:8}}><div style={{fontSize:11,fontWeight:700,color:"#94a3b8",marginBottom:5,textTransform:"uppercase",letterSpacing:1}}>{month}</div><div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{mw.map(w=>{const gi=WEEKS.indexOf(w);return(<button key={gi} onClick={()=>setWeekIdx(gi)} className="btn" style={{background:weekIdx===gi?"#4f46e5":"#fff",color:weekIdx===gi?"#fff":"#475569",border:`1px solid ${weekIdx===gi?"#4f46e5":"#e2e8f0"}`}}>{w.label} <span style={{opacity:.7,fontSize:11}}>({w.display})</span></button>);})}</div></div>);})}</div>
       <div style={{display:"flex",gap:8,marginBottom:16,alignItems:"center",flexWrap:"wrap"}}>
         {[["all","📊 All Days"],["single","📅 Single Day"]].map(([v,l])=><button key={v} onClick={()=>setView(v)} className="btn" style={{background:view===v?"#4f46e5":"#fff",color:view===v?"#fff":"#475569",border:`1px solid ${view===v?"#4f46e5":"#e2e8f0"}`}}>{l}</button>)}
         {view==="single"&&<select value={dayFilter} onChange={e=>setDayFilter(e.target.value)} style={{width:"auto",minWidth:120}}>{DAYS.map(d=><option key={d}>{d}</option>)}</select>}
       </div>
       {view==="all"&&(<>
-        <div style={{marginBottom:20}}>
-          <div style={{fontWeight:700,fontSize:14,marginBottom:8}}>👥 Total Staffed</div>
-          <div style={{overflowX:"auto",borderRadius:12,border:"1px solid #e2e8f0"}}><table style={{minWidth:600}}>
-            <thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th style={{minWidth:70,position:"sticky",left:0,background:"#f8fafc",zIndex:2}}>Time</th>{DAYS.map((d,i)=><th key={d} style={{textAlign:"center",minWidth:80}}><div>{d.slice(0,3)}</div><div style={{fontWeight:400,fontSize:10,color:"#94a3b8"}}>{fmtShort(week.dates[i])}</div></th>)}</tr></thead>
-            <tbody>{data.map((row,ri)=><tr key={ri} style={{borderBottom:"1px solid #f1f5f9"}}><td style={{fontWeight:600,fontSize:11,color:"#475569",position:"sticky",left:0,background:"#fff",zIndex:1}}>{row.label}</td>{DAYS.map(day=>{const n=row[day].total,bg=tBg(n,maxT);return<td key={day} style={{textAlign:"center",background:bg,color:tc(bg),fontWeight:700,fontSize:13,padding:"5px 4px"}}>{n>0?n:"–"}</td>;})}</tr>)}</tbody>
-          </table></div>
-        </div>
-        <div style={{fontWeight:700,fontSize:14,marginBottom:8}}>🏢 In Office</div>
-        <div style={{overflowX:"auto",borderRadius:12,border:"1px solid #e2e8f0"}}><table style={{minWidth:600}}>
-          <thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th style={{minWidth:70,position:"sticky",left:0,background:"#f8fafc",zIndex:2}}>Time</th>{DAYS.map((d,i)=><th key={d} style={{textAlign:"center",minWidth:80}}><div>{d.slice(0,3)}</div><div style={{fontWeight:400,fontSize:10,color:"#94a3b8"}}>{fmtShort(week.dates[i])}</div></th>)}</tr></thead>
-          <tbody>{data.map((row,ri)=><tr key={ri} style={{borderBottom:"1px solid #f1f5f9"}}><td style={{fontWeight:600,fontSize:11,color:"#475569",position:"sticky",left:0,background:"#fff",zIndex:1}}>{row.label}</td>{DAYS.map(day=>{const n=row[day].office,bg=oBg(n,maxO);return<td key={day} style={{textAlign:"center",background:bg,color:tc(bg),fontWeight:700,fontSize:13,padding:"5px 4px"}}>{n>0?n:"–"}</td>;})}</tr>)}</tbody>
-        </table></div>
+        <div style={{marginBottom:20}}><div style={{fontWeight:700,fontSize:14,marginBottom:8}}>👥 Total Staffed</div>
+          <div style={{overflowX:"auto",borderRadius:12,border:"1px solid #e2e8f0"}}><table style={{minWidth:600}}><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th style={{minWidth:70,position:"sticky",left:0,background:"#f8fafc",zIndex:2}}>Time</th>{DAYS.map((d,i)=><th key={d} style={{textAlign:"center",minWidth:80}}><div>{d.slice(0,3)}</div><div style={{fontWeight:400,fontSize:10,color:"#94a3b8"}}>{fmtShort(week.dates[i])}</div></th>)}</tr></thead>
+          <tbody>{data.map((row,ri)=><tr key={ri} style={{borderBottom:"1px solid #f1f5f9"}}><td style={{fontWeight:600,fontSize:11,color:"#475569",position:"sticky",left:0,background:"#fff",zIndex:1}}>{row.label}</td>{DAYS.map(day=>{const n=row[day].total,bg=tBg(n,maxT);return<td key={day} style={{textAlign:"center",background:bg,color:tc(bg),fontWeight:700,fontSize:13,padding:"5px 4px"}}>{n>0?n:"–"}</td>;})}</tr>)}</tbody></table></div></div>
+        <div><div style={{fontWeight:700,fontSize:14,marginBottom:8}}>🏢 In Office</div>
+          <div style={{overflowX:"auto",borderRadius:12,border:"1px solid #e2e8f0"}}><table style={{minWidth:600}}><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th style={{minWidth:70,position:"sticky",left:0,background:"#f8fafc",zIndex:2}}>Time</th>{DAYS.map((d,i)=><th key={d} style={{textAlign:"center",minWidth:80}}><div>{d.slice(0,3)}</div><div style={{fontWeight:400,fontSize:10,color:"#94a3b8"}}>{fmtShort(week.dates[i])}</div></th>)}</tr></thead>
+          <tbody>{data.map((row,ri)=><tr key={ri} style={{borderBottom:"1px solid #f1f5f9"}}><td style={{fontWeight:600,fontSize:11,color:"#475569",position:"sticky",left:0,background:"#fff",zIndex:1}}>{row.label}</td>{DAYS.map(day=>{const n=row[day].office,bg=oBg(n,maxO);return<td key={day} style={{textAlign:"center",background:bg,color:tc(bg),fontWeight:700,fontSize:13,padding:"5px 4px"}}>{n>0?n:"–"}</td>;})}</tr>)}</tbody></table></div></div>
       </>)}
-      {view==="single"&&(()=>{const sd=data.map(r=>({label:r.label,total:r[dayFilter].total,office:r[dayFilter].office}));const ms=Math.max(...sd.map(r=>r.total));return(
-        <div style={{borderRadius:12,border:"1px solid #e2e8f0",overflow:"hidden",background:"#fff"}}>
-          <table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th>Time</th><th>Staffed</th><th style={{width:80,textAlign:"center"}}>Total</th><th style={{width:80,textAlign:"center"}}>Office</th></tr></thead>
-          <tbody>{sd.map((row,i)=>{const pT=ms>0?row.total/ms:0,pO=row.total>0?row.office/row.total:0;return(<tr key={i} style={{borderBottom:"1px solid #f8fafc"}}>
-            <td style={{fontWeight:600,fontSize:11,color:"#475569"}}>{row.label}</td>
-            <td style={{padding:"4px 8px"}}><div style={{position:"relative",height:18,background:"#f1f5f9",borderRadius:3,overflow:"hidden"}}><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pT*100}%`,background:"#93c5fd",borderRadius:3}}/><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pT*pO*100}%`,background:"#22c55e",borderRadius:3}}/></div></td>
-            <td style={{textAlign:"center",fontWeight:700,color:row.total>0?"#1d4ed8":"#cbd5e1"}}>{row.total||"–"}</td>
-            <td style={{textAlign:"center",fontWeight:700,color:row.office>0?"#15803d":"#cbd5e1"}}>{row.office||"–"}</td>
-          </tr>);})}</tbody></table>
-        </div>);})()}
+      {view==="single"&&(()=>{const sd=data.map(r=>({label:r.label,total:r[dayFilter].total,office:r[dayFilter].office}));const ms=Math.max(...sd.map(r=>r.total));return(<div style={{borderRadius:12,border:"1px solid #e2e8f0",overflow:"hidden",background:"#fff"}}><table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th>Time</th><th>Staffed</th><th style={{width:80,textAlign:"center"}}>Total</th><th style={{width:80,textAlign:"center"}}>Office</th></tr></thead><tbody>{sd.map((row,i)=>{const pT=ms>0?row.total/ms:0,pO=row.total>0?row.office/row.total:0;return(<tr key={i} style={{borderBottom:"1px solid #f8fafc"}}><td style={{fontWeight:600,fontSize:11,color:"#475569"}}>{row.label}</td><td style={{padding:"4px 8px"}}><div style={{position:"relative",height:18,background:"#f1f5f9",borderRadius:3,overflow:"hidden"}}><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pT*100}%`,background:"#93c5fd",borderRadius:3}}/><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pT*pO*100}%`,background:"#22c55e",borderRadius:3}}/></div></td><td style={{textAlign:"center",fontWeight:700,color:row.total>0?"#1d4ed8":"#cbd5e1"}}>{row.total||"–"}</td><td style={{textAlign:"center",fontWeight:700,color:row.office>0?"#15803d":"#cbd5e1"}}>{row.office||"–"}</td></tr>);})}</tbody></table></div>);})()}
     </div>
   );
 }
 
+// ---- TIME OFF TAB (no departures section) ----
 function TimeOffTab({agents}){
   const[mf,setMf]=useState("All");const[nf,setNf]=useState("All");
   const names=["All",...[...new Set(timeOffData.map(r=>r.name))].sort()];
@@ -844,13 +831,8 @@ function TimeOffTab({agents}){
   const filtered=timeOffData.filter(r=>(mf==="All"||rm(r)===mf)&&(nf==="All"||r.name===nf));
   const febC=[...new Set(timeOffData.filter(r=>rm(r)==="February").map(r=>r.name))].length;
   const marC=[...new Set(timeOffData.filter(r=>rm(r)==="March").map(r=>r.name))].length;
-  const departed=agents.filter(a=>a.lastDay);
   return(
     <div>
-      {departed.length>0&&<div style={{background:"#fee2e2",border:"1px solid #fca5a5",borderRadius:10,padding:"12px 16px",marginBottom:20}}>
-        <div style={{fontWeight:700,fontSize:13,color:"#991b1b",marginBottom:8}}>🚪 Departures</div>
-        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{departed.map(a=><div key={a.id} style={{background:"#fff",border:"1px solid #fca5a5",borderRadius:8,padding:"6px 12px",fontSize:12}}><span style={{fontWeight:600}}>{a.name}</span><span style={{color:"#94a3b8",margin:"0 4px"}}>·</span><span style={{color:"#991b1b",fontWeight:600}}>Last day: {fmtShort(a.lastDay)}</span></div>)}</div>
-      </div>}
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20,maxWidth:400}}>
         {[["February",febC],["March",marC]].map(([m,c])=>(
           <div key={m} onClick={()=>setMf(mf===m?"All":m)} style={{background:mf===m?"#eff6ff":"#fff",border:`2px solid ${mf===m?"#93c5fd":"#e2e8f0"}`,borderRadius:12,padding:"12px 16px",cursor:"pointer"}}>
@@ -865,6 +847,10 @@ function TimeOffTab({agents}){
         <div style={{flex:1,minWidth:160}}><select value={nf} onChange={e=>setNf(e.target.value)}>{names.map(n=><option key={n}>{n}</option>)}</select></div>
         <button className="btn btn-ghost" onClick={()=>{setMf("All");setNf("All");}}>Clear</button>
       </div>
+      <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
+        <span className="tag tag-vacation">✈️ Vacation</span><span className="tag tag-jiffy">🌟 Jiffy Day</span>
+        <span className="tag tag-half">½ Half Day</span><span className="tag tag-parental">👶 Parental Leave</span>
+      </div>
       <div style={{borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0"}}>
         <table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}>
           <th style={{minWidth:160}}>Agent</th><th>Type</th><th>Dates</th><th style={{textAlign:"center"}}>Days</th><th>Status</th><th>Supervisor</th>
@@ -874,7 +860,7 @@ function TimeOffTab({agents}){
           {filtered.map((r,i)=>{const sup=agents.find(a=>a.name===r.name)?.supervisor||"—";const c=SUP_COLORS[sup]||{bg:"#64748b"};return(
             <tr key={i} style={{borderBottom:"1px solid #f1f5f9",background:r.note?"#fffbeb":"#fff"}}>
               <td style={{fontWeight:600}}>{r.name}</td>
-              <td>{r.half?<span className="tag tag-half">½ {r.type}</span>:r.type==="Vacation"?<span className="tag tag-vacation">✈️</span>:r.type==="Parental Leave"?<span className="tag tag-parental">👶 Parental</span>:<span className="tag tag-jiffy">🌟 Jiffy</span>}</td>
+              <td>{r.half?<span className="tag tag-half">½ {r.type}</span>:r.type==="Vacation"?<span className="tag tag-vacation">✈️ Vacation</span>:r.type==="Parental Leave"?<span className="tag tag-parental">👶 Parental</span>:<span className="tag tag-jiffy">🌟 Jiffy</span>}</td>
               <td style={{color:"#475569",whiteSpace:"nowrap"}}>{r.start===r.end?fmtShort(r.start):`${fmtShort(r.start)}–${fmtShort(r.end)}`}</td>
               <td style={{textAlign:"center",color:"#64748b"}}>{r.duration}</td>
               <td><span style={{fontSize:11,color:r.note?"#854d0e":"#059669",fontWeight:600}}>{r.note||"Approved"}</span></td>
@@ -887,126 +873,50 @@ function TimeOffTab({agents}){
   );
 }
 
-function ScheduleTab({agents,setAgents,isManager}){
-  const[weekIdx,setWeekIdx]=useState(4);
-  const[filterSup,setFilterSup]=useState("All");
-  const[filterNew,setFilterNew]=useState(false);
-  const[editAgent,setEditAgent]=useState(null);
-  const[showAdd,setShowAdd]=useState(false);
-  const[delConfirm,setDelConfirm]=useState(null);
-  const[saved,setSaved]=useState(false);
-  const week=WEEKS[weekIdx];
-  const persist=a=>{setAgents(a);saveAgents(a);setSaved(true);setTimeout(()=>setSaved(false),2000);};
-  const handleSave=form=>{form.id?persist(agents.map(a=>a.id===form.id?form:a)):persist([...agents,{...form,id:Math.max(0,...agents.map(a=>a.id))+1}]);setEditAgent(null);setShowAdd(false);};
-  const weekStart=parseDate(week.dates[0]);
-  const activeAgents=agents.filter(a=>{if(!a.lastDay)return true;const last=parseDate(a.lastDay);return last&&last>=weekStart;});
-  const displayed=activeAgents.filter(a=>(filterSup==="All"||a.supervisor===filterSup)&&(!filterNew||a.isNew));
-  const grouped=SUPERVISORS.map(sup=>({sup,agents:displayed.filter(a=>a.supervisor===sup),total:activeAgents.filter(a=>a.supervisor===sup).length})).filter(g=>g.agents.length>0);
-  const daySummary=DAYS.map((day,di)=>{let w=0,p=0,h=0,d=0;activeAgents.forEach(a=>{const s=getCellStatus(a,day,week.dates);if(s.type==="dayoff"||s.type==="departed")d++;else if(s.type==="pto")p++;else if(s.type==="half")h++;else w++;});return{day,date:week.dates[di],working:w,pto:p,half:h,dayoff:d};});
-  const departingThisWeek=agents.filter(a=>{if(!a.lastDay)return false;const last=parseDate(a.lastDay),wEnd=parseDate(week.dates[5]);return last&&last>=weekStart&&last<=wEnd;});
-  return(
-    <div>
-      {saved&&<div style={{background:"#dcfce7",color:"#166534",padding:"8px 14px",borderRadius:8,marginBottom:12,fontSize:12,fontWeight:600}}>✓ Saved</div>}
-      <div style={{marginBottom:16}}>{["February","March"].map(month=>{const mw=WEEKS.filter(w=>w.month===month);return(<div key={month} style={{marginBottom:8}}>
-        <div style={{fontSize:11,fontWeight:700,color:"#94a3b8",marginBottom:5,textTransform:"uppercase",letterSpacing:1}}>{month}</div>
-        <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{mw.map(w=>{const gi=WEEKS.indexOf(w);return(<button key={gi} onClick={()=>setWeekIdx(gi)} className="btn" style={{background:weekIdx===gi?"#4f46e5":"#fff",color:weekIdx===gi?"#fff":"#475569",border:`1px solid ${weekIdx===gi?"#4f46e5":"#e2e8f0"}`}}>{w.label} <span style={{opacity:.7,fontSize:11}}>({w.display})</span></button>);})}</div>
-      </div>);})}</div>
-      {departingThisWeek.length>0&&<div style={{background:"#fee2e2",border:"1px solid #fca5a5",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#991b1b",marginBottom:10,fontWeight:500}}>🚪 {departingThisWeek.map(a=><strong key={a.id}>{a.name}</strong>).reduce((a,b)=>[a,", ",b])} — last day this week ({departingThisWeek.map(a=>fmtShort(a.lastDay)).join(", ")})</div>}
-      {week.month==="March"&&weekIdx>=5&&<div style={{background:"#ffedd5",border:"1px solid #fdba74",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#9a3412",marginBottom:10}}>👶 <strong>Jeremy Carillo</strong> on Parental Leave Mar 16–31.</div>}
-      {week.month==="March"&&(weekIdx===6||weekIdx===7)&&<div style={{background:"#ede9fe",border:"1px solid #c4b5fd",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#5b21b6",marginBottom:10}}>✈️ <strong>Unaisa Aslam</strong> vacation Mar 18–29. Reverts to 11:30–8:00 from Mar 19.</div>}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:8,marginBottom:20}}>
-        {daySummary.map(d=><div key={d.day} style={{background:"#fff",borderRadius:10,border:"1px solid #e2e8f0",padding:"10px 8px",textAlign:"center"}}>
-          <div style={{fontWeight:700,fontSize:12,color:"#475569"}}>{d.day.slice(0,3)}</div>
-          <div style={{fontSize:10,color:"#94a3b8",marginBottom:4}}>{fmtShort(d.date)}</div>
-          <div style={{fontSize:22,fontWeight:800}}>{d.working+d.half}</div>
-          <div style={{fontSize:10,color:"#94a3b8"}}>sched.</div>
-          {d.pto>0&&<div style={{marginTop:2}}><span className="tag tag-vacation" style={{fontSize:10}}>{d.pto} off</span></div>}
-        </div>)}
-      </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:16}}>
-        {SUPERVISORS.map(sup=>{const c=SUP_COLORS[sup];const t=activeAgents.filter(a=>a.supervisor===sup).length;const n=activeAgents.filter(a=>a.supervisor===sup&&a.isNew).length;return(
-          <div key={sup} onClick={()=>setFilterSup(filterSup===sup?"All":sup)} style={{background:filterSup===sup?c.light:"#fff",border:`2px solid ${filterSup===sup?c.border:"#e2e8f0"}`,borderRadius:12,padding:"10px 14px",cursor:"pointer"}}>
-            <div style={{fontSize:11,fontWeight:700,color:c.bg}}>{sup}</div>
-            <div style={{fontSize:22,fontWeight:800}}>{t}</div>
-            <div style={{fontSize:11,color:"#94a3b8"}}>{n>0?`${n} new`:""}</div>
-          </div>);})}
-      </div>
-      <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap",alignItems:"center"}}>
-        <button className="btn btn-ghost" style={{background:filterSup==="All"?"#4f46e5":"",color:filterSup==="All"?"#fff":""}} onClick={()=>setFilterSup("All")}>All</button>
-        <button className="btn" style={{background:filterNew?"#fbbf24":"#f1f5f9",color:filterNew?"#fff":"#475569",border:"1px solid #e2e8f0"}} onClick={()=>setFilterNew(!filterNew)}>✨ New</button>
-        {isManager&&<button className="btn btn-success" style={{marginLeft:"auto"}} onClick={()=>setShowAdd(true)}>+ Add</button>}
-      </div>
-      {grouped.map(({sup,agents:team,total})=>{const c=SUP_COLORS[sup];return(
-        <div key={sup} style={{marginBottom:20,borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0"}}>
-          <div style={{background:c.bg,color:"#fff",padding:"10px 16px",display:"flex",justifyContent:"space-between"}}>
-            <span style={{fontWeight:700,fontSize:14}}>{sup}</span><span style={{fontSize:12,opacity:.85}}>{total} agents</span>
-          </div>
-          <div style={{overflowX:"auto"}}><table>
-            <thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}>
-              <th style={{minWidth:155}}>Agent</th><th style={{minWidth:80}}>Shift</th>
-              {DAYS.map((d,di)=><th key={d} style={{textAlign:"center",minWidth:90}}><div>{d.slice(0,3)}</div><div style={{fontWeight:400,color:"#94a3b8",fontSize:10}}>{fmtShort(week.dates[di])}</div></th>)}
-              {isManager&&<th style={{textAlign:"center",minWidth:80}}>Actions</th>}
-            </tr></thead>
-            <tbody>{team.map(agent=>{
-              const isDep=departingThisWeek.some(a=>a.id===agent.id);
-              const hasPto=DAYS.some(d=>{const s=getCellStatus(agent,d,week.dates);return s.type==="pto"||s.type==="half";});
-              const es=getAgentForDate(agent,week.dates[2]).shift;
-              return(<tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",background:isDep?"#fff5f5":hasPto?"#fffbeb":agent.isNew?"#f0fdf4":"#fff"}}>
-                <td style={{fontWeight:600}}>
-                  {agent.isNew&&<span style={{marginRight:4}}>✨</span>}{agent.name}
-                  {agent.lastDay&&<span style={{marginLeft:6,fontSize:10,background:"#fee2e2",color:"#991b1b",padding:"1px 5px",borderRadius:10,fontWeight:600}}>Last: {fmtShort(agent.lastDay)}</span>}
-                </td>
-                <td style={{color:"#64748b",fontSize:11}}>{es}</td>
-                {DAYS.map(day=>{const st=getCellStatus(agent,day,week.dates);return<td key={day} style={{textAlign:"center",padding:"6px 4px"}}><CellTag status={st}/></td>;})}
-                {isManager&&<td style={{textAlign:"center"}}>
-                  <button className="btn btn-ghost" style={{fontSize:11,padding:"3px 8px",marginRight:4}} onClick={()=>setEditAgent(agent)}>✏️</button>
-                  <button className="btn btn-danger" style={{fontSize:11,padding:"3px 8px"}} onClick={()=>setDelConfirm(agent.id)}>🗑</button>
-                </td>}
-              </tr>);
-            })}</tbody>
-          </table></div>
-        </div>);})}
-      {(editAgent||showAdd)&&<RosterEditModal agent={editAgent||{workDays:[],officeDays:[],wfhDays:[],shift:"6:00–2:30",supervisor:"Shelby Coldiron",isNew:true,skills:"",startDate:"",lastDay:""}} onSave={handleSave} onClose={()=>{setEditAgent(null);setShowAdd(false);}}/>}
-      {delConfirm&&<div className="modal-overlay" onClick={()=>setDelConfirm(null)}><div className="modal" style={{width:340}} onClick={e=>e.stopPropagation()}>
-        <h2 style={{fontWeight:700,fontSize:16,marginBottom:8}}>Remove Agent?</h2>
-        <p style={{fontSize:13,color:"#64748b",marginBottom:20}}>Remove <strong>{agents.find(a=>a.id===delConfirm)?.name}</strong>?</p>
-        <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button className="btn btn-ghost" onClick={()=>setDelConfirm(null)}>Cancel</button><button className="btn btn-danger" onClick={()=>setDelConfirm(null)&&setAgents(agents.filter(a=>a.id!==delConfirm))}>Remove</button></div>
-      </div></div>}
-    </div>
-  );
-}
-
+// ---- MAIN APP ----
 function App(){
   const[agents,setAgents]=useState(loadAgents);
   const[isManager,setIsManager]=useState(false);
   const[showLogin,setShowLogin]=useState(false);
   const[tab,setTab]=useState("today");
+  // Roster tab requires manager login
+  const[rosterUnlocked,setRosterUnlocked]=useState(false);
+  const[showRosterLogin,setShowRosterLogin]=useState(false);
+
+  function handleTabClick(t){
+    if(t==="roster"&&!rosterUnlocked){setShowRosterLogin(true);return;}
+    setTab(t);
+  }
+
   return(
     <div style={{minHeight:"100vh",background:"#f8fafc"}}>
       <div style={{background:"#1e293b",color:"#fff",padding:"14px 24px",display:"flex",alignItems:"center",justifyContent:"space-between",boxShadow:"0 2px 8px #0003"}}>
         <div>
           <div style={{fontWeight:700,fontSize:18}}>📋 Customer Solutions — Team Hub</div>
-          <div style={{fontSize:11,color:"#94a3b8",marginTop:2}}>Feb – Mar 2026 · {agents.length} agents · {SUPERVISORS.length} teams</div>
+          <div style={{fontSize:11,color:"#94a3b8",marginTop:2}}>Feb – Mar 2026 · {agents.filter(a=>{if(a.lastDay){const d=parseDate(a.lastDay);if(d&&d<TODAY_DATE)return false;}if(a.startDate){const d=parseDate(a.startDate);if(d&&d>TODAY_DATE)return false;}return true;}).length} active agents</div>
         </div>
-        <div>{isManager?<button className="btn btn-ghost" style={{fontSize:11}} onClick={()=>setIsManager(false)}>🔒 Lock</button>:<button className="btn btn-ghost" style={{fontSize:11}} onClick={()=>setShowLogin(true)}>🔑 Manager Login</button>}</div>
+        <div>{isManager?<button className="btn btn-ghost" style={{fontSize:11}} onClick={()=>{setIsManager(false);setRosterUnlocked(false);}}>🔒 Lock</button>:<button className="btn btn-ghost" style={{fontSize:11}} onClick={()=>setShowLogin(true)}>🔑 Manager Login</button>}</div>
       </div>
       <div style={{background:"#fff",borderBottom:"1px solid #e2e8f0",padding:"0 24px",display:"flex",gap:4,overflowX:"auto"}}>
-        <button className={`nav-tab${tab==="today"?" active":""}`}    onClick={()=>setTab("today")}>🌅 Today</button>
-        <button className={`nav-tab${tab==="roster"?" active":""}`}   onClick={()=>setTab("roster")}>👥 Roster</button>
-        <button className={`nav-tab${tab==="overview"?" active":""}`} onClick={()=>setTab("overview")}>📊 Overview</button>
-        <button className={`nav-tab${tab==="schedule"?" active":""}`} onClick={()=>setTab("schedule")}>📅 Schedule</button>
-        <button className={`nav-tab${tab==="chat"?" active":""}`}     onClick={()=>setTab("chat")}>💬 Chat</button>
-        <button className={`nav-tab${tab==="timeoff"?" active":""}`}  onClick={()=>setTab("timeoff")}>🏖️ Time Off</button>
+        <button className={`nav-tab${tab==="today"?" active":""}`}    onClick={()=>handleTabClick("today")}>🌅 Today</button>
+        <button className={`nav-tab${tab==="roster"?" active":""}`}   onClick={()=>handleTabClick("roster")}>
+          👥 Roster {!rosterUnlocked&&<span style={{fontSize:10,marginLeft:4,opacity:.6}}>🔒</span>}
+        </button>
+        <button className={`nav-tab${tab==="overview"?" active":""}`} onClick={()=>handleTabClick("overview")}>📊 Overview</button>
+        <button className={`nav-tab${tab==="schedule"?" active":""}`} onClick={()=>handleTabClick("schedule")}>📅 Schedule</button>
+        <button className={`nav-tab${tab==="chat"?" active":""}`}     onClick={()=>handleTabClick("chat")}>💬 Chat</button>
+        <button className={`nav-tab${tab==="timeoff"?" active":""}`}  onClick={()=>handleTabClick("timeoff")}>🏖️ Time Off</button>
       </div>
-      <div style={{padding:"20px 24px",maxWidth:1200,margin:"0 auto"}}>
+      <div style={{padding:"20px 24px",maxWidth:1300,margin:"0 auto"}}>
         {tab==="today"   &&<TodayTab agents={agents}/>}
-        {tab==="roster"  &&<RosterTab agents={agents} setAgents={setAgents} isManager={isManager}/>}
+        {tab==="roster"  &&rosterUnlocked&&<RosterTab agents={agents} setAgents={setAgents}/>}
         {tab==="overview"&&<OverviewTab agents={agents}/>}
         {tab==="schedule"&&<ScheduleTab agents={agents} setAgents={setAgents} isManager={isManager}/>}
         {tab==="chat"    &&<ChatScheduleTab/>}
         {tab==="timeoff" &&<TimeOffTab agents={agents}/>}
       </div>
-      {showLogin&&<LoginModal onLogin={()=>{setIsManager(true);setShowLogin(false);}} onClose={()=>setShowLogin(false)}/>}
+      {showLogin&&<LoginModal onLogin={()=>{setIsManager(true);setRosterUnlocked(true);setShowLogin(false);setTab("today");}} onClose={()=>setShowLogin(false)}/>}
+      {showRosterLogin&&<LoginModal onLogin={()=>{setRosterUnlocked(true);setIsManager(true);setShowRosterLogin(false);setTab("roster");}} onClose={()=>setShowRosterLogin(false)}/>}
     </div>
   );
 }
