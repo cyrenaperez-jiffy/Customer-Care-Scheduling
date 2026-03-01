@@ -29,22 +29,15 @@ th.sortable.asc .sort-icon::after{content:"▲"}
 th.sortable.desc .sort-icon::after{content:"▼"}
 th.sortable:not(.asc):not(.desc) .sort-icon::after{content:"⇅"}
 .tag{display:inline-block;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
-.tag-office{background:#dcfce7;color:#166534}
-.tag-wfh{background:#dbeafe;color:#1e40af}
-.tag-vacation{background:#ede9fe;color:#5b21b6}
-.tag-jiffy{background:#fef9c3;color:#854d0e}
-.tag-half{background:#fce7f3;color:#9d174d}
-.tag-parental{background:#ffedd5;color:#9a3412}
-.tag-dayoff{background:#f1f5f9;color:#94a3b8}
-.tag-primary{background:#dbeafe;color:#1e40af}
-.tag-backup{background:#f3f4f6;color:#6b7280}
-.tag-lunch{background:#fef3c7;color:#92400e}
-.tag-departed{background:#fee2e2;color:#991b1b}
-.tag-active{background:#dcfce7;color:#166534}
-.tag-incoming{background:#e0e7ff;color:#3730a3}
-.tag-risk{background:#fee2e2;color:#991b1b}
-.tag-warn{background:#fef3c7;color:#92400e}
-.tag-ok{background:#dcfce7;color:#166534}
+.tag-office{background:#dcfce7;color:#166534}.tag-wfh{background:#dbeafe;color:#1e40af}
+.tag-vacation{background:#ede9fe;color:#5b21b6}.tag-jiffy{background:#fef9c3;color:#854d0e}
+.tag-half{background:#fce7f3;color:#9d174d}.tag-parental{background:#ffedd5;color:#9a3412}
+.tag-dayoff{background:#f1f5f9;color:#94a3b8}.tag-primary{background:#dbeafe;color:#1e40af}
+.tag-backup{background:#f3f4f6;color:#6b7280}.tag-lunch{background:#fef3c7;color:#92400e}
+.tag-departed{background:#fee2e2;color:#991b1b}.tag-active{background:#dcfce7;color:#166534}
+.tag-incoming{background:#e0e7ff;color:#3730a3}.tag-risk{background:#fee2e2;color:#991b1b}
+.tag-warn{background:#fef3c7;color:#92400e}.tag-ok{background:#dcfce7;color:#166534}
+.tag-changed{background:#fef3c7;color:#92400e}
 .nav-tab{padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;color:#64748b;background:none;border-top:none;border-left:none;border-right:none;white-space:nowrap}
 .nav-tab.active{border-bottom-color:#4f46e5;color:#4f46e5}
 .card{background:#fff;border-radius:12px;border:1px solid #e2e8f0;padding:16px;box-shadow:0 1px 4px #0001}
@@ -66,19 +59,16 @@ const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const SUPERVISORS = ["Shelby Coldiron","Neyat Abraha","Alex Blair","Lauren Montanye","Ainsley Reynolds","Angy Chang"];
 const SHIFTS = ["6:00–2:30","8:00–4:30","9:00–5:30","10:30–8:00","11:30–8:00"];
 const SUP_COLORS = {
-  "Shelby Coldiron": {bg:"#059669",light:"#ecfdf5",border:"#6ee7b7"},
-  "Neyat Abraha":    {bg:"#7c3aed",light:"#f5f3ff",border:"#c4b5fd"},
-  "Alex Blair":      {bg:"#d97706",light:"#fffbeb",border:"#fcd34d"},
-  "Lauren Montanye": {bg:"#e11d48",light:"#fff1f2",border:"#fda4af"},
+  "Shelby Coldiron":{bg:"#059669",light:"#ecfdf5",border:"#6ee7b7"},
+  "Neyat Abraha":   {bg:"#7c3aed",light:"#f5f3ff",border:"#c4b5fd"},
+  "Alex Blair":     {bg:"#d97706",light:"#fffbeb",border:"#fcd34d"},
+  "Lauren Montanye":{bg:"#e11d48",light:"#fff1f2",border:"#fda4af"},
   "Ainsley Reynolds":{bg:"#0ea5e9",light:"#f0f9ff",border:"#7dd3fc"},
-  "Angy Chang":      {bg:"#8b5cf6",light:"#faf5ff",border:"#c4b5fd"},
+  "Angy Chang":     {bg:"#8b5cf6",light:"#faf5ff",border:"#c4b5fd"},
 };
 const SHIFT_TIMES = {
-  "6:00–2:30":  {start:360, end:870},
-  "8:00–4:30":  {start:480, end:990},
-  "9:00–5:30":  {start:540, end:1050},
-  "10:30–8:00": {start:630, end:1200},
-  "11:30–8:00": {start:690, end:1200},
+  "6:00–2:30":{start:360,end:870},"8:00–4:30":{start:480,end:990},
+  "9:00–5:30":{start:540,end:1050},"10:30–8:00":{start:630,end:1200},"11:30–8:00":{start:690,end:1200},
 };
 const INTERVALS=[];
 for(let m=360;m<1200;m+=30){const h=Math.floor(m/60),mn=m%60;INTERVALS.push({label:`${String(h).padStart(2,"0")}:${String(mn).padStart(2,"0")}`,minutes:m});}
@@ -91,8 +81,77 @@ const WEEKS=[
   {month:"March",   label:"W2",display:"Mar 9–14",  dates:["3/9/26","3/10/26","3/11/26","3/12/26","3/13/26","3/14/26"]},
   {month:"March",   label:"W3",display:"Mar 16–21", dates:["3/16/26","3/17/26","3/18/26","3/19/26","3/20/26","3/21/26"]},
   {month:"March",   label:"W4",display:"Mar 23–28", dates:["3/23/26","3/24/26","3/25/26","3/26/26","3/27/26","3/28/26"]},
+  {month:"March",   label:"W5",display:"Mar 30",    dates:["3/30/26","3/31/26","3/31/26","3/31/26","3/31/26","3/31/26"]},
 ];
 
+// ── Real today ───────────────────────────────────────────────────────────────
+const REAL_TODAY = (()=>{const d=new Date();d.setHours(0,0,0,0);return d;})();
+const REAL_DOW   = REAL_TODAY.getDay(); // 0=Sun
+// If today is Sunday, treat as Monday for display purposes
+const DISPLAY_DATE = (()=>{if(REAL_DOW===0){const d=new Date(REAL_TODAY);d.setDate(d.getDate()+1);return d;}return REAL_TODAY;})();
+const TODAY_STR  = `${DISPLAY_DATE.getMonth()+1}/${DISPLAY_DATE.getDate()}/${String(DISPLAY_DATE.getFullYear()).slice(-2)}`;
+const TODAY_DAY  = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][DISPLAY_DATE.getDay()];
+const IS_SUNDAY  = REAL_DOW === 0;
+
+// ── Key dates ────────────────────────────────────────────────────────────────
+const MAR6  = new Date(2026,2,6);
+const MAR9  = new Date(2026,2,9);
+const MAR19 = new Date(2026,2,19);
+const MAR30 = new Date(2026,2,30);
+
+// ── Schedule changes (Mar 30) ────────────────────────────────────────────────
+const SCHEDULE_CHANGES = {
+  "Rachel Dunlap":  {effectiveDate:"3/30/26",shift:"11:30–8:00",workDays:["Monday","Tuesday","Wednesday","Thursday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Saturday"]},
+  "Ariashe Lowery": {effectiveDate:"3/30/26",shift:"6:00–2:30", workDays:["Monday","Tuesday","Wednesday","Thursday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Saturday"]},
+  "Taylor Amos":    {effectiveDate:"3/30/26",shift:"8:00–4:30", workDays:["Monday","Tuesday","Wednesday","Thursday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Saturday"]},
+};
+
+// ── Per-date agent resolution ─────────────────────────────────────────────────
+// Amber, Bo, Andre, Sarah: 9:00–5:30, Mon–Fri, all office until Mar 6; permanent schedule from Mar 9
+// Enrico: full office Mon–Fri Mar 2–6; permanent office pattern from Mar 9
+const EARLY_OFFICE_AGENTS = new Set(["Amber Bailey","Bo Repko","Andre Cordero","Sarah Hajali"]);
+
+function getAgentForDate(agent, dateS) {
+  const d = parseDate(dateS);
+  if (!d) return agent;
+
+  // Unaisa: shift changes Mar 19
+  if (agent.name === "Unaisa Aslam" && d >= MAR19) {
+    agent = {...agent, shift:"11:30–8:00"};
+  }
+
+  // Amber, Bo, Andre, Sarah: before Mar 9 → 9:00–5:30, Mon–Fri, all office
+  if (EARLY_OFFICE_AGENTS.has(agent.name) && d < MAR9) {
+    agent = {...agent,
+      shift:"9:00–5:30",
+      workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],
+      officeDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],
+      wfhDays:[],
+    };
+  }
+
+  // Enrico: Mar 2–6 → full office Mon–Fri; from Mar 9 → normal schedule
+  if (agent.name === "Enrico Davis") {
+    const mar2 = new Date(2026,2,2);
+    if (d >= mar2 && d <= MAR6) {
+      agent = {...agent,
+        workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],
+        officeDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],
+        wfhDays:[],
+      };
+    }
+  }
+
+  // Mar 30 permanent changes
+  const chg = SCHEDULE_CHANGES[agent.name];
+  if (chg && d >= MAR30) {
+    agent = {...agent, shift:chg.shift, workDays:chg.workDays, officeDays:chg.officeDays, wfhDays:chg.wfhDays};
+  }
+
+  return agent;
+}
+
+// ── Chat agents ──────────────────────────────────────────────────────────────
 const chatAgents=[
   {name:"Rosa Nuno",         shift:"6:00-14:30",  Mon:"X",Tue:"X",Wed:"", Thu:"", Fri:""},
   {name:"Michael Chavez",    shift:"6:00-14:30",  Mon:"X",Tue:"", Wed:"", Thu:"X",Fri:""},
@@ -117,6 +176,7 @@ const chatAgents=[
   {name:"Jeremy Carillo",    shift:"11:30-20:00", Mon:"X",Tue:"B",Wed:"X",Thu:"", Fri:""},
   {name:"Sarah Al-Obaidi",   shift:"11:30-20:00", Mon:"B",Tue:"X",Wed:"X",Thu:"", Fri:""},
 ];
+const CHAT_MIN_STAFFING = 6;
 
 const timeOffData=[
   {name:"Zhane Alexander",    type:"Jiffy Day",     start:"2/2/26",  end:"2/2/26",  duration:1,   half:false},
@@ -183,6 +243,7 @@ const defaultAgents=[
   {id:14,  name:"Sarah Al-Obaidi",        shift:"8:00–4:30", supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Thursday","Friday"],wfhDays:["Tuesday","Wednesday"],isNew:false,startDate:"12/1/25",skills:"Email, Chat"},
   {id:18,  name:"Denia Bradley",          shift:"11:30–8:00",supervisor:"Alex Blair",     workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Wednesday","Thursday","Friday"],wfhDays:["Tuesday","Saturday"],isNew:false,startDate:"12/1/25",skills:"Chat, Email, Tier 2"},
   {id:27,  name:"Unaisa Aslam",           shift:"8:00–4:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Friday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Friday","Saturday"],isNew:false,startDate:"1/5/26",skills:"Phone, Chat, Spanish"},
+  // Mar 9 permanent schedules; before Mar 9 → 9:00–5:30 all-office via getAgentForDate
   {id:28,  name:"Bo Repko",               shift:"6:00–2:30", supervisor:"Lauren Montanye",workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Tuesday","Wednesday","Thursday"],wfhDays:["Friday","Saturday"],isNew:false,startDate:"1/20/26",skills:"Chat, Email"},
   {id:23,  name:"Andre Cordero",          shift:"8:00–4:30", supervisor:"Alex Blair",     workDays:["Monday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Monday","Wednesday","Thursday"],wfhDays:["Friday","Saturday"],isNew:false,startDate:"1/20/26",skills:"Chat, Phone"},
   {id:29,  name:"Amber Bailey",           shift:"8:00–4:30", supervisor:"Lauren Montanye",workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Wednesday","Thursday","Friday"],wfhDays:["Tuesday","Saturday"],isNew:false,startDate:"1/20/26",skills:"Chat, Phone"},
@@ -190,6 +251,7 @@ const defaultAgents=[
   {id:25,  name:"Rachel Dunlap",          shift:"9:00–5:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"2/2/26",skills:"Phone, Chat"},
   {id:26,  name:"Taylor Amos",            shift:"9:00–5:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"2/2/26",skills:"Chat, Email, Training"},
   {id:24,  name:"Ariashe Lowery",         shift:"9:00–5:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"2/2/26",skills:"Email, Chat, Billing"},
+  // Enrico: full office Mar 2–6 via getAgentForDate; permanent from Mar 9
   {id:30,  name:"Enrico Davis",           shift:"11:30–8:00",supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Thursday"],wfhDays:["Wednesday","Friday"],isNew:false,startDate:"2/2/26",skills:"Chat, Email, Billing"},
   {id:1003,name:"Rylie Walker",           shift:"9:00–5:30", supervisor:"Angy Chang",     permanentSup:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"2/23/26",skills:"Chat, Email"},
   {id:1004,name:"Jada Brown",             shift:"9:00–5:30", supervisor:"Angy Chang",     permanentSup:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"2/23/26",skills:"Chat, Email"},
@@ -207,34 +269,7 @@ const defaultAgents=[
   {id:2007,name:"Lysette Salinas",        shift:"8:00–4:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"2/2/26",lastDay:"2/28/26",skills:"Chat, Email",notes:"Attrition"},
 ];
 
-// ── Shared real-today (zeroed) ──────────────────────────────────────────────
-const REAL_TODAY = (() => { const d = new Date(); d.setHours(0,0,0,0); return d; })();
-const TODAY_STR  = `${REAL_TODAY.getMonth()+1}/${REAL_TODAY.getDate()}/${String(REAL_TODAY.getFullYear()).slice(-2)}`;
-const TODAY_DAY  = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][REAL_TODAY.getDay()];
-
-// ── Single shared getStatus ─────────────────────────────────────────────────
-function getStatus(a, refDate = REAL_TODAY) {
-  if (a.lastDay)   { const d = parseDate(a.lastDay);   if (d && d < refDate)  return "departed"; }
-  if (a.startDate) { const d = parseDate(a.startDate); if (d && d > refDate)  return "incoming"; }
-  return "active";
-}
-
-// active agents as of REAL_TODAY (used everywhere for the header count)
-function getActiveAgents(agents) {
-  return agents.filter(a => { const st = getStatus(a); return st === "active" || st === "incoming"; });
-}
-
-// agents on-roster for a given week (started before week end, not departed before week start)
-function getWeekAgents(agents, week) {
-  const ws = parseDate(week.dates[0]), we = parseDate(week.dates[5]);
-  return agents.filter(a => {
-    if (a.lastDay)   { const d = parseDate(a.lastDay);   if (d && d < ws) return false; }
-    if (a.startDate) { const d = parseDate(a.startDate); if (d && d > we) return false; }
-    return true;
-  });
-}
-
-// ── Helpers ─────────────────────────────────────────────────────────────────
+// ── Core helpers ─────────────────────────────────────────────────────────────
 function parseDate(s){if(!s)return null;const p=s.split("/");if(p.length<3)return null;const yr=parseInt(p[2])<100?2000+parseInt(p[2]):parseInt(p[2]);return new Date(yr,parseInt(p[0])-1,parseInt(p[1]));}
 function dateStr(d){return`${d.getMonth()+1}/${d.getDate()}/${String(d.getFullYear()).slice(-2)}`;}
 function fmtShort(s){const d=parseDate(s);return d?d.toLocaleDateString("en-US",{month:"short",day:"numeric"}):s;}
@@ -243,59 +278,73 @@ function dateRange(start,end){const dates=[];let d=new Date(parseDate(start));co
 function getTimeOff(name,dateS){return timeOffData.find(r=>r.name===name&&dateRange(r.start,r.end).includes(dateS))||null;}
 function hasDeparted(agent,dateS){if(!agent.lastDay)return false;const last=parseDate(agent.lastDay),d=parseDate(dateS);return last&&d&&d>last;}
 function hasNotStarted(agent,dateS){if(!agent.startDate)return false;const start=parseDate(agent.startDate),d=parseDate(dateS);return start&&d&&d<start;}
-function getAgentForDate(agent,dateS){
-  if(agent.name==="Unaisa Aslam"){const d=parseDate(dateS),c=new Date(2026,2,19);if(d&&d>=c)return{...agent,shift:"11:30–8:00"};}
-  return agent;
-}
+
 function getCellStatus(agent,day,weekDates){
   const dateS=weekDates[DAYS.indexOf(day)];
   const ea=getAgentForDate(agent,dateS);
   if(hasDeparted(agent,dateS))return{type:"departed",dateS,shift:ea.shift};
   if(hasNotStarted(agent,dateS))return{type:"notstarted",dateS,shift:ea.shift};
-  if(!agent.workDays.includes(day))return{type:"dayoff",dateS,shift:ea.shift};
+  if(!ea.workDays.includes(day))return{type:"dayoff",dateS,shift:ea.shift};
   const to=getTimeOff(agent.name,dateS);
   if(to)return{type:to.half?"half":"pto",label:to.type,dateS,to,shift:ea.shift};
-  return{type:agent.officeDays.includes(day)?"office":"wfh",dateS,shift:ea.shift};
+  return{type:ea.officeDays.includes(day)?"office":"wfh",dateS,shift:ea.shift};
 }
+
+function getStatus(a,refDate=REAL_TODAY){
+  if(a.lastDay){const d=parseDate(a.lastDay);if(d&&d<refDate)return"departed";}
+  if(a.startDate){const d=parseDate(a.startDate);if(d&&d>refDate)return"incoming";}
+  return"active";
+}
+function getActiveAgents(agents){return agents.filter(a=>{const st=getStatus(a);return st==="active"||st==="incoming";});}
+function getWeekAgents(agents,week){
+  const ws=parseDate(week.dates[0]),we=parseDate(week.dates[5]);
+  return agents.filter(a=>{
+    if(a.lastDay){const d=parseDate(a.lastDay);if(d&&d<ws)return false;}
+    if(a.startDate){const d=parseDate(a.startDate);if(d&&d>we)return false;}
+    return true;
+  });
+}
+
 function timeToMin(t){if(!t)return 0;const p=t.trim().split(":");return parseInt(p[0])*60+(parseInt(p[1])||0);}
 function minToTime(m){const h=Math.floor(m/60),mn=m%60;return`${h}:${String(mn).padStart(2,"0")}`;}
-function tenure(sd, refDate = REAL_TODAY){
+function tenure(sd,refDate=REAL_TODAY){
   if(!sd)return"—";const d=parseDate(sd);if(!d)return"—";
   const diff=(refDate-d)/(1000*60*60*24*365);
-  if(diff<0)return"Not started";
-  if(diff<1)return`${Math.floor(diff*12)}mo`;
-  return`${diff.toFixed(1)}yr`;
+  if(diff<0)return"Not started";if(diff<1)return`${Math.floor(diff*12)}mo`;return`${diff.toFixed(1)}yr`;
 }
-function loadAgents(){try{const s=localStorage.getItem("schedAgents7");return s?JSON.parse(s):defaultAgents;}catch{return defaultAgents;}}
-function saveAgents(a){try{localStorage.setItem("schedAgents7",JSON.stringify(a));}catch{}}
+function loadAgents(){try{const s=localStorage.getItem("schedAgents8");return s?JSON.parse(s):defaultAgents;}catch{return defaultAgents;}}
+function saveAgents(a){try{localStorage.setItem("schedAgents8",JSON.stringify(a));}catch{}}
+
+// Chat interval staffing for a given day key
+function getChatIntervalCounts(dayKey){
+  function pShift(s){const p=s.split("-");return{startMin:timeToMin(p[0]),endMin:timeToMin(p[1])};}
+  return INTERVALS.filter(r=>r.minutes>=360&&r.minutes<1200).map(({label,minutes})=>{
+    let pri=0,bkp=0;
+    chatAgents.forEach(a=>{const{startMin,endMin}=pShift(a.shift);if(minutes>=startMin&&minutes<endMin){if(a[dayKey]==="X")pri++;else if(a[dayKey]==="B")bkp++;}});
+    return{label,minutes,pri,bkp,total:pri+bkp};
+  });
+}
 
 // ── Sort hook ────────────────────────────────────────────────────────────────
-function useSortableData(data, initialKey = null, initialDir = "asc") {
-  const [sortKey, setSortKey] = useState(initialKey);
-  const [sortDir, setSortDir] = useState(initialDir);
-  const sorted = useMemo(() => {
-    if (!sortKey) return data;
-    return [...data].sort((a, b) => {
-      let av = a[sortKey], bv = b[sortKey];
-      // date-aware
-      if (typeof av === "string" && /^\d+\/\d+\/\d+$/.test(av)) { av = parseDate(av)||0; bv = parseDate(bv)||0; }
-      if (av instanceof Date) { av = av.getTime(); bv = (bv instanceof Date ? bv : new Date(0)).getTime(); }
-      if (av == null) av = ""; if (bv == null) bv = "";
-      if (av < bv) return sortDir === "asc" ? -1 : 1;
-      if (av > bv) return sortDir === "asc" ? 1 : -1;
-      return 0;
+function useSortableData(data,initialKey=null,initialDir="asc"){
+  const[sortKey,setSortKey]=useState(initialKey);
+  const[sortDir,setSortDir]=useState(initialDir);
+  const sorted=useMemo(()=>{
+    if(!sortKey)return data;
+    return[...data].sort((a,b)=>{
+      let av=a[sortKey],bv=b[sortKey];
+      if(typeof av==="string"&&/^\d+\/\d+\/\d+$/.test(av)){av=parseDate(av)||0;bv=parseDate(bv)||0;}
+      if(av instanceof Date){av=av.getTime();bv=(bv instanceof Date?bv:new Date(0)).getTime();}
+      if(av==null)av="";if(bv==null)bv="";
+      if(av<bv)return sortDir==="asc"?-1:1;if(av>bv)return sortDir==="asc"?1:-1;return 0;
     });
-  }, [data, sortKey, sortDir]);
-  function requestSort(key) {
-    setSortDir(s => sortKey === key ? (s === "asc" ? "desc" : "asc") : "asc");
-    setSortKey(key);
+  },[data,sortKey,sortDir]);
+  function requestSort(key){setSortDir(s=>sortKey===key?(s==="asc"?"desc":"asc"):"asc");setSortKey(key);}
+  function SortTh({colKey,children,style={}}){
+    const active=sortKey===colKey;
+    return<th className={`sortable${active?" "+sortDir:""}`} onClick={()=>requestSort(colKey)} style={style}>{children}<span className="sort-icon"/></th>;
   }
-  function SortTh({colKey, children, style={}}) {
-    const active = sortKey === colKey;
-    const cls = `sortable${active ? " "+sortDir : ""}`;
-    return <th className={cls} onClick={()=>requestSort(colKey)} style={style}>{children}<span className="sort-icon"/></th>;
-  }
-  return {sorted, sortKey, sortDir, requestSort, SortTh};
+  return{sorted,sortKey,sortDir,requestSort,SortTh};
 }
 
 function CellTag({status}){
@@ -321,7 +370,7 @@ function LoginModal({onLogin,onClose}){
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" style={{width:320}} onClick={e=>e.stopPropagation()}>
         <h2 style={{fontWeight:700,fontSize:16,marginBottom:6}}>🔒 Manager Login</h2>
-        <p style={{fontSize:12,color:"#64748b",marginBottom:16}}>Enter your manager password to access the Roster.</p>
+        <p style={{fontSize:12,color:"#64748b",marginBottom:16}}>Enter your manager password.</p>
         <input type="password" value={pw} onChange={e=>{setPw(e.target.value);setErr(false);}} onKeyDown={e=>e.key==="Enter"&&submit()} style={{marginBottom:10}}/>
         {err&&<p style={{fontSize:11,color:"#ef4444",marginBottom:8}}>Incorrect password.</p>}
         <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
@@ -340,38 +389,31 @@ function RosterEditModal({agent,onSave,onClose}){
   const setWork=d=>{const wd=tog(form.workDays,d);setForm({...form,workDays:wd,officeDays:form.officeDays.filter(x=>wd.includes(x)),wfhDays:form.wfhDays.filter(x=>wd.includes(x))});};
   const setOffice=d=>{if(!form.workDays.includes(d))return;setForm({...form,officeDays:tog(form.officeDays,d),wfhDays:form.wfhDays.filter(x=>x!==d)});};
   const setWfh=d=>{if(!form.workDays.includes(d))return;setForm({...form,wfhDays:tog(form.wfhDays,d),officeDays:form.officeDays.filter(x=>x!==d)});};
-  const valid=form.name&&form.workDays.length===5&&form.officeDays.length===3&&form.wfhDays.length===2&&!form.officeDays.includes("Saturday");
+  const valid=form.name&&form.workDays.length===5&&form.officeDays.length>=2&&!form.officeDays.includes("Saturday");
   return(
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e=>e.stopPropagation()}>
         <h2 style={{fontWeight:700,fontSize:16,marginBottom:16}}>{agent.id?"Edit Agent":"Add Agent"}</h2>
         <div style={{display:"grid",gap:10,marginBottom:14}}>
-          <div><label style={{fontSize:11,color:"#64748b",fontWeight:600,display:"block",marginBottom:3}}>FULL NAME</label>
-            <input value={form.name||""} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Full name"/></div>
+          <div><label style={{fontSize:11,color:"#64748b",fontWeight:600,display:"block",marginBottom:3}}>FULL NAME</label><input value={form.name||""} onChange={e=>setForm({...form,name:e.target.value})}/></div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-            <div><label style={{fontSize:11,color:"#64748b",fontWeight:600,display:"block",marginBottom:3}}>SHIFT</label>
-              <select value={form.shift} onChange={e=>setForm({...form,shift:e.target.value})}>{SHIFTS.map(s=><option key={s}>{s}</option>)}</select></div>
-            <div><label style={{fontSize:11,color:"#64748b",fontWeight:600,display:"block",marginBottom:3}}>SUPERVISOR</label>
-              <select value={form.supervisor} onChange={e=>setForm({...form,supervisor:e.target.value})}>{SUPERVISORS.map(s=><option key={s}>{s}</option>)}</select></div>
+            <div><label style={{fontSize:11,color:"#64748b",fontWeight:600,display:"block",marginBottom:3}}>SHIFT</label><select value={form.shift} onChange={e=>setForm({...form,shift:e.target.value})}>{SHIFTS.map(s=><option key={s}>{s}</option>)}</select></div>
+            <div><label style={{fontSize:11,color:"#64748b",fontWeight:600,display:"block",marginBottom:3}}>SUPERVISOR</label><select value={form.supervisor} onChange={e=>setForm({...form,supervisor:e.target.value})}>{SUPERVISORS.map(s=><option key={s}>{s}</option>)}</select></div>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-            <div><label style={{fontSize:11,color:"#64748b",fontWeight:600,display:"block",marginBottom:3}}>START DATE</label>
-              <input value={form.startDate} onChange={e=>setForm({...form,startDate:e.target.value})} placeholder="M/D/YY"/></div>
-            <div><label style={{fontSize:11,color:"#64748b",fontWeight:600,display:"block",marginBottom:3}}>LAST DAY <span style={{color:"#94a3b8",fontWeight:400}}>(optional)</span></label>
-              <input value={form.lastDay} onChange={e=>setForm({...form,lastDay:e.target.value})} placeholder="M/D/YY"/>
-              {form.lastDay&&parseDate(form.lastDay)&&<p style={{fontSize:10,color:"#ef4444",marginTop:3}}>⚠️ Departs after {fmtShort(form.lastDay)}</p>}</div>
+            <div><label style={{fontSize:11,color:"#64748b",fontWeight:600,display:"block",marginBottom:3}}>START DATE</label><input value={form.startDate} onChange={e=>setForm({...form,startDate:e.target.value})} placeholder="M/D/YY"/></div>
+            <div><label style={{fontSize:11,color:"#64748b",fontWeight:600,display:"block",marginBottom:3}}>LAST DAY</label><input value={form.lastDay} onChange={e=>setForm({...form,lastDay:e.target.value})} placeholder="M/D/YY"/>{form.lastDay&&parseDate(form.lastDay)&&<p style={{fontSize:10,color:"#ef4444",marginTop:3}}>⚠️ Departs after {fmtShort(form.lastDay)}</p>}</div>
           </div>
-          <div><label style={{fontSize:11,color:"#64748b",fontWeight:600,display:"block",marginBottom:3}}>SKILLS</label>
-            <textarea value={form.skills} onChange={e=>setForm({...form,skills:e.target.value})} placeholder="e.g. Chat, Phone, Billing" style={{height:55}}/></div>
+          <div><label style={{fontSize:11,color:"#64748b",fontWeight:600,display:"block",marginBottom:3}}>SKILLS</label><textarea value={form.skills} onChange={e=>setForm({...form,skills:e.target.value})} style={{height:55}}/></div>
         </div>
-        <div style={{fontSize:11,color:"#64748b",fontWeight:600,marginBottom:6}}>SCHEDULE (5 work · 3 office · 2 WFH · no Sat office)</div>
+        <div style={{fontSize:11,color:"#64748b",fontWeight:600,marginBottom:6}}>SCHEDULE</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:4,marginBottom:14}}>
           {DAYS.map(day=>{const works=form.workDays.includes(day),office=form.officeDays.includes(day),wfh=form.wfhDays.includes(day),isSat=day==="Saturday";return(
             <div key={day} style={{textAlign:"center",fontSize:11}}>
               <div style={{fontWeight:600,color:"#475569",marginBottom:4}}>{day.slice(0,3)}</div>
-              <button onClick={()=>setWork(day)} style={{width:"100%",padding:"3px 0",borderRadius:4,border:`1px solid ${works?"#4f46e5":"#e2e8f0"}`,background:works?"#eef2ff":"#f8fafc",color:works?"#4f46e5":"#94a3b8",fontSize:10,cursor:"pointer",marginBottom:3,fontWeight:600}}>{works?"✓ Work":"Off"}</button>
-              {works&&!isSat&&<button onClick={()=>setOffice(day)} style={{width:"100%",padding:"3px 0",borderRadius:4,border:`1px solid ${office?"#059669":"#e2e8f0"}`,background:office?"#dcfce7":"#f8fafc",color:office?"#059669":"#94a3b8",fontSize:10,cursor:"pointer",marginBottom:3,fontWeight:600}}>{office?"🏢":"Office?"}</button>}
-              {works&&isSat&&<div style={{fontSize:9,color:"#94a3b8",padding:"3px 0"}}>No office Sat</div>}
+              <button onClick={()=>setWork(day)} style={{width:"100%",padding:"3px 0",borderRadius:4,border:`1px solid ${works?"#4f46e5":"#e2e8f0"}`,background:works?"#eef2ff":"#f8fafc",color:works?"#4f46e5":"#94a3b8",fontSize:10,cursor:"pointer",marginBottom:3,fontWeight:600}}>{works?"✓":"Off"}</button>
+              {works&&!isSat&&<button onClick={()=>setOffice(day)} style={{width:"100%",padding:"3px 0",borderRadius:4,border:`1px solid ${office?"#059669":"#e2e8f0"}`,background:office?"#dcfce7":"#f8fafc",color:office?"#059669":"#94a3b8",fontSize:10,cursor:"pointer",marginBottom:3,fontWeight:600}}>{office?"🏢":"Off?"}</button>}
+              {works&&isSat&&<div style={{fontSize:9,color:"#94a3b8",padding:"3px 0"}}>No office</div>}
               {works&&<button onClick={()=>setWfh(day)} style={{width:"100%",padding:"3px 0",borderRadius:4,border:`1px solid ${wfh?"#1d4ed8":"#e2e8f0"}`,background:wfh?"#dbeafe":"#f8fafc",color:wfh?"#1d4ed8":"#94a3b8",fontSize:10,cursor:"pointer",fontWeight:600}}>{wfh?"🏠":"WFH?"}</button>}
             </div>);})}
         </div>
@@ -379,7 +421,6 @@ function RosterEditModal({agent,onSave,onClose}){
           <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
           <button className="btn btn-primary" disabled={!valid} onClick={()=>onSave(form)} style={{opacity:valid?1:0.5}}>Save</button>
         </div>
-        {!valid&&<p style={{fontSize:11,color:"#ef4444",marginTop:8,textAlign:"center"}}>5 work days · 3 office (no Sat) · 2 WFH</p>}
       </div>
     </div>
   );
@@ -393,65 +434,51 @@ function RosterTab({agents,setAgents}){
   const[editAgent,setEditAgent]=useState(null);
   const[saved,setSaved]=useState(false);
   const persist=a=>{setAgents(a);saveAgents(a);setSaved(true);setTimeout(()=>setSaved(false),2000);};
-
-  const enriched = useMemo(()=>agents.map(a=>({
-    ...a,
-    _status: getStatus(a),
-    _tenure: tenure(a.startDate),
-  })),[agents]);
-
-  const filtered = enriched.filter(a=>{
-    const supOk = filterSup==="All"||a.supervisor===filterSup;
-    const stOk  = filterStatus==="All"||a._status===filterStatus;
-    const srOk  = !search||a.name.toLowerCase().includes(search.toLowerCase())||(a.skills||"").toLowerCase().includes(search.toLowerCase());
-    return supOk&&stOk&&srOk;
-  });
-
-  const {sorted, SortTh} = useSortableData(filtered, "name");
-
+  const enriched=useMemo(()=>agents.map(a=>({...a,_status:getStatus(a),_tenure:tenure(a.startDate),_hasChange:!!SCHEDULE_CHANGES[a.name]})),[agents]);
+  const filtered=enriched.filter(a=>(filterSup==="All"||a.supervisor===filterSup)&&(filterStatus==="All"||a._status===filterStatus)&&(!search||a.name.toLowerCase().includes(search.toLowerCase())||(a.skills||"").toLowerCase().includes(search.toLowerCase())));
+  const{sorted,SortTh}=useSortableData(filtered,"name");
   const counts={active:0,incoming:0,departed:0};
-  enriched.forEach(a=>{ if(counts[a._status]!==undefined) counts[a._status]++; });
-  const rosterTotal = counts.active + counts.incoming;
-
-  const upcomingDeps = agents.filter(a=>{
-    if(!a.lastDay)return false;
-    const d=parseDate(a.lastDay);
-    return d&&d>=REAL_TODAY;
-  }).sort((a,b)=>parseDate(a.lastDay)-parseDate(b.lastDay));
-
+  enriched.forEach(a=>{if(counts[a._status]!==undefined)counts[a._status]++;});
+  const rosterTotal=counts.active+counts.incoming;
+  const upcomingDeps=agents.filter(a=>{if(!a.lastDay)return false;const d=parseDate(a.lastDay);return d&&d>=REAL_TODAY;}).sort((a,b)=>parseDate(a.lastDay)-parseDate(b.lastDay));
+  const schedChanging=Object.entries(SCHEDULE_CHANGES).map(([name,chg])=>({name,...chg}));
   return(
     <div>
       {saved&&<div style={{background:"#dcfce7",color:"#166534",padding:"8px 14px",borderRadius:8,marginBottom:12,fontSize:12,fontWeight:600}}>✓ Saved</div>}
       {upcomingDeps.length>0&&(
-        <div style={{background:"#fff5f5",border:"1px solid #fca5a5",borderRadius:10,padding:"12px 16px",marginBottom:20}}>
+        <div style={{background:"#fff5f5",border:"1px solid #fca5a5",borderRadius:10,padding:"12px 16px",marginBottom:16}}>
           <div style={{fontWeight:700,fontSize:13,color:"#991b1b",marginBottom:8}}>🚪 Upcoming Departures</div>
           <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-            {upcomingDeps.map(a=>(
-              <div key={a.id} style={{background:"#fff",border:"1px solid #fca5a5",borderRadius:8,padding:"5px 12px",fontSize:12}}>
-                <span style={{fontWeight:600}}>{a.name}</span><span style={{color:"#94a3b8",margin:"0 4px"}}>·</span>
-                <span style={{color:"#991b1b",fontWeight:600}}>{fmtShort(a.lastDay)}</span>
-              </div>
-            ))}
+            {upcomingDeps.map(a=><div key={a.id} style={{background:"#fff",border:"1px solid #fca5a5",borderRadius:8,padding:"5px 12px",fontSize:12}}><span style={{fontWeight:600}}>{a.name}</span><span style={{color:"#94a3b8",margin:"0 4px"}}>·</span><span style={{color:"#991b1b",fontWeight:600}}>{fmtShort(a.lastDay)}</span></div>)}
           </div>
         </div>
       )}
+      <div style={{background:"#fffbeb",border:"1px solid #fcd34d",borderRadius:10,padding:"12px 16px",marginBottom:20}}>
+        <div style={{fontWeight:700,fontSize:13,color:"#92400e",marginBottom:8}}>📅 Permanent Schedule Changes — Effective Mar 30</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:8}}>
+          {schedChanging.map(chg=>(
+            <div key={chg.name} style={{background:"#fff",border:"1px solid #fcd34d",borderRadius:8,padding:"8px 12px",fontSize:12}}>
+              <div style={{fontWeight:700,marginBottom:3}}>{chg.name}</div>
+              <div style={{color:"#64748b"}}><span style={{fontWeight:600,color:"#92400e"}}>{chg.shift}</span><span style={{margin:"0 6px",color:"#cbd5e1"}}>·</span>{chg.workDays.map(d=>d.slice(0,3)).join(", ")}</div>
+              <div style={{fontSize:11,color:"#94a3b8",marginTop:2}}>Office: {chg.officeDays.map(d=>d.slice(0,3)).join(", ")} · WFH: {chg.wfhDays.map(d=>d.slice(0,3)).join(", ")}</div>
+            </div>
+          ))}
+        </div>
+      </div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
         {[["Total Roster","All","#4f46e5",rosterTotal],["Active","active","#059669",counts.active],["Incoming","incoming","#7c3aed",counts.incoming],["Departed","departed","#ef4444",counts.departed]].map(([label,val,color,count])=>(
-          <div key={label} onClick={()=>setFilterStatus(val)} style={{background:filterStatus===val?color+"15":"#fff",border:`2px solid ${filterStatus===val?color:"#e2e8f0"}`,borderRadius:12,padding:"14px",cursor:"pointer",transition:"all .15s"}}>
+          <div key={label} onClick={()=>setFilterStatus(val)} style={{background:filterStatus===val?color+"15":"#fff",border:`2px solid ${filterStatus===val?color:"#e2e8f0"}`,borderRadius:12,padding:"14px",cursor:"pointer"}}>
             <div style={{fontSize:11,fontWeight:700,color,marginBottom:2,textTransform:"uppercase"}}>{label}</div>
-            <div style={{fontSize:28,fontWeight:800,color:"#1e293b"}}>{count}</div>
+            <div style={{fontSize:28,fontWeight:800}}>{count}</div>
           </div>
         ))}
       </div>
       <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
         <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search name or skill…" style={{maxWidth:240}}/>
-        <select value={filterSup} onChange={e=>setFilterSup(e.target.value)} style={{width:"auto",minWidth:160}}>
-          <option value="All">All Supervisors</option>
-          {SUPERVISORS.map(s=><option key={s}>{s}</option>)}
-        </select>
+        <select value={filterSup} onChange={e=>setFilterSup(e.target.value)} style={{width:"auto",minWidth:160}}><option value="All">All Supervisors</option>{SUPERVISORS.map(s=><option key={s}>{s}</option>)}</select>
         <button className="btn btn-success" style={{marginLeft:"auto"}} onClick={()=>setEditAgent({workDays:[],officeDays:[],wfhDays:[],shift:"6:00–2:30",supervisor:"Shelby Coldiron",isNew:true,skills:"",startDate:"",lastDay:""})}>+ Add Agent</button>
       </div>
-      <div style={{borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0",boxShadow:"0 1px 4px #0001"}}>
+      <div style={{borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0"}}>
         <div style={{overflowX:"auto"}}>
           <table>
             <thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}>
@@ -463,48 +490,43 @@ function RosterTab({agents,setAgents}){
               <SortTh colKey="_tenure" style={{minWidth:70}}>Tenure</SortTh>
               <SortTh colKey="lastDay" style={{minWidth:90}}>Last Day</SortTh>
               <th style={{minWidth:230}}>Skills</th>
-              <th style={{minWidth:80,textAlign:"center"}}>Edit</th>
+              <th style={{minWidth:60,textAlign:"center"}}>Edit</th>
             </tr></thead>
             <tbody>
               {sorted.length===0&&<tr><td colSpan={9} style={{textAlign:"center",color:"#94a3b8",padding:24}}>No agents found</td></tr>}
               {sorted.map(a=>{
                 const c=SUP_COLORS[a.supervisor]||{bg:"#64748b"};
                 const skills=(a.skills||"").split(",").map(s=>s.trim()).filter(Boolean);
-                return(
-                  <tr key={a.id} style={{borderBottom:"1px solid #f1f5f9",background:a._status==="departed"?"#fff5f5":a._status==="incoming"?"#f5f3ff":a.isNew?"#f0fdf4":"#fff"}}>
-                    <td style={{fontWeight:600}}>{a.isNew&&<span style={{marginRight:4}}>✨</span>}{a.name}</td>
-                    <td>
-                      {a._status==="active"   &&<span className="tag tag-active">● Active</span>}
-                      {a._status==="incoming" &&<span className="tag tag-incoming">⏳ Incoming</span>}
-                      {a._status==="departed" &&<span className="tag tag-departed">🚪 Departed</span>}
-                    </td>
-                    <td><span style={{fontSize:11,fontWeight:600,color:c.bg}}>{a.supervisor}</span></td>
-                    <td style={{fontSize:11,color:"#64748b"}}>{a.shift}</td>
-                    <td style={{fontSize:11,color:"#475569"}}>{a.startDate?fmtShort(a.startDate):"—"}</td>
-                    <td style={{fontSize:11,color:"#64748b"}}>{a._tenure}</td>
-                    <td style={{fontSize:11,color:a.lastDay?"#ef4444":"#94a3b8"}}>{a.lastDay?fmtShort(a.lastDay):"—"}</td>
-                    <td>{skills.length>0?skills.map((sk,i)=><span key={i} className="skill-chip">{sk}</span>):<span style={{fontSize:11,color:"#94a3b8"}}>—</span>}</td>
-                    <td style={{textAlign:"center"}}><button className="btn btn-ghost" style={{fontSize:11,padding:"3px 8px"}} onClick={()=>setEditAgent(a)}>✏️</button></td>
-                  </tr>
-                );
+                return(<tr key={a.id} style={{borderBottom:"1px solid #f1f5f9",background:a._status==="departed"?"#fff5f5":a._status==="incoming"?"#f5f3ff":a.isNew?"#f0fdf4":"#fff"}}>
+                  <td style={{fontWeight:600}}>{a.isNew&&<span style={{marginRight:4}}>✨</span>}{a.name}{a._hasChange&&<span className="tag tag-changed" style={{marginLeft:6,fontSize:10}}>📅 Mar 30</span>}</td>
+                  <td>{a._status==="active"&&<span className="tag tag-active">● Active</span>}{a._status==="incoming"&&<span className="tag tag-incoming">⏳ Incoming</span>}{a._status==="departed"&&<span className="tag tag-departed">🚪 Departed</span>}</td>
+                  <td><span style={{fontSize:11,fontWeight:600,color:c.bg}}>{a.supervisor}</span></td>
+                  <td style={{fontSize:11,color:"#64748b"}}>{a.shift}</td>
+                  <td style={{fontSize:11,color:"#475569"}}>{a.startDate?fmtShort(a.startDate):"—"}</td>
+                  <td style={{fontSize:11,color:"#64748b"}}>{a._tenure}</td>
+                  <td style={{fontSize:11,color:a.lastDay?"#ef4444":"#94a3b8"}}>{a.lastDay?fmtShort(a.lastDay):"—"}</td>
+                  <td>{skills.length>0?skills.map((sk,i)=><span key={i} className="skill-chip">{sk}</span>):<span style={{fontSize:11,color:"#94a3b8"}}>—</span>}</td>
+                  <td style={{textAlign:"center"}}><button className="btn btn-ghost" style={{fontSize:11,padding:"3px 8px"}} onClick={()=>setEditAgent(a)}>✏️</button></td>
+                </tr>);
               })}
             </tbody>
           </table>
         </div>
       </div>
-      <p style={{fontSize:11,color:"#94a3b8",marginTop:8}}>{sorted.length} of {agents.length} agents shown.</p>
-      {editAgent&&<RosterEditModal agent={editAgent} onSave={form=>{
-        form.id?persist(agents.map(a=>a.id===form.id?form:a)):persist([...agents,{...form,id:Math.max(0,...agents.map(a=>a.id))+1}]);
-        setEditAgent(null);
-      }} onClose={()=>setEditAgent(null)}/>}
+      <p style={{fontSize:11,color:"#94a3b8",marginTop:8}}>{sorted.length} of {agents.length} shown.</p>
+      {editAgent&&<RosterEditModal agent={editAgent} onSave={form=>{form.id?persist(agents.map(a=>a.id===form.id?form:a)):persist([...agents,{...form,id:Math.max(0,...agents.map(a=>a.id))+1}]);setEditAgent(null);}} onClose={()=>setEditAgent(null)}/>}
     </div>
   );
 }
 
 // ── TODAY TAB ────────────────────────────────────────────────────────────────
 function TodayTab({agents}){
-  const weekDates = WEEKS[4].dates;
-  const active = getActiveAgents(agents);
+  // find which week contains DISPLAY_DATE
+  const todayDateStr2 = TODAY_STR;
+  const weekForToday = WEEKS.find(w=>w.dates.includes(todayDateStr2)) || WEEKS[4];
+  const weekDates = weekForToday.dates;
+
+  const active=getActiveAgents(agents);
   const working=[],pto=[],halfDay=[],wfh=[],inOffice=[];
   active.forEach(a=>{
     const s=getCellStatus(a,TODAY_DAY,weekDates);
@@ -514,34 +536,37 @@ function TodayTab({agents}){
     if(s.type==="office"){inOffice.push(a);working.push(a);}
     if(s.type==="wfh"){wfh.push(a);working.push(a);}
   });
+
   const CHAT_DAY_KEYS=["Mon","Tue","Wed","Thu","Fri"];
   const todayKey=CHAT_DAY_KEYS[["Monday","Tuesday","Wednesday","Thursday","Friday"].indexOf(TODAY_DAY)]||"Mon";
+  const chatCounts = getChatIntervalCounts(todayKey);
   const chatPrimary=chatAgents.filter(a=>a[todayKey]==="X").length;
   const chatBackup=chatAgents.filter(a=>a[todayKey]==="B").length;
+  const chatRiskIntervals=chatCounts.filter(r=>r.total>0&&r.total<CHAT_MIN_STAFFING);
+
   const expected=active.filter(a=>a.workDays.includes(TODAY_DAY)&&!hasNotStarted(a,TODAY_STR)).length;
   const actual=working.length+halfDay.length;
   const pct=expected>0?Math.round(actual/expected*100):100;
   const risk=pct<70?"HIGH":pct<85?"MEDIUM":"OK";
-  const soon14=agents.filter(a=>{if(!a.lastDay)return false;const last=parseDate(a.lastDay);const diff=(last-REAL_TODAY)/(1000*60*60*24);return diff>=0&&diff<=14;});
   const starting7=agents.filter(a=>{if(!a.startDate)return false;const sd=parseDate(a.startDate);const diff=(sd-REAL_TODAY)/(1000*60*60*24);return diff>=0&&diff<=7;});
   const shiftGroups={};working.forEach(a=>{const sh=getAgentForDate(a,TODAY_STR).shift;shiftGroups[sh]=(shiftGroups[sh]||0)+1;});
-  const todayDateStr = REAL_TODAY.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+  const todayLabel=DISPLAY_DATE.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
 
   return(
     <div>
       <div style={{background:"linear-gradient(135deg,#1e293b,#334155)",borderRadius:16,padding:"20px 24px",color:"#fff",marginBottom:24}}>
-        <div style={{fontSize:11,color:"#94a3b8",fontWeight:600,marginBottom:4,textTransform:"uppercase",letterSpacing:1}}>Daily Briefing</div>
-        <div style={{fontSize:22,fontWeight:800}}>{todayDateStr}</div>
+        <div style={{fontSize:11,color:"#94a3b8",fontWeight:600,marginBottom:4,textTransform:"uppercase",letterSpacing:1}}>Daily Briefing{IS_SUNDAY?" — Showing Monday":""}  </div>
+        <div style={{fontSize:22,fontWeight:800}}>{todayLabel}</div>
         <div style={{fontSize:13,color:"#94a3b8",marginTop:4}}>{active.length} active agents on roster</div>
         <div style={{marginTop:14,display:"flex",gap:10,flexWrap:"wrap"}}>
-          <span className={`tag tag-${risk==="HIGH"?"risk":risk==="MEDIUM"?"warn":"ok"}`} style={{fontSize:13,padding:"4px 12px"}}>
-            {risk==="HIGH"?"🔴 HIGH RISK":risk==="MEDIUM"?"🟡 MEDIUM RISK":"🟢 STAFFING OK"}
-          </span>
-          <span className="tag" style={{background:"#ffffff22",color:"#fff",fontSize:13,padding:"4px 12px"}}>{pct}% coverage today</span>
+          <span className={`tag tag-${risk==="HIGH"?"risk":risk==="MEDIUM"?"warn":"ok"}`} style={{fontSize:13,padding:"4px 12px"}}>{risk==="HIGH"?"🔴 HIGH RISK":risk==="MEDIUM"?"🟡 MEDIUM RISK":"🟢 STAFFING OK"}</span>
+          <span className="tag" style={{background:"#ffffff22",color:"#fff",fontSize:13,padding:"4px 12px"}}>{pct}% coverage</span>
+          {chatRiskIntervals.length>0&&<span className="tag tag-risk" style={{fontSize:13,padding:"4px 12px"}}>💬 Chat Risk: {chatRiskIntervals.length} intervals below {CHAT_MIN_STAFFING}</span>}
         </div>
       </div>
+
       <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:12,marginBottom:24}}>
-        {[["👥","Working",working.length,`+${halfDay.length} half`,""],["🏢","In Office",inOffice.length,"","ok-card"],["🏠","WFH",wfh.length,"",""],["🌟","Out / PTO",pto.length,"",pto.length>3?"risk-card":""],["💬","Chat Primary",chatPrimary,`+${chatBackup} backup`,""]].map(([icon,label,val,sub,cls])=>(
+        {[["👥","Working",working.length,`+${halfDay.length} half`,""],["🏢","In Office",inOffice.length,"","ok-card"],["🏠","WFH",wfh.length,"",""],["🌟","Out / PTO",pto.length,"",pto.length>3?"risk-card":""],["💬","Chat Primary",chatPrimary,`+${chatBackup} backup`,chatRiskIntervals.length>0?"risk-card":""]].map(([icon,label,val,sub,cls])=>(
           <div key={label} className={`card ${cls}`} style={{textAlign:"center",padding:"16px 10px"}}>
             <div style={{fontSize:22}}>{icon}</div>
             <div style={{fontSize:28,fontWeight:800,color:"#1e293b",margin:"4px 0"}}>{val}</div>
@@ -550,10 +575,11 @@ function TodayTab({agents}){
           </div>
         ))}
       </div>
+
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,marginBottom:24}}>
         <div className="card">
           <div style={{fontWeight:700,fontSize:14,marginBottom:12}}>🌟 Out Today</div>
-          {pto.length===0&&halfDay.length===0?<p style={{fontSize:12,color:"#94a3b8"}}>No time off today ✓</p>
+          {pto.length===0&&halfDay.length===0?<p style={{fontSize:12,color:"#94a3b8"}}>No time off ✓</p>
           :[...pto,...halfDay].map((item,i)=>{const c=SUP_COLORS[item.agent.supervisor]||{bg:"#64748b"};return(
             <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid #f1f5f9"}}>
               <div><div style={{fontWeight:600,fontSize:12}}>{item.agent.name}</div><div style={{fontSize:11,color:c.bg}}>{item.agent.supervisor}</div></div>
@@ -570,13 +596,23 @@ function TodayTab({agents}){
             </div>);})}
         </div>
       </div>
+
       <div style={{fontWeight:700,fontSize:15,marginBottom:12}}>⚠️ Risks & Alerts</div>
       <div style={{display:"grid",gap:10,marginBottom:24}}>
-        {risk!=="OK"&&<div className={`card ${risk==="HIGH"?"risk-card":"warn-card"}`}><div style={{fontWeight:700,fontSize:13,marginBottom:4}}>{risk==="HIGH"?"🔴 Staffing Risk":"🟡 Coverage Watch"}</div><p style={{fontSize:12,color:"#475569"}}>Working headcount ({working.length}) is {100-pct}% below expected ({expected} scheduled).{pto.length>0?` ${pto.length} agent${pto.length>1?"s":""}  out on PTO.`:""}</p></div>}
-        {soon14.length>0&&<div className="card warn-card"><div style={{fontWeight:700,fontSize:13,marginBottom:6}}>🚪 Upcoming Departures (14 days)</div>{soon14.map(a=><div key={a.id} style={{fontSize:12,padding:"3px 0",display:"flex",justifyContent:"space-between"}}><span style={{fontWeight:600}}>{a.name}</span><span style={{color:"#b45309"}}>Last day: {fmtFull(a.lastDay)}</span></div>)}<p style={{fontSize:11,color:"#94a3b8",marginTop:6}}>Ensure knowledge transfer is underway.</p></div>}
+        {risk!=="OK"&&<div className={`card ${risk==="HIGH"?"risk-card":"warn-card"}`}><div style={{fontWeight:700,fontSize:13,marginBottom:4}}>{risk==="HIGH"?"🔴 Staffing Risk":"🟡 Coverage Watch"}</div><p style={{fontSize:12,color:"#475569"}}>Working headcount ({working.length}) is {100-pct}% below expected ({expected} scheduled).{pto.length>0?` ${pto.length} agent${pto.length>1?"s":""} out on PTO.`:""}</p></div>}
+        {chatRiskIntervals.length>0&&(
+          <div className="card risk-card">
+            <div style={{fontWeight:700,fontSize:13,marginBottom:6}}>💬 Chat Staffing Risk — below {CHAT_MIN_STAFFING} agents</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
+              {chatRiskIntervals.map((r,i)=><span key={i} style={{background:"#fee2e2",color:"#991b1b",padding:"2px 8px",borderRadius:12,fontSize:11,fontWeight:600}}>{r.label} ({r.total})</span>)}
+            </div>
+            <p style={{fontSize:11,color:"#94a3b8",marginTop:6}}>Minimum threshold: {CHAT_MIN_STAFFING} agents per interval.</p>
+          </div>
+        )}
         {starting7.length>0&&<div className="card ok-card"><div style={{fontWeight:700,fontSize:13,marginBottom:6}}>✨ Starting This Week</div>{starting7.map(a=><div key={a.id} style={{fontSize:12,padding:"3px 0",display:"flex",justifyContent:"space-between"}}><span style={{fontWeight:600}}>{a.name}</span><span style={{color:"#059669"}}>Starts: {fmtFull(a.startDate)} · {a.supervisor}</span></div>)}</div>}
-        {risk==="OK"&&soon14.length===0&&<div className="card ok-card"><div style={{fontWeight:700,fontSize:13}}>✅ All Clear</div><p style={{fontSize:12,color:"#475569",marginTop:4}}>No major staffing risks today.</p></div>}
+        {risk==="OK"&&chatRiskIntervals.length===0&&<div className="card ok-card"><div style={{fontWeight:700,fontSize:13}}>✅ All Clear</div><p style={{fontSize:12,color:"#475569",marginTop:4}}>No major staffing risks today.</p></div>}
       </div>
+
       <div style={{fontWeight:700,fontSize:15,marginBottom:12}}>👤 By Supervisor</div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:12}}>
         {SUPERVISORS.map(sup=>{
@@ -607,24 +643,18 @@ function ScheduleTab({agents,setAgents,isManager}){
   const[saved,setSaved]=useState(false);
   const week=WEEKS[weekIdx];
   const persist=a=>{setAgents(a);saveAgents(a);setSaved(true);setTimeout(()=>setSaved(false),2000);};
-  const weekStart=parseDate(week.dates[0]);
-  const weekEnd=parseDate(week.dates[5]);
-
-  const weekAgents = getWeekAgents(agents, week);
-  const base = weekAgents.filter(a=>(filterSup==="All"||a.supervisor===filterSup)&&(!search||a.name.toLowerCase().includes(search.toLowerCase())));
-
-  // enrich for sorting
-  const enriched = base.map(a=>({...a, _status: getStatus(a, weekStart)}));
-  const {sorted, SortTh} = useSortableData(enriched, "name");
-
+  const weekStart=parseDate(week.dates[0]),weekEnd=parseDate(week.dates[5]);
+  const weekAgents=getWeekAgents(agents,week);
+  const base=weekAgents.filter(a=>(filterSup==="All"||a.supervisor===filterSup)&&(!search||a.name.toLowerCase().includes(search.toLowerCase())));
+  const enriched=base.map(a=>({...a,_status:getStatus(a,weekStart)}));
+  const{sorted,SortTh}=useSortableData(enriched,"name");
   const supCounts=SUPERVISORS.map(sup=>({sup,count:weekAgents.filter(a=>a.supervisor===sup).length})).filter(s=>s.count>0);
-  const departingThisWeek=weekAgents.filter(a=>{if(!a.lastDay)return false;const last=parseDate(a.lastDay);return last&&last>=weekStart&&last<=weekEnd;});
   const daySummary=DAYS.map((day,di)=>{
     let w=0,p=0,h=0;
     weekAgents.forEach(a=>{const s=getCellStatus(a,day,week.dates);if(s.type==="pto")p++;else if(s.type==="half")h++;else if(s.type==="office"||s.type==="wfh")w++;});
     return{day,date:week.dates[di],working:w,pto:p,half:h};
   });
-
+  const changesThisWeek=Object.entries(SCHEDULE_CHANGES).filter(([,chg])=>{const eff=parseDate(chg.effectiveDate);return eff&&eff>=weekStart&&eff<=weekEnd;});
   return(
     <div>
       {saved&&<div style={{background:"#dcfce7",color:"#166534",padding:"8px 14px",borderRadius:8,marginBottom:12,fontSize:12,fontWeight:600}}>✓ Saved</div>}
@@ -632,13 +662,11 @@ function ScheduleTab({agents,setAgents,isManager}){
         <div key={month} style={{marginBottom:8}}>
           <div style={{fontSize:11,fontWeight:700,color:"#94a3b8",marginBottom:5,textTransform:"uppercase",letterSpacing:1}}>{month}</div>
           <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{mw.map(w=>{const gi=WEEKS.indexOf(w);return(
-            <button key={gi} onClick={()=>setWeekIdx(gi)} className="btn" style={{background:weekIdx===gi?"#4f46e5":"#fff",color:weekIdx===gi?"#fff":"#475569",border:`1px solid ${weekIdx===gi?"#4f46e5":"#e2e8f0"}`}}>
-              {w.label} <span style={{opacity:.7,fontSize:11}}>({w.display})</span>
-            </button>);})}</div>
-        </div>);})}</div>
-
-      {departingThisWeek.length>0&&<div style={{background:"#fee2e2",border:"1px solid #fca5a5",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#991b1b",marginBottom:10}}>🚪 {departingThisWeek.map(a=><strong key={a.id}>{a.name}</strong>).reduce((a,b)=>[a,", ",b])} — last day this week</div>}
-
+            <button key={gi} onClick={()=>setWeekIdx(gi)} className="btn" style={{background:weekIdx===gi?"#4f46e5":"#fff",color:weekIdx===gi?"#fff":"#475569",border:`1px solid ${weekIdx===gi?"#4f46e5":"#e2e8f0"}`}}>{w.label} <span style={{opacity:.7,fontSize:11}}>({w.display})</span></button>
+          );})}</div>
+        </div>
+      );})}</div>
+      {changesThisWeek.length>0&&<div style={{background:"#fffbeb",border:"1px solid #fcd34d",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#92400e",marginBottom:10}}>📅 <strong>Schedule changes take effect this week:</strong> {changesThisWeek.map(([n])=>n).join(", ")} — new shift/days apply from Mar 30.</div>}
       <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:8,marginBottom:20}}>
         {daySummary.map(d=>(
           <div key={d.day} style={{background:"#fff",borderRadius:10,border:"1px solid #e2e8f0",padding:"10px 8px",textAlign:"center"}}>
@@ -649,24 +677,21 @@ function ScheduleTab({agents,setAgents,isManager}){
           </div>
         ))}
       </div>
-
       <div style={{fontSize:12,fontWeight:700,color:"#64748b",marginBottom:8,textTransform:"uppercase",letterSpacing:.5}}>Filter by Supervisor</div>
       <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:12}}>
         <div onClick={()=>setFilterSup("All")} style={{background:filterSup==="All"?"#4f46e5":"#fff",color:filterSup==="All"?"#fff":"#475569",border:`2px solid ${filterSup==="All"?"#4f46e5":"#e2e8f0"}`,borderRadius:10,padding:"8px 14px",cursor:"pointer",fontSize:12,fontWeight:700,display:"flex",gap:8,alignItems:"center"}}>
-          <span>All Agents</span><span style={{background:filterSup==="All"?"#ffffff33":"#f1f5f9",padding:"1px 7px",borderRadius:10,fontWeight:800}}>{weekAgents.length}</span>
+          <span>All</span><span style={{background:filterSup==="All"?"#ffffff33":"#f1f5f9",padding:"1px 7px",borderRadius:10,fontWeight:800}}>{weekAgents.length}</span>
         </div>
         {supCounts.map(({sup,count})=>{const c=SUP_COLORS[sup]||{bg:"#64748b",light:"#f8fafc",border:"#e2e8f0"};const sel=filterSup===sup;return(
-          <div key={sup} onClick={()=>setFilterSup(sel?"All":sup)} style={{background:sel?c.bg:c.light,color:sel?"#fff":c.bg,border:`2px solid ${sel?c.bg:c.border}`,borderRadius:10,padding:"8px 14px",cursor:"pointer",fontSize:12,fontWeight:700,display:"flex",gap:8,alignItems:"center",transition:"all .15s"}}>
+          <div key={sup} onClick={()=>setFilterSup(sel?"All":sup)} style={{background:sel?c.bg:c.light,color:sel?"#fff":c.bg,border:`2px solid ${sel?c.bg:c.border}`,borderRadius:10,padding:"8px 14px",cursor:"pointer",fontSize:12,fontWeight:700,display:"flex",gap:8,alignItems:"center"}}>
             <span>{sup}</span><span style={{background:sel?"#ffffff33":c.bg+"22",padding:"1px 7px",borderRadius:10,fontWeight:800}}>{count}</span>
           </div>);})}
       </div>
-
       <div style={{display:"flex",gap:10,marginBottom:14,alignItems:"center"}}>
         <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search agent…" style={{maxWidth:220}}/>
         {isManager&&<button className="btn btn-success" style={{marginLeft:"auto"}} onClick={()=>setEditAgent({workDays:[],officeDays:[],wfhDays:[],shift:"6:00–2:30",supervisor:"Shelby Coldiron",isNew:true,skills:"",startDate:"",lastDay:""})}>+ Add Agent</button>}
       </div>
-
-      <div style={{borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0",boxShadow:"0 1px 4px #0001"}}>
+      <div style={{borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0"}}>
         <div style={{overflowX:"auto"}}>
           <table>
             <thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}>
@@ -679,14 +704,14 @@ function ScheduleTab({agents,setAgents,isManager}){
             <tbody>
               {sorted.length===0&&<tr><td colSpan={10} style={{textAlign:"center",color:"#94a3b8",padding:24}}>No agents found</td></tr>}
               {sorted.map(agent=>{
-                const isDep=departingThisWeek.some(a=>a.id===agent.id);
                 const hasPto=DAYS.some(d=>{const s=getCellStatus(agent,d,week.dates);return s.type==="pto"||s.type==="half";});
-                const ea=getAgentForDate(agent,week.dates[2]);
+                const ea=getAgentForDate(agent,week.dates[0]);
                 const c=SUP_COLORS[agent.supervisor]||{bg:"#64748b"};
-                return(<tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",background:isDep?"#fff5f5":hasPto?"#fffbeb":agent.isNew?"#f0fdf4":"#fff"}}>
+                const hasChg=!!SCHEDULE_CHANGES[agent.name];
+                return(<tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",background:hasPto?"#fffbeb":agent.isNew?"#f0fdf4":"#fff"}}>
                   <td style={{fontWeight:600,position:"sticky",left:0,background:"inherit",zIndex:1}}>
-                    {agent.isNew&&<span style={{marginRight:4}}>✨</span>}
-                    {agent.name}
+                    {agent.isNew&&<span style={{marginRight:4}}>✨</span>}{agent.name}
+                    {hasChg&&<span className="tag tag-changed" style={{marginLeft:6,fontSize:10}}>📅 Mar 30</span>}
                     {agent.lastDay&&<span style={{marginLeft:6,fontSize:10,background:"#fee2e2",color:"#991b1b",padding:"1px 5px",borderRadius:10,fontWeight:600}}>Last: {fmtShort(agent.lastDay)}</span>}
                   </td>
                   <td style={{fontSize:11,color:"#64748b"}}>{ea.shift}</td>
@@ -703,7 +728,6 @@ function ScheduleTab({agents,setAgents,isManager}){
         </div>
       </div>
       <p style={{fontSize:11,color:"#94a3b8",marginTop:6}}>{sorted.length} agents shown</p>
-
       {editAgent&&<RosterEditModal agent={editAgent} onSave={form=>{form.id?persist(agents.map(a=>a.id===form.id?form:a)):persist([...agents,{...form,id:Math.max(0,...agents.map(a=>a.id))+1}]);setEditAgent(null);}} onClose={()=>setEditAgent(null)}/>}
       {delConfirm&&<div className="modal-overlay" onClick={()=>setDelConfirm(null)}><div className="modal" style={{width:340}} onClick={e=>e.stopPropagation()}>
         <h2 style={{fontWeight:700,fontSize:16,marginBottom:8}}>Remove Agent?</h2>
@@ -715,8 +739,8 @@ function ScheduleTab({agents,setAgents,isManager}){
 }
 
 // ── CHAT TAB ─────────────────────────────────────────────────────────────────
-const CHAT_INTERVALS=[];
-for(let m=360;m<=1200;m+=30){const h=Math.floor(m/60),mn=m%60;CHAT_INTERVALS.push({label:`${String(h).padStart(2,"0")}:${String(mn).padStart(2,"0")}`,minutes:m});}
+const CHAT_INTERVALS_ALL=[];
+for(let m=360;m<=1200;m+=30){const h=Math.floor(m/60),mn=m%60;CHAT_INTERVALS_ALL.push({label:`${String(h).padStart(2,"0")}:${String(mn).padStart(2,"0")}`,minutes:m});}
 const CHAT_DAY_KEYS=["Mon","Tue","Wed","Thu","Fri"];
 const CHAT_DAY_FULL={Mon:"Monday",Tue:"Tuesday",Wed:"Wednesday",Thu:"Thursday",Fri:"Friday"};
 
@@ -726,42 +750,29 @@ function ChatScheduleTab(){
   const[search,setSearch]=useState("");
   const[sortKey,setSortKey]=useState("startMin");
   const[sortDir,setSortDir]=useState("asc");
-
   function pShift(s){const p=s.split("-");return{startMin:timeToMin(p[0]),endMin:timeToMin(p[1])};}
-
   function reqSort(k){setSortDir(d=>sortKey===k?(d==="asc"?"desc":"asc"):"asc");setSortKey(k);}
-  function SortTh({colKey,children,style={}}){
-    const active=sortKey===colKey;
-    return <th className={`sortable${active?" "+sortDir:""}`} onClick={()=>reqSort(colKey)} style={style}>{children}<span className="sort-icon"/></th>;
-  }
-
+  function SortTh({colKey,children,style={}}){const active=sortKey===colKey;return<th className={`sortable${active?" "+sortDir:""}`} onClick={()=>reqSort(colKey)} style={style}>{children}<span className="sort-icon"/></th>;}
   const dayAgents=chatAgents.filter(a=>(a[dayKey]==="X"||(showBackups&&a[dayKey]==="B"))&&(!search||a.name.toLowerCase().includes(search.toLowerCase())));
-  const iCounts=CHAT_INTERVALS.filter(({minutes})=>minutes>=360&&minutes<1200).map(({label,minutes})=>{
-    let pri=0,bkp=0;chatAgents.forEach(a=>{const{startMin,endMin}=pShift(a.shift);if(minutes>=startMin&&minutes<endMin){if(a[dayKey]==="X")pri++;else if(a[dayKey]==="B")bkp++;}});
-    return{label,minutes,pri,bkp,total:pri+bkp};
-  });
-
-  const rows=dayAgents.map(a=>{const{startMin,endMin}=pShift(a.shift);const mid=Math.round((startMin+endMin)/2/30)*30;
-    return{name:a.name,shift:a.shift.replace("-","–"),role:a[dayKey],lunch:`${minToTime(mid)}–${minToTime(mid+30)}`,startMin,endMin};
-  });
-  const sortedRows=[...rows].sort((a,b)=>{
-    let av=a[sortKey],bv=b[sortKey];
-    if(typeof av==="string")av=av.toLowerCase(),bv=bv.toLowerCase();
-    return sortDir==="asc"?(av<bv?-1:av>bv?1:0):(av>bv?-1:av<bv?1:0);
-  });
-
-  const allDC=CHAT_DAY_KEYS.map(dk=>CHAT_INTERVALS.filter(({minutes})=>minutes>=360&&minutes<1200).map(({label,minutes})=>{let p=0,b=0;chatAgents.forEach(a=>{const{startMin,endMin}=pShift(a.shift);if(minutes>=startMin&&minutes<endMin){if(a[dk]==="X")p++;else if(a[dk]==="B")b++;}});return{label,minutes,pri:p,bkp:b,total:p+b};}));
+  const iCounts=getChatIntervalCounts(dayKey);
   const maxT=Math.max(...iCounts.map(r=>r.total),1);
-
+  const rows=dayAgents.map(a=>{const{startMin,endMin}=pShift(a.shift);const mid=Math.round((startMin+endMin)/2/30)*30;return{name:a.name,shift:a.shift.replace("-","–"),role:a[dayKey],lunch:`${minToTime(mid)}–${minToTime(mid+30)}`,startMin,endMin};});
+  const sortedRows=[...rows].sort((a,b)=>{let av=a[sortKey],bv=b[sortKey];if(typeof av==="string"){av=av.toLowerCase();bv=bv.toLowerCase();}return sortDir==="asc"?(av<bv?-1:av>bv?1:0):(av>bv?-1:av<bv?1:0);});
+  const allDC=CHAT_DAY_KEYS.map(dk=>getChatIntervalCounts(dk));
   return(
     <div>
+      <div style={{background:"#fff5f5",border:"1px solid #fca5a5",borderRadius:8,padding:"8px 14px",fontSize:12,color:"#991b1b",marginBottom:16,fontWeight:600}}>
+        🔴 Risk threshold: fewer than {CHAT_MIN_STAFFING} agents in any interval is flagged as a risk.
+      </div>
       <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap",alignItems:"center"}}>
-        {CHAT_DAY_KEYS.map(d=><button key={d} onClick={()=>setDayKey(d)} className="btn" style={{background:dayKey===d?"#4f46e5":"#fff",color:dayKey===d?"#fff":"#475569",border:`1px solid ${dayKey===d?"#4f46e5":"#e2e8f0"}`}}>{CHAT_DAY_FULL[d]}</button>)}
+        {CHAT_DAY_KEYS.map(d=>{
+          const dc=getChatIntervalCounts(d);
+          const hasRisk=dc.some(r=>r.total>0&&r.total<CHAT_MIN_STAFFING);
+          return<button key={d} onClick={()=>setDayKey(d)} className="btn" style={{background:dayKey===d?"#4f46e5":"#fff",color:dayKey===d?"#fff":"#475569",border:`2px solid ${dayKey===d?"#4f46e5":hasRisk?"#ef4444":"#e2e8f0"}`}}>{CHAT_DAY_FULL[d]}{hasRisk&&<span style={{marginLeft:4}}>🔴</span>}</button>;
+        })}
         <button onClick={()=>setShowBackups(!showBackups)} className="btn" style={{background:showBackups?"#e0e7ff":"#fff",color:showBackups?"#4f46e5":"#475569",border:`1px solid ${showBackups?"#a5b4fc":"#e2e8f0"}`}}>{showBackups?"✓ Backups":"Show Backups"}</button>
       </div>
-      <div style={{marginBottom:16}}>
-        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search agent…" style={{maxWidth:220}}/>
-      </div>
+      <div style={{marginBottom:16}}><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search agent…" style={{maxWidth:220}}/></div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,marginBottom:24}}>
         <div>
           <div style={{fontWeight:700,fontSize:14,marginBottom:8}}>💬 {CHAT_DAY_FULL[dayKey]}</div>
@@ -786,18 +797,21 @@ function ChatScheduleTab(){
           <div style={{fontWeight:700,fontSize:14,marginBottom:8}}>📊 Headcount by Interval</div>
           <div style={{borderRadius:12,border:"1px solid #e2e8f0",overflow:"hidden",background:"#fff"}}>
             <table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}>
-              <th style={{width:65,fontWeight:600,color:"#64748b"}}>Time</th><th style={{fontWeight:600,color:"#64748b"}}>Coverage</th>
+              <th style={{width:65,fontWeight:600,color:"#64748b"}}>Time</th>
+              <th style={{fontWeight:600,color:"#64748b"}}>Coverage</th>
               <th style={{width:45,textAlign:"center",fontWeight:600,color:"#1d4ed8"}}>Pri</th>
               {showBackups&&<th style={{width:45,textAlign:"center",fontWeight:600,color:"#6b7280"}}>Bkp</th>}
               <th style={{width:45,textAlign:"center",fontWeight:600}}>Tot</th>
             </tr></thead>
-            <tbody>{iCounts.map((row,i)=>{const pct=row.total/maxT,pP=row.total>0?row.pri/row.total:0;return(
-              <tr key={i} style={{borderBottom:"1px solid #f8fafc"}}>
-                <td style={{fontWeight:600,fontSize:11,color:"#475569"}}>{row.label}</td>
-                <td style={{padding:"3px 8px"}}><div style={{position:"relative",height:14,background:"#f1f5f9",borderRadius:3,overflow:"hidden"}}><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pct*100}%`,background:"#93c5fd",borderRadius:3}}/><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pct*pP*100}%`,background:"#4f46e5",borderRadius:3}}/></div></td>
+            <tbody>{iCounts.map((row,i)=>{
+              const isRisk=row.total>0&&row.total<CHAT_MIN_STAFFING;
+              const pct=row.total/maxT,pP=row.total>0?row.pri/row.total:0;
+              return(<tr key={i} style={{borderBottom:"1px solid #f8fafc",background:isRisk?"#fff5f5":""}}>
+                <td style={{fontWeight:600,fontSize:11,color:isRisk?"#991b1b":"#475569"}}>{row.label}{isRisk&&" 🔴"}</td>
+                <td style={{padding:"3px 8px"}}><div style={{position:"relative",height:14,background:"#f1f5f9",borderRadius:3,overflow:"hidden"}}><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pct*100}%`,background:isRisk?"#fca5a5":"#93c5fd",borderRadius:3}}/><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pct*pP*100}%`,background:isRisk?"#ef4444":"#4f46e5",borderRadius:3}}/></div></td>
                 <td style={{textAlign:"center",fontWeight:700,fontSize:12,color:row.pri>0?"#4f46e5":"#e2e8f0"}}>{row.pri||"–"}</td>
                 {showBackups&&<td style={{textAlign:"center",fontWeight:600,fontSize:12,color:row.bkp>0?"#6b7280":"#e2e8f0"}}>{row.bkp||"–"}</td>}
-                <td style={{textAlign:"center",fontWeight:700,fontSize:12,color:row.total>0?"#1e293b":"#e2e8f0"}}>{row.total||"–"}</td>
+                <td style={{textAlign:"center",fontWeight:700,fontSize:12,color:isRisk?"#991b1b":row.total>0?"#1e293b":"#e2e8f0"}}>{row.total||"–"}</td>
               </tr>);})}
             </tbody></table>
           </div>
@@ -809,12 +823,17 @@ function ChatScheduleTab(){
           <th style={{minWidth:65,position:"sticky",left:0,background:"#f8fafc"}}>Time</th>
           {CHAT_DAY_KEYS.map(d=><th key={d} style={{textAlign:"center",minWidth:90}}>{CHAT_DAY_FULL[d]}</th>)}
         </tr></thead>
-        <tbody>{CHAT_INTERVALS.filter(r=>r.minutes>=360&&r.minutes<1200).map(({label,minutes},ri)=>{
+        <tbody>{CHAT_INTERVALS_ALL.filter(r=>r.minutes>=360&&r.minutes<1200).map(({label,minutes},ri)=>{
           const dc=allDC.map(d=>d.find(r=>r.minutes===minutes)||{pri:0,bkp:0,total:0});
           if(dc.every(c=>c.total===0))return null;
           return(<tr key={ri} style={{borderBottom:"1px solid #f1f5f9"}}>
             <td style={{fontWeight:600,fontSize:11,color:"#475569",position:"sticky",left:0,background:"#fff"}}>{label}</td>
-            {dc.map((c,ci)=>{const bg=c.total===0?"#f8fafc":c.total<4?"#dbeafe":c.total<8?"#93c5fd":c.total<12?"#3b82f6":"#1d4ed8";const tc=["#3b82f6","#1d4ed8"].includes(bg)?"#fff":"#1e293b";return<td key={ci} style={{textAlign:"center",background:bg,color:tc,fontWeight:700,fontSize:12,padding:"5px 4px"}} title={`${c.pri} pri, ${c.bkp} bkp`}>{c.total>0?c.total:"–"}</td>;})}
+            {dc.map((c,ci)=>{
+              const isRisk=c.total>0&&c.total<CHAT_MIN_STAFFING;
+              const bg=isRisk?"#fee2e2":c.total===0?"#f8fafc":c.total<4?"#dbeafe":c.total<8?"#93c5fd":c.total<12?"#3b82f6":"#1d4ed8";
+              const tc=isRisk?"#991b1b":["#3b82f6","#1d4ed8"].includes(bg)?"#fff":"#1e293b";
+              return<td key={ci} style={{textAlign:"center",background:bg,color:tc,fontWeight:700,fontSize:12,padding:"5px 4px"}} title={`${c.pri} pri, ${c.bkp} bkp`}>{c.total>0?c.total:"–"}</td>;
+            })}
           </tr>);})}
         </tbody></table>
       </div>
@@ -826,8 +845,8 @@ function ChatScheduleTab(){
 function OverviewTab({agents}){
   const[weekIdx,setWeekIdx]=useState(4);const[view,setView]=useState("all");const[dayFilter,setDayFilter]=useState("Monday");
   const week=WEEKS[weekIdx];
+  const wAgents=getWeekAgents(agents,week);
   function buildData(agents,week){return INTERVALS.map(({label,minutes})=>{const row={label};DAYS.forEach(day=>{let total=0,office=0;agents.forEach(a=>{const dateS=week.dates[DAYS.indexOf(day)];const ea=getAgentForDate(a,dateS);const st=getCellStatus(a,day,week.dates);if(st.type==="dayoff"||st.type==="pto"||st.type==="departed"||st.type==="notstarted")return;const sh=SHIFT_TIMES[ea.shift];if(!sh)return;if(minutes>=sh.start&&minutes<sh.end){total++;if(st.type==="office")office++;}});row[day]={total,office};});return row;});}
-  const wAgents = getWeekAgents(agents, week);
   const data=buildData(wAgents,week);
   const maxT=Math.max(...data.map(r=>DAYS.reduce((m,d)=>Math.max(m,r[d].total),0)));
   const maxO=Math.max(...data.map(r=>DAYS.reduce((m,d)=>Math.max(m,r[d].office),0)));
@@ -856,50 +875,34 @@ function OverviewTab({agents}){
 
 // ── TIME OFF TAB ─────────────────────────────────────────────────────────────
 function TimeOffTab({agents}){
-  const[mf,setMf]=useState("All");
-  const[nf,setNf]=useState("All");
-  const[search,setSearch]=useState("");
+  const[mf,setMf]=useState("All");const[nf,setNf]=useState("All");const[search,setSearch]=useState("");
   const names=["All",...[...new Set(timeOffData.map(r=>r.name))].sort()];
   const rm=r=>{const d=parseDate(r.start);return d?.getMonth()===1?"February":d?.getMonth()===2?"March":"Other";};
-
-  const enriched = timeOffData.map(r=>{
-    const sup = agents.find(a=>a.name===r.name)?.supervisor||"—";
-    return {...r, _sup: sup, _month: rm(r), _startDate: parseDate(r.start)||new Date(0)};
-  });
-
-  const filtered = enriched.filter(r=>
-    (mf==="All"||r._month===mf)&&
-    (nf==="All"||r.name===nf)&&
-    (!search||r.name.toLowerCase().includes(search.toLowerCase())||r.type.toLowerCase().includes(search.toLowerCase()))
-  );
-
-  const {sorted, SortTh} = useSortableData(filtered, "_startDate");
-
+  const enriched=timeOffData.map(r=>{const sup=agents.find(a=>a.name===r.name)?.supervisor||"—";return{...r,_sup:sup,_month:rm(r),_startDate:parseDate(r.start)||new Date(0)};});
+  const filtered=enriched.filter(r=>(mf==="All"||r._month===mf)&&(nf==="All"||r.name===nf)&&(!search||r.name.toLowerCase().includes(search.toLowerCase())||r.type.toLowerCase().includes(search.toLowerCase())));
+  const{sorted,SortTh}=useSortableData(filtered,"_startDate");
   const febC=[...new Set(timeOffData.filter(r=>rm(r)==="February").map(r=>r.name))].length;
   const marC=[...new Set(timeOffData.filter(r=>rm(r)==="March").map(r=>r.name))].length;
-
   return(
     <div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20,maxWidth:400}}>
         {[["February",febC],["March",marC]].map(([m,c])=>(
           <div key={m} onClick={()=>setMf(mf===m?"All":m)} style={{background:mf===m?"#eff6ff":"#fff",border:`2px solid ${mf===m?"#93c5fd":"#e2e8f0"}`,borderRadius:12,padding:"12px 16px",cursor:"pointer"}}>
             <div style={{fontSize:11,fontWeight:700,color:"#3b82f6",marginBottom:4}}>{m}</div>
-            <div style={{fontSize:26,fontWeight:800,color:"#1e293b"}}>{c}</div>
+            <div style={{fontSize:26,fontWeight:800}}>{c}</div>
             <div style={{fontSize:11,color:"#94a3b8"}}>agents with time off</div>
           </div>
         ))}
       </div>
       <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
-        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search name or type…" style={{maxWidth:200}}/>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search…" style={{maxWidth:200}}/>
         <select value={mf} onChange={e=>setMf(e.target.value)} style={{width:"auto",minWidth:120}}><option value="All">All months</option><option>February</option><option>March</option></select>
         <select value={nf} onChange={e=>setNf(e.target.value)} style={{width:"auto",minWidth:160}}>{names.map(n=><option key={n}>{n}</option>)}</select>
         <button className="btn btn-ghost" onClick={()=>{setMf("All");setNf("All");setSearch("");}}>Clear</button>
       </div>
       <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
-        <span className="tag tag-vacation">✈️ Vacation</span>
-        <span className="tag tag-jiffy">🌟 Jiffy Day</span>
-        <span className="tag tag-half">½ Half Day</span>
-        <span className="tag tag-parental">👶 Parental Leave</span>
+        <span className="tag tag-vacation">✈️ Vacation</span><span className="tag tag-jiffy">🌟 Jiffy Day</span>
+        <span className="tag tag-half">½ Half Day</span><span className="tag tag-parental">👶 Parental Leave</span>
       </div>
       <div style={{borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0"}}>
         <table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}>
@@ -936,15 +939,8 @@ function App(){
   const[tab,setTab]=useState("today");
   const[rosterUnlocked,setRosterUnlocked]=useState(false);
   const[showRosterLogin,setShowRosterLogin]=useState(false);
-
-  // Single authoritative active count
-  const activeCount = useMemo(()=>getActiveAgents(agents).length,[agents]);
-
-  function handleTabClick(t){
-    if(t==="roster"&&!rosterUnlocked){setShowRosterLogin(true);return;}
-    setTab(t);
-  }
-
+  const activeCount=useMemo(()=>getActiveAgents(agents).length,[agents]);
+  function handleTabClick(t){if(t==="roster"&&!rosterUnlocked){setShowRosterLogin(true);return;}setTab(t);}
   return(
     <div style={{minHeight:"100vh",background:"#f8fafc"}}>
       <div style={{background:"#1e293b",color:"#fff",padding:"14px 24px",display:"flex",alignItems:"center",justifyContent:"space-between",boxShadow:"0 2px 8px #0003"}}>
