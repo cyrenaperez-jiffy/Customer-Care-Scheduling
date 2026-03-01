@@ -77,45 +77,45 @@ const WEEKS = [
   {month:"March",   label:"W4",display:"Mar 23–28", dates:["3/23/26","3/24/26","3/25/26","3/26/26","3/27/26","3/28/26"]},
 ];
 
-// Chat schedule from doc: X = primary, B = backup
-// Days: Mon, Tue, Wed, Thu, Fri (Sat not in chat schedule)
+// Chat agents: Mon/Tue/Wed/Thu/Fri columns; X=primary, B=backup
+// Data transcribed directly from the PDF document
 const chatAgents = [
-  {name:"Rosa Nuno",          start:"6:00",  end:"14:30", wfhDays:["Saturday","Monday"],   Mon:"X", Tue:"X", Wed:"",  Thu:"",  Fri:"",  Sat:""},
-  {name:"Michael Chavez",     start:"6:00",  end:"14:30", wfhDays:["Tuesday","Wednesday","Friday"], Mon:"X", Tue:"",  Wed:"",  Thu:"X", Fri:"",  Sat:""},
-  {name:"Morgan Lankford",    start:"6:00",  end:"14:30", wfhDays:["Saturday","Friday"],   Mon:"B", Tue:"X", Wed:"",  Thu:"X", Fri:"",  Sat:""},
-  {name:"Chassidy Williams",  start:"6:00",  end:"14:30", wfhDays:["Wednesday","Thursday"],Mon:"X", Tue:"B", Wed:"",  Thu:"",  Fri:"X", Sat:""},
-  {name:"Sam De Castro",      start:"6:00",  end:"14:30", wfhDays:["Monday","Tuesday","Friday"], Mon:"",  Tue:"",  Wed:"X", Thu:"X", Fri:"",  Sat:""},
-  {name:"Michael Nguyen",     start:"6:00",  end:"14:30", wfhDays:["Saturday","Thursday"], Mon:"",  Tue:"X", Wed:"",  Thu:"",  Fri:"X", Sat:""},
-  {name:"Bianca Vernando",    start:"6:00",  end:"14:30", wfhDays:["Saturday","Thursday"], Mon:"X", Tue:"B", Wed:"",  Thu:"B", Fri:"B", Sat:""},
-  {name:"Katie LaCour",       start:"8:00",  end:"16:30", wfhDays:["Saturday","Monday","Thursday"], Mon:"B", Tue:"",  Wed:"",  Thu:"",  Fri:"",  Sat:""},
-  {name:"Cristie Avant",      start:"8:00",  end:"16:30", wfhDays:["Tuesday","Monday"],    Mon:"B", Tue:"",  Wed:"X", Thu:"",  Fri:"",  Sat:""},
-  {name:"Damian Doubrava",    start:"8:00",  end:"16:30", wfhDays:["Saturday","Wednesday"],Mon:"B", Tue:"X", Wed:"",  Thu:"",  Fri:"",  Sat:""},
-  {name:"Preston Panetti",    start:"8:00",  end:"16:30", wfhDays:["Saturday","Thursday"], Mon:"X", Tue:"",  Wed:"",  Thu:"",  Fri:"",  Sat:""},
-  {name:"Ramila Chaulagain",  start:"8:00",  end:"16:30", wfhDays:["Saturday","Friday","Tuesday"], Mon:"",  Tue:"",  Wed:"X", Thu:"",  Fri:"",  Sat:""},
-  {name:"Servando Morales",   start:"8:00",  end:"16:30", wfhDays:["Tuesday","Wednesday"], Mon:"X", Tue:"",  Wed:"",  Thu:"X", Fri:"",  Sat:""},
-  {name:"Eri Dotson",         start:"8:00",  end:"16:30", wfhDays:[],                      Mon:"X", Tue:"B", Wed:"",  Thu:"",  Fri:"",  Sat:""},
-  {name:"Zhane Alexander",    start:"9:00",  end:"17:30", wfhDays:["Thursday","Friday"],   Mon:"B", Tue:"X", Wed:"B", Thu:"",  Fri:"",  Sat:""},
-  {name:"Chisa Ordu",         start:"11:30", end:"20:00", wfhDays:["Wednesday","Thursday"],Mon:"X", Tue:"B", Wed:"X", Thu:"",  Fri:"B", Sat:""},
-  {name:"Jessie Gregory",     start:"11:30", end:"20:00", wfhDays:["Monday","Friday"],     Mon:"X", Tue:"X", Wed:"X", Thu:"",  Fri:"",  Sat:""},
-  {name:"Blanca Berumen",     start:"11:30", end:"20:00", wfhDays:["Saturday","Thursday"], Mon:"X", Tue:"X", Wed:"X", Thu:"",  Fri:"",  Sat:""},
-  {name:"Balrupe Purewal",    start:"11:30", end:"20:00", wfhDays:["Monday","Tuesday"],    Mon:"X", Tue:"B", Wed:"B", Thu:"",  Fri:"X", Sat:""},
-  {name:"Denia Bradley",      start:"11:30", end:"20:00", wfhDays:["Saturday","Tuesday"],  Mon:"B", Tue:"",  Wed:"X", Thu:"B", Fri:"X", Sat:""},
-  {name:"Jeremy Carillo",     start:"11:30", end:"20:00", wfhDays:["Saturday","Wednesday"],Mon:"X", Tue:"B", Wed:"X", Thu:"",  Fri:"",  Sat:""},
-  {name:"Sarah Al-Obaidi",    start:"11:30", end:"20:00", wfhDays:["Tuesday","Wednesday"], Mon:"B", Tue:"X", Wed:"X", Thu:"",  Fri:"",  Sat:""},
+  {name:"Rosa Nuno",         shift:"6:00-14:30",  Mon:"X", Tue:"X", Wed:"",  Thu:"",  Fri:""},
+  {name:"Michael Chavez",    shift:"6:00-14:30",  Mon:"X", Tue:"",  Wed:"",  Thu:"X", Fri:""},
+  {name:"Morgan Lankford",   shift:"6:00-14:30",  Mon:"B", Tue:"X", Wed:"",  Thu:"X", Fri:""},
+  {name:"Chassidy Williams", shift:"6:00-14:30",  Mon:"X", Tue:"B", Wed:"",  Thu:"",  Fri:"X"},
+  {name:"Sam De Castro",     shift:"6:00-14:30",  Mon:"",  Tue:"",  Wed:"X", Thu:"X", Fri:""},
+  {name:"Michael Nguyen",    shift:"6:00-14:30",  Mon:"",  Tue:"X", Wed:"",  Thu:"",  Fri:"X"},
+  {name:"Bianca Vernando",   shift:"6:00-14:30",  Mon:"X", Tue:"B", Wed:"",  Thu:"B", Fri:"B"},
+  {name:"Katie LaCour",      shift:"8:00-16:30",  Mon:"B", Tue:"",  Wed:"",  Thu:"",  Fri:""},
+  {name:"Cristie Avant",     shift:"8:00-16:30",  Mon:"B", Tue:"",  Wed:"X", Thu:"",  Fri:""},
+  {name:"Damian Doubrava",   shift:"8:00-16:30",  Mon:"B", Tue:"X", Wed:"",  Thu:"",  Fri:""},
+  {name:"Preston Panetti",   shift:"8:00-16:30",  Mon:"X", Tue:"",  Wed:"",  Thu:"",  Fri:""},
+  {name:"Ramila Chaulagain", shift:"8:00-16:30",  Mon:"",  Tue:"",  Wed:"X", Thu:"",  Fri:""},
+  {name:"Servando Morales",  shift:"8:00-16:30",  Mon:"X", Tue:"",  Wed:"",  Thu:"X", Fri:""},
+  {name:"Eri Dotson",        shift:"8:00-16:30",  Mon:"X", Tue:"B", Wed:"",  Thu:"",  Fri:""},
+  {name:"Zhane Alexander",   shift:"9:00-17:30",  Mon:"B", Tue:"X", Wed:"B", Thu:"",  Fri:""},
+  {name:"Chisa Ordu",        shift:"11:30-20:00", Mon:"X", Tue:"B", Wed:"X", Thu:"",  Fri:"B"},
+  {name:"Jessie Gregory",    shift:"11:30-20:00", Mon:"X", Tue:"X", Wed:"X", Thu:"",  Fri:""},
+  {name:"Blanca Berumen",    shift:"11:30-20:00", Mon:"X", Tue:"X", Wed:"X", Thu:"",  Fri:""},
+  {name:"Balrupe Purewal",   shift:"11:30-20:00", Mon:"X", Tue:"B", Wed:"B", Thu:"",  Fri:"X"},
+  {name:"Denia Bradley",     shift:"11:30-20:00", Mon:"B", Tue:"",  Wed:"X", Thu:"B", Fri:"X"},
+  {name:"Jeremy Carillo",    shift:"11:30-20:00", Mon:"X", Tue:"B", Wed:"X", Thu:"",  Fri:""},
+  {name:"Sarah Al-Obaidi",   shift:"11:30-20:00", Mon:"B", Tue:"X", Wed:"X", Thu:"",  Fri:""},
 ];
 
-// Parse start/end time strings to minutes
-function timeToMin(t){const[h,m]=t.split(":").map(Number);return h*60+(m||0);}
-
-// Suggested lunch windows per shift (start of lunch block)
-function lunchWindow(startStr,endStr){
-  const s=timeToMin(startStr),e=timeToMin(endStr);
-  const mid=Math.round((s+e)/2/30)*30; // midpoint rounded to 30min
-  return mid;
+// Parse "H:MM" or "HH:MM" to minutes
+function timeToMin(t){
+  if(!t) return 0;
+  const parts = t.trim().split(":");
+  return parseInt(parts[0])*60 + (parseInt(parts[1])||0);
 }
 
-const CHAT_DAYS = ["Mon","Tue","Wed","Thu","Fri"];
-const CHAT_DAY_FULL = {Mon:"Monday",Tue:"Tuesday",Wed:"Wednesday",Thu:"Thursday",Fri:"Friday"};
+// Format minutes to "H:MM"
+function minToTime(m){
+  const h=Math.floor(m/60), mn=m%60;
+  return `${h}:${String(mn).padStart(2,"0")}`;
+}
 
 // Build 30-min intervals for chat schedule (6:00 to 20:00)
 const CHAT_INTERVALS = [];
@@ -124,7 +124,9 @@ for(let m=360;m<=1200;m+=30){
   CHAT_INTERVALS.push({label:`${String(h).padStart(2,"0")}:${String(min).padStart(2,"0")}`,minutes:m});
 }
 
-// Time off
+const CHAT_DAY_KEYS = ["Mon","Tue","Wed","Thu","Fri"];
+const CHAT_DAY_FULL = {Mon:"Monday",Tue:"Tuesday",Wed:"Wednesday",Thu:"Thursday",Fri:"Friday"};
+
 const timeOffData = [
   {name:"Zhane Alexander",    type:"Jiffy Day",     start:"2/2/26",  end:"2/2/26",  duration:1,   half:false},
   {name:"Jeremy Carillo",     type:"Jiffy Day",     start:"2/3/26",  end:"2/3/26",  duration:1,   half:false},
@@ -199,7 +201,6 @@ const defaultAgents = [
   {id:30,name:"Enrico Davis",       shift:"11:30–8:00",supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Thursday"],wfhDays:["Wednesday","Friday"],isNew:true},
 ];
 
-// ---- Helpers ----
 function parseDate(s){
   if(!s)return null;
   const p=s.split("/");if(p.length<3)return null;
@@ -216,17 +217,13 @@ function dateRange(start,end){
 function getTimeOff(name,dateS){
   return timeOffData.find(r=>r.name===name&&dateRange(r.start,r.end).includes(dateS))||null;
 }
-
-// Unaisa Aslam reverts to 11:30-8:00 from Mar 19 onwards
 function getAgentForDate(agent,dateS){
   if(agent.name==="Unaisa Aslam"){
-    const d=parseDate(dateS);
-    const cutoff=new Date(2026,2,19);
+    const d=parseDate(dateS);const cutoff=new Date(2026,2,19);
     if(d&&d>=cutoff) return{...agent,shift:"11:30–8:00"};
   }
   return agent;
 }
-
 function getCellStatus(agent,day,weekDates){
   const dateS=weekDates[DAYS.indexOf(day)];
   const effectiveAgent=getAgentForDate(agent,dateS);
@@ -235,7 +232,6 @@ function getCellStatus(agent,day,weekDates){
   if(to) return{type:to.half?"half":"pto",label:to.type,dateS,to,shift:effectiveAgent.shift};
   return{type:agent.officeDays.includes(day)?"office":"wfh",dateS,shift:effectiveAgent.shift};
 }
-
 function agentActiveAtInterval(agent,day,intervalMin,weekDates){
   const dateS=weekDates[DAYS.indexOf(day)];
   const effectiveAgent=getAgentForDate(agent,dateS);
@@ -246,7 +242,6 @@ function agentActiveAtInterval(agent,day,intervalMin,weekDates){
   const active=intervalMin>=st.start&&intervalMin<st.end;
   return{active,inOffice:active&&status.type==="office"};
 }
-
 function buildIntervalData(agents,week){
   return INTERVALS.map(({label,minutes})=>{
     const row={label};
@@ -258,7 +253,6 @@ function buildIntervalData(agents,week){
     return row;
   });
 }
-
 function loadAgents(){try{const s=localStorage.getItem("scheduleAgents4");return s?JSON.parse(s):defaultAgents;}catch{return defaultAgents;}}
 function saveAgents(a){try{localStorage.setItem("scheduleAgents4",JSON.stringify(a));}catch{}}
 
@@ -275,7 +269,6 @@ function CellTag({status}){
   return <span className="tag tag-dayoff">—</span>;
 }
 
-// ---- Modals ----
 function EditModal({agent,onSave,onClose}){
   const[form,setForm]=useState({...agent,workDays:[...(agent.workDays||[])],officeDays:[...(agent.officeDays||[])],wfhDays:[...(agent.wfhDays||[])]});
   const tog=(arr,d)=>arr.includes(d)?arr.filter(x=>x!==d):[...arr,d];
@@ -335,133 +328,156 @@ function LoginModal({onLogin,onClose}){
 
 // ---- CHAT SCHEDULE TAB ----
 function ChatScheduleTab(){
-  const[dayFilter,setDayFilter]=useState("Mon");
+  const[dayKey,setDayKey]=useState("Mon");
   const[showBackups,setShowBackups]=useState(true);
 
-  const dayKey=dayFilter; // "Mon","Tue" etc
+  // Agents active on selected day
+  const dayAgents = chatAgents.filter(a => a[dayKey]==="X" || (showBackups && a[dayKey]==="B"));
 
-  // Get agents scheduled on this day (X or B)
-  const dayAgents=chatAgents.filter(a=>a[dayKey]==="X"||(showBackups&&a[dayKey]==="B"));
+  // Parse shift string "H:MM-HH:MM" into start/end minutes
+  function parseShift(shiftStr){
+    const parts = shiftStr.split("-");
+    return {startMin: timeToMin(parts[0]), endMin: timeToMin(parts[1])};
+  }
 
-  // Build interval headcount for selected day
-  const intervalCounts=CHAT_INTERVALS.map(({label,minutes})=>{
-    let primary=0,backup=0;
-    chatAgents.forEach(a=>{
-      const s=timeToMin(a.start),e=timeToMin(a.end);
-      const active=minutes>=s&&minutes<e;
-      if(!active)return;
-      if(a[dayKey]==="X") primary++;
-      else if(a[dayKey]==="B") backup++;
+  // Build interval headcount
+  const intervalCounts = CHAT_INTERVALS
+    .filter(({minutes}) => minutes >= 360 && minutes < 1200)
+    .map(({label, minutes}) => {
+      let primary=0, backup=0;
+      chatAgents.forEach(a => {
+        const {startMin, endMin} = parseShift(a.shift);
+        if(minutes >= startMin && minutes < endMin){
+          if(a[dayKey]==="X") primary++;
+          else if(a[dayKey]==="B") backup++;
+        }
+      });
+      return {label, minutes, primary, backup, total: primary+backup};
     });
-    return{label,minutes,primary,backup,total:primary+backup};
-  }).filter(r=>r.total>0||r.minutes>=360&&r.minutes<=1200);
 
-  // Suggested lunch stagger — group agents by shift start, suggest lunch ~midpoint
-  const lunchSuggestions=dayAgents.map(a=>{
-    const s=timeToMin(a.start),e=timeToMin(a.end);
-    const mid=Math.round((s+e)/2/30)*30;
-    const hm=h=>Math.floor(h/60)+":"+(h%60===0?"00":h%60);
-    return{name:a.name,shift:`${a.start}–${a.end}`,lunch:`${hm(mid)}–${hm(mid+30)}`};
-  }).sort((a,b)=>timeToMin(a.start)-timeToMin(b.start));
+  // Suggested lunch: midpoint of shift, rounded to nearest 30 min
+  const agentRows = dayAgents.map(a => {
+    const {startMin, endMin} = parseShift(a.shift);
+    const mid = Math.round((startMin + endMin) / 2 / 30) * 30;
+    const lunchEnd = mid + 30;
+    return {
+      name: a.name,
+      shift: a.shift.replace("-","–"),
+      role: a[dayKey],
+      lunchLabel: `${minToTime(mid)}–${minToTime(lunchEnd)}`,
+      startMin,
+    };
+  }).sort((a,b) => a.startMin - b.startMin);
 
-  const maxTotal=Math.max(...intervalCounts.map(r=>r.total),1);
+  const maxTotal = Math.max(...intervalCounts.map(r=>r.total), 1);
+
+  // Summary heatmap across all days
+  const allDayCounts = CHAT_DAY_KEYS.map(dk => {
+    return CHAT_INTERVALS
+      .filter(({minutes}) => minutes>=360 && minutes<1200)
+      .map(({label,minutes}) => {
+        let pri=0,bkp=0;
+        chatAgents.forEach(a=>{
+          const {startMin,endMin}=parseShift(a.shift);
+          if(minutes>=startMin&&minutes<endMin){
+            if(a[dk]==="X") pri++;
+            else if(a[dk]==="B") bkp++;
+          }
+        });
+        return{label,minutes,pri,bkp,total:pri+bkp};
+      });
+  });
 
   return(
     <div>
-      {/* Day selector */}
       <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
         <span style={{fontSize:12,fontWeight:600,color:"#64748b"}}>Day:</span>
-        {CHAT_DAYS.map(d=>(
-          <button key={d} onClick={()=>setDayFilter(d)} className="btn"
-            style={{background:dayFilter===d?"#4f46e5":"#fff",color:dayFilter===d?"#fff":"#475569",border:`1px solid ${dayFilter===d?"#4f46e5":"#e2e8f0"}`}}>
+        {CHAT_DAY_KEYS.map(d=>(
+          <button key={d} onClick={()=>setDayKey(d)} className="btn"
+            style={{background:dayKey===d?"#4f46e5":"#fff",color:dayKey===d?"#fff":"#475569",border:`1px solid ${dayKey===d?"#4f46e5":"#e2e8f0"}`}}>
             {CHAT_DAY_FULL[d]}
           </button>
         ))}
         <button onClick={()=>setShowBackups(!showBackups)} className="btn"
-          style={{marginLeft:"auto",background:showBackups?"#f3f4f6":"#fff",color:"#475569",border:"1px solid #e2e8f0"}}>
-          {showBackups?"✓ Showing Backups":"Show Backups"}
+          style={{marginLeft:"auto",background:showBackups?"#e0e7ff":"#fff",color:showBackups?"#4f46e5":"#475569",border:`1px solid ${showBackups?"#a5b4fc":"#e2e8f0"}`}}>
+          {showBackups?"✓ Backups Shown":"Show Backups"}
         </button>
       </div>
 
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,marginBottom:24}}>
-
         {/* Agent list */}
         <div>
-          <div style={{fontWeight:700,fontSize:14,marginBottom:8}}>💬 {CHAT_DAY_FULL[dayFilter]} — Chat Agents</div>
+          <div style={{fontWeight:700,fontSize:14,marginBottom:8}}>💬 {CHAT_DAY_FULL[dayKey]} — Chat Agents</div>
           <div style={{borderRadius:12,border:"1px solid #e2e8f0",overflow:"hidden",boxShadow:"0 1px 4px #0001",background:"#fff"}}>
-            <table style={{width:"100%"}}>
+            <table>
               <thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}>
                 <th>Agent</th>
                 <th style={{textAlign:"center"}}>Shift</th>
                 <th style={{textAlign:"center"}}>Role</th>
-                <th style={{textAlign:"center"}}>Lunch</th>
+                <th style={{textAlign:"center"}}>Suggested Lunch</th>
               </tr></thead>
               <tbody>
-                {lunchSuggestions.map((a,i)=>{
-                  const agent=chatAgents.find(x=>x.name===a.name);
-                  const role=agent?agent[dayKey]:"";
-                  return(
-                    <tr key={i} style={{borderBottom:"1px solid #f1f5f9",background:role==="B"?"#fafafa":"#fff"}}>
-                      <td style={{fontWeight:600,fontSize:12}}>{a.name}</td>
-                      <td style={{textAlign:"center",fontSize:11,color:"#64748b"}}>{a.shift}</td>
-                      <td style={{textAlign:"center"}}>
-                        {role==="X"?<span className="tag tag-primary">Primary</span>:<span className="tag tag-backup">Backup</span>}
-                      </td>
-                      <td style={{textAlign:"center"}}>
-                        <span className="tag tag-lunch">🍽 {a.lunch}</span>
-                      </td>
-                    </tr>
-                  );
-                })}
-                {lunchSuggestions.length===0&&<tr><td colSpan={4} style={{textAlign:"center",color:"#94a3b8",padding:20}}>No agents scheduled</td></tr>}
+                {agentRows.length===0 && (
+                  <tr><td colSpan={4} style={{textAlign:"center",color:"#94a3b8",padding:24}}>No agents scheduled</td></tr>
+                )}
+                {agentRows.map((a,i)=>(
+                  <tr key={i} style={{borderBottom:"1px solid #f1f5f9",background:a.role==="B"?"#fafafa":"#fff"}}>
+                    <td style={{fontWeight:600,fontSize:12}}>{a.name}</td>
+                    <td style={{textAlign:"center",fontSize:11,color:"#64748b"}}>{a.shift}</td>
+                    <td style={{textAlign:"center"}}>
+                      {a.role==="X"
+                        ? <span className="tag tag-primary">Primary</span>
+                        : <span className="tag tag-backup">Backup</span>}
+                    </td>
+                    <td style={{textAlign:"center"}}>
+                      <span className="tag tag-lunch">🍽 {a.lunchLabel}</span>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
+            {agentRows.length>0&&(
+              <div style={{padding:"8px 14px",background:"#f8fafc",fontSize:11,color:"#94a3b8"}}>
+                {agentRows.filter(a=>a.role==="X").length} primary · {agentRows.filter(a=>a.role==="B").length} backup
+              </div>
+            )}
           </div>
-          <p style={{fontSize:11,color:"#94a3b8",marginTop:6}}>
-            {dayAgents.filter(a=>a[dayKey]==="X").length} primary · {dayAgents.filter(a=>a[dayKey]==="B").length} backup · Lunch times are suggested midpoints
-          </p>
         </div>
 
         {/* Headcount by interval */}
         <div>
           <div style={{fontWeight:700,fontSize:14,marginBottom:8}}>📊 Headcount by 30-min Interval</div>
           <div style={{borderRadius:12,border:"1px solid #e2e8f0",overflow:"hidden",boxShadow:"0 1px 4px #0001",background:"#fff"}}>
-            <table style={{width:"100%"}}>
+            <table>
               <thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}>
                 <th style={{width:65,fontWeight:600,color:"#64748b"}}>Time</th>
                 <th style={{fontWeight:600,color:"#64748b"}}>Coverage</th>
-                <th style={{width:55,textAlign:"center",fontWeight:600,color:"#64748b"}}>Pri</th>
-                {showBackups&&<th style={{width:55,textAlign:"center",fontWeight:600,color:"#64748b"}}>Bkp</th>}
-                <th style={{width:55,textAlign:"center",fontWeight:600,color:"#64748b"}}>Total</th>
+                <th style={{width:50,textAlign:"center",fontWeight:600,color:"#1d4ed8"}}>Pri</th>
+                {showBackups&&<th style={{width:50,textAlign:"center",fontWeight:600,color:"#6b7280"}}>Bkp</th>}
+                <th style={{width:50,textAlign:"center",fontWeight:600,color:"#1e293b"}}>Tot</th>
               </tr></thead>
               <tbody>
-                {intervalCounts.filter(r=>r.minutes>=360&&r.minutes<1200).map((row,i)=>{
-                  const pct=maxTotal>0?row.total/maxTotal:0;
-                  const pctP=row.total>0?row.primary/row.total:0;
-                  const isLunch=intervalCounts.some(r2=>
-                    lunchSuggestions.some(ls=>{
-                      const lm=timeToMin(ls.lunch.split("–")[0].replace(":",":")+"");
-                      return row.minutes===lm;
-                    })
-                  );
+                {intervalCounts.map((row,i)=>{
+                  const pct = row.total/maxTotal;
+                  const pctP = row.total>0 ? row.primary/row.total : 0;
                   return(
                     <tr key={i} style={{borderBottom:"1px solid #f8fafc",background:row.total===0?"#fafafa":"#fff"}}>
-                      <td style={{fontWeight:600,fontSize:11,color:"#475569",whiteSpace:"nowrap"}}>{row.label}</td>
+                      <td style={{fontWeight:600,fontSize:11,color:"#475569"}}>{row.label}</td>
                       <td style={{padding:"4px 8px"}}>
-                        <div style={{position:"relative",height:18,background:"#f1f5f9",borderRadius:4,overflow:"hidden"}}>
+                        <div style={{position:"relative",height:16,background:"#f1f5f9",borderRadius:4,overflow:"hidden"}}>
                           <div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pct*100}%`,background:"#93c5fd",borderRadius:4}}/>
                           <div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pct*pctP*100}%`,background:"#4f46e5",borderRadius:4}}/>
                         </div>
                       </td>
-                      <td style={{textAlign:"center",fontWeight:700,fontSize:12,color:row.primary>0?"#4f46e5":"#cbd5e1"}}>{row.primary||"–"}</td>
-                      {showBackups&&<td style={{textAlign:"center",fontWeight:600,fontSize:12,color:row.backup>0?"#6b7280":"#cbd5e1"}}>{row.backup||"–"}</td>}
-                      <td style={{textAlign:"center",fontWeight:700,fontSize:12,color:row.total>0?"#1e293b":"#cbd5e1"}}>{row.total||"–"}</td>
+                      <td style={{textAlign:"center",fontWeight:700,fontSize:12,color:row.primary>0?"#4f46e5":"#e2e8f0"}}>{row.primary||"–"}</td>
+                      {showBackups&&<td style={{textAlign:"center",fontWeight:600,fontSize:12,color:row.backup>0?"#6b7280":"#e2e8f0"}}>{row.backup||"–"}</td>}
+                      <td style={{textAlign:"center",fontWeight:700,fontSize:12,color:row.total>0?"#1e293b":"#e2e8f0"}}>{row.total||"–"}</td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
-            <div style={{padding:"8px 16px",background:"#f8fafc",display:"flex",gap:16,fontSize:11,color:"#64748b"}}>
+            <div style={{padding:"8px 14px",background:"#f8fafc",display:"flex",gap:16,fontSize:11,color:"#64748b"}}>
               <span><span style={{display:"inline-block",width:10,height:10,background:"#4f46e5",borderRadius:2,marginRight:4,verticalAlign:"middle"}}/>Primary</span>
               <span><span style={{display:"inline-block",width:10,height:10,background:"#93c5fd",borderRadius:2,marginRight:4,verticalAlign:"middle"}}/>Backup</span>
             </div>
@@ -469,39 +485,31 @@ function ChatScheduleTab(){
         </div>
       </div>
 
-      {/* All days summary */}
-      <div style={{fontWeight:700,fontSize:14,marginBottom:8}}>📅 All Days — Peak Chat Coverage Summary</div>
+      {/* All-days heatmap */}
+      <div style={{fontWeight:700,fontSize:14,marginBottom:8}}>📅 All Days — Chat Coverage Heatmap (Primary + Backup)</div>
       <div style={{overflowX:"auto",borderRadius:12,border:"1px solid #e2e8f0",boxShadow:"0 1px 4px #0001"}}>
         <table>
           <thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}>
-            <th style={{minWidth:70,position:"sticky",left:0,background:"#f8fafc"}}>Time</th>
-            {CHAT_DAYS.map(d=><th key={d} style={{textAlign:"center",minWidth:90}}>{CHAT_DAY_FULL[d]}</th>)}
+            <th style={{minWidth:65,position:"sticky",left:0,background:"#f8fafc",zIndex:2}}>Time</th>
+            {CHAT_DAY_KEYS.map(d=><th key={d} style={{textAlign:"center",minWidth:90}}>{CHAT_DAY_FULL[d]}</th>)}
           </tr></thead>
           <tbody>
             {CHAT_INTERVALS.filter(r=>r.minutes>=360&&r.minutes<1200).map(({label,minutes},ri)=>{
-              const dayCounts=CHAT_DAYS.map(d=>{
-                let pri=0,bkp=0;
-                chatAgents.forEach(a=>{
-                  const s=timeToMin(a.start),e=timeToMin(a.end);
-                  if(minutes>=s&&minutes<e){
-                    if(a[d]==="X")pri++;
-                    else if(a[d]==="B")bkp++;
-                  }
-                });
-                return{pri,bkp,total:pri+bkp};
-              });
-              const allZero=dayCounts.every(c=>c.total===0);
-              if(allZero)return null;
-              const overallMax=Math.max(...dayCounts.map(c=>c.total),1);
+              const dayCounts = allDayCounts.map(dc => dc.find(r=>r.minutes===minutes)||{pri:0,bkp:0,total:0});
+              const allZero = dayCounts.every(c=>c.total===0);
+              if(allZero) return null;
               return(
                 <tr key={ri} style={{borderBottom:"1px solid #f1f5f9"}}>
-                  <td style={{fontWeight:600,fontSize:11,color:"#475569",position:"sticky",left:0,background:"#fff"}}>{label}</td>
+                  <td style={{fontWeight:600,fontSize:11,color:"#475569",position:"sticky",left:0,background:"#fff",zIndex:1}}>{label}</td>
                   {dayCounts.map((c,ci)=>{
-                    const bg=c.total===0?"#f8fafc":c.total<5?"#dbeafe":c.total<10?"#93c5fd":c.total<13?"#3b82f6":"#1d4ed8";
+                    const bg=c.total===0?"#f8fafc":c.total<4?"#dbeafe":c.total<8?"#93c5fd":c.total<12?"#3b82f6":"#1d4ed8";
                     const tc=["#3b82f6","#1d4ed8"].includes(bg)?"#fff":"#1e293b";
-                    return<td key={ci} style={{textAlign:"center",background:bg,color:tc,fontWeight:700,fontSize:12,padding:"5px 4px"}}>
-                      {c.total>0?<span title={`${c.pri} primary, ${c.bkp} backup`}>{c.total}</span>:"–"}
-                    </td>;
+                    return(
+                      <td key={ci} style={{textAlign:"center",background:bg,color:tc,fontWeight:700,fontSize:12,padding:"5px 4px"}}
+                        title={`${CHAT_DAY_FULL[CHAT_DAY_KEYS[ci]]}: ${c.pri} primary, ${c.bkp} backup`}>
+                        {c.total>0?c.total:"–"}
+                      </td>
+                    );
                   })}
                 </tr>
               );
@@ -750,11 +758,9 @@ function ScheduleTab({agents,setAgents,isManager}){
         </div>
       )}
       {week.month==="March"&&(weekIdx===6||weekIdx===7)&&(
-        <>
-          <div style={{background:"#ede9fe",border:"1px solid #c4b5fd",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#5b21b6",marginBottom:10,fontWeight:500}}>
-            ✈️ <strong>Unaisa Aslam</strong> on Vacation Mar 18–29. Reverts to <strong>11:30–8:00</strong> from Mar 19.
-          </div>
-        </>
+        <div style={{background:"#ede9fe",border:"1px solid #c4b5fd",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#5b21b6",marginBottom:10,fontWeight:500}}>
+          ✈️ <strong>Unaisa Aslam</strong> on Vacation Mar 18–29. Reverts to <strong>11:30–8:00</strong> from Mar 19.
+        </div>
       )}
       <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:8,marginBottom:20}}>
         {daySummary.map(d=>(
