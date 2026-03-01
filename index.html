@@ -177,6 +177,10 @@ const chatAgents=[
   {name:"Sarah Al-Obaidi",   shift:"11:30-20:00", Mon:"B",Tue:"X",Wed:"X",Thu:"", Fri:""},
 ];
 const CHAT_MIN_STAFFING = 6;
+const CHAT_STANDARD_START = 480;  // 8:00
+const CHAT_STANDARD_END   = 1080; // 18:00
+const CHAT_EXPANDED_START = 360;  // 6:00
+const CHAT_EXPANDED_END   = 1200; // 20:00
 
 const timeOffData=[
   {name:"Zhane Alexander",    type:"Jiffy Day",     start:"2/2/26",  end:"2/2/26",  duration:1,   half:false},
@@ -315,10 +319,12 @@ function tenure(sd,refDate=REAL_TODAY){
 function loadAgents(){try{const s=localStorage.getItem("schedAgents8");return s?JSON.parse(s):defaultAgents;}catch{return defaultAgents;}}
 function saveAgents(a){try{localStorage.setItem("schedAgents8",JSON.stringify(a));}catch{}}
 
-// Chat interval staffing for a given day key
-function getChatIntervalCounts(dayKey){
+// Chat interval staffing for a given day key and hour window
+function getChatIntervalCounts(dayKey, expanded=false){
+  const winStart = expanded ? CHAT_EXPANDED_START : CHAT_STANDARD_START;
+  const winEnd   = expanded ? CHAT_EXPANDED_END   : CHAT_STANDARD_END;
   function pShift(s){const p=s.split("-");return{startMin:timeToMin(p[0]),endMin:timeToMin(p[1])};}
-  return INTERVALS.filter(r=>r.minutes>=360&&r.minutes<1200).map(({label,minutes})=>{
+  return INTERVALS.filter(r=>r.minutes>=winStart&&r.minutes<winEnd).map(({label,minutes})=>{
     let pri=0,bkp=0;
     chatAgents.forEach(a=>{const{startMin,endMin}=pShift(a.shift);if(minutes>=startMin&&minutes<endMin){if(a[dayKey]==="X")pri++;else if(a[dayKey]==="B")bkp++;}});
     return{label,minutes,pri,bkp,total:pri+bkp};
@@ -741,41 +747,83 @@ function ScheduleTab({agents,setAgents,isManager}){
 // ── CHAT TAB ─────────────────────────────────────────────────────────────────
 const CHAT_INTERVALS_ALL=[];
 for(let m=360;m<=1200;m+=30){const h=Math.floor(m/60),mn=m%60;CHAT_INTERVALS_ALL.push({label:`${String(h).padStart(2,"0")}:${String(mn).padStart(2,"0")}`,minutes:m});}
-const CHAT_DAY_KEYS=["Mon","Tue","Wed","Thu","Fri"];
-const CHAT_DAY_FULL={Mon:"Monday",Tue:"Tuesday",Wed:"Wednesday",Thu:"Thursday",Fri:"Friday"};
+const CHAT_DAY_KEYS=["Mon","Tue","Wed","Thu","Fri","Sat"];
+const CHAT_DAY_FULL={Mon:"Monday",Tue:"Tuesday",Wed:"Wednesday",Thu:"Thursday",Fri:"Friday",Sat:"Saturday"};
 
 function ChatScheduleTab(){
   const[dayKey,setDayKey]=useState("Mon");
   const[showBackups,setShowBackups]=useState(true);
+  const[expanded,setExpanded]=useState(false);
   const[search,setSearch]=useState("");
   const[sortKey,setSortKey]=useState("startMin");
   const[sortDir,setSortDir]=useState("asc");
   function pShift(s){const p=s.split("-");return{startMin:timeToMin(p[0]),endMin:timeToMin(p[1])};}
   function reqSort(k){setSortDir(d=>sortKey===k?(d==="asc"?"desc":"asc"):"asc");setSortKey(k);}
   function SortTh({colKey,children,style={}}){const active=sortKey===colKey;return<th className={`sortable${active?" "+sortDir:""}`} onClick={()=>reqSort(colKey)} style={style}>{children}<span className="sort-icon"/></th>;}
-  const dayAgents=chatAgents.filter(a=>(a[dayKey]==="X"||(showBackups&&a[dayKey]==="B"))&&(!search||a.name.toLowerCase().includes(search.toLowerCase())));
-  const iCounts=getChatIntervalCounts(dayKey);
+
+  const winStart = expanded ? CHAT_EXPANDED_START : CHAT_STANDARD_START;
+  const winEnd   = expanded ? CHAT_EXPANDED_END   : CHAT_STANDARD_END;
+
+  // For agent list: show agents whose shift overlaps the current window on the selected day
+  const dayAgents = chatAgents.filter(a=>{
+    const role = a[dayKey];
+    if(!role || (!showBackups && role==="B")) return false;
+    if(search && !a.name.toLowerCase().includes(search.toLowerCase())) return false;
+    // only show if their shift overlaps the window
+    const{startMin,endMin}=pShift(a.shift);
+    return startMin < winEnd && endMin > winStart;
+  });
+
+  const iCounts=getChatIntervalCounts(dayKey, expanded);
   const maxT=Math.max(...iCounts.map(r=>r.total),1);
   const rows=dayAgents.map(a=>{const{startMin,endMin}=pShift(a.shift);const mid=Math.round((startMin+endMin)/2/30)*30;return{name:a.name,shift:a.shift.replace("-","–"),role:a[dayKey],lunch:`${minToTime(mid)}–${minToTime(mid+30)}`,startMin,endMin};});
   const sortedRows=[...rows].sort((a,b)=>{let av=a[sortKey],bv=b[sortKey];if(typeof av==="string"){av=av.toLowerCase();bv=bv.toLowerCase();}return sortDir==="asc"?(av<bv?-1:av>bv?1:0):(av>bv?-1:av<bv?1:0);});
-  const allDC=CHAT_DAY_KEYS.map(dk=>getChatIntervalCounts(dk));
+  const allDC=CHAT_DAY_KEYS.map(dk=>getChatIntervalCounts(dk, expanded));
+
+  const winLabel = expanded ? "6:00 am – 8:00 pm" : "8:00 am – 6:00 pm";
+
   return(
     <div>
-      <div style={{background:"#fff5f5",border:"1px solid #fca5a5",borderRadius:8,padding:"8px 14px",fontSize:12,color:"#991b1b",marginBottom:16,fontWeight:600}}>
-        🔴 Risk threshold: fewer than {CHAT_MIN_STAFFING} agents in any interval is flagged as a risk.
+      {/* Header bar */}
+      <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16,flexWrap:"wrap"}}>
+        <div style={{flex:1}}>
+          <div style={{fontWeight:700,fontSize:15}}>💬 Chat Coverage</div>
+          <div style={{fontSize:11,color:"#64748b",marginTop:2}}>
+            {expanded
+              ? <span style={{color:"#7c3aed",fontWeight:600}}>🔭 Expanded view: 6:00 am – 8:00 pm (potential hours)</span>
+              : <span style={{color:"#059669",fontWeight:600}}>✅ Standard hours: 8:00 am – 6:00 pm</span>}
+          </div>
+        </div>
+        <button onClick={()=>setExpanded(e=>!e)} className="btn" style={{background:expanded?"#7c3aed":"#f5f3ff",color:expanded?"#fff":"#7c3aed",border:`2px solid ${expanded?"#7c3aed":"#c4b5fd"}`,fontWeight:700}}>
+          {expanded?"📊 Standard Hours (8am–6pm)":"🔭 Expanded Hours (6am–8pm)"}
+        </button>
       </div>
+
+      {expanded&&(
+        <div style={{background:"#f5f3ff",border:"1px solid #c4b5fd",borderRadius:8,padding:"8px 14px",fontSize:12,color:"#5b21b6",marginBottom:12}}>
+          🔭 <strong>Expanded view</strong> — showing potential coverage if chat ran 6am–8pm. Intervals outside standard hours (before 8am or after 6pm) are shown with a purple tint. Not-yet-trained agents (Rylie, Lybah, Jada, Rachel, Taylor, Ariashe) are excluded.
+        </div>
+      )}
+
+      <div style={{background:"#fff5f5",border:"1px solid #fca5a5",borderRadius:8,padding:"8px 14px",fontSize:12,color:"#991b1b",marginBottom:12,fontWeight:600}}>
+        🔴 Risk threshold: fewer than {CHAT_MIN_STAFFING} agents in any interval.
+      </div>
+
+      {/* Day + controls row */}
       <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap",alignItems:"center"}}>
         {CHAT_DAY_KEYS.map(d=>{
-          const dc=getChatIntervalCounts(d);
+          const dc=getChatIntervalCounts(d, expanded);
           const hasRisk=dc.some(r=>r.total>0&&r.total<CHAT_MIN_STAFFING);
           return<button key={d} onClick={()=>setDayKey(d)} className="btn" style={{background:dayKey===d?"#4f46e5":"#fff",color:dayKey===d?"#fff":"#475569",border:`2px solid ${dayKey===d?"#4f46e5":hasRisk?"#ef4444":"#e2e8f0"}`}}>{CHAT_DAY_FULL[d]}{hasRisk&&<span style={{marginLeft:4}}>🔴</span>}</button>;
         })}
-        <button onClick={()=>setShowBackups(!showBackups)} className="btn" style={{background:showBackups?"#e0e7ff":"#fff",color:showBackups?"#4f46e5":"#475569",border:`1px solid ${showBackups?"#a5b4fc":"#e2e8f0"}`}}>{showBackups?"✓ Backups":"Show Backups"}</button>
+        <button onClick={()=>setShowBackups(b=>!b)} className="btn" style={{marginLeft:"auto",background:showBackups?"#e0e7ff":"#fff",color:showBackups?"#4f46e5":"#475569",border:`1px solid ${showBackups?"#a5b4fc":"#e2e8f0"}`}}>{showBackups?"✓ Backups":"Backups"}</button>
       </div>
       <div style={{marginBottom:16}}><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search agent…" style={{maxWidth:220}}/></div>
+
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,marginBottom:24}}>
+        {/* Agent list */}
         <div>
-          <div style={{fontWeight:700,fontSize:14,marginBottom:8}}>💬 {CHAT_DAY_FULL[dayKey]}</div>
+          <div style={{fontWeight:700,fontSize:14,marginBottom:8}}>👥 {CHAT_DAY_FULL[dayKey]} — {winLabel}</div>
           <div style={{borderRadius:12,border:"1px solid #e2e8f0",overflow:"hidden",background:"#fff"}}>
             <table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}>
               <SortTh colKey="name">Agent</SortTh>
@@ -783,16 +831,24 @@ function ChatScheduleTab(){
               <SortTh colKey="role" style={{textAlign:"center"}}>Role</SortTh>
               <SortTh colKey="lunch" style={{textAlign:"center"}}>Lunch</SortTh>
             </tr></thead>
-            <tbody>{sortedRows.length===0&&<tr><td colSpan={4} style={{textAlign:"center",color:"#94a3b8",padding:20}}>No agents</td></tr>}
-            {sortedRows.map((a,i)=><tr key={i} style={{borderBottom:"1px solid #f1f5f9",background:a.role==="B"?"#fafafa":"#fff"}}>
-              <td style={{fontWeight:600,fontSize:12}}>{a.name}</td>
-              <td style={{textAlign:"center",fontSize:11,color:"#64748b"}}>{a.shift}</td>
-              <td style={{textAlign:"center"}}>{a.role==="X"?<span className="tag tag-primary">Primary</span>:<span className="tag tag-backup">Backup</span>}</td>
-              <td style={{textAlign:"center"}}><span className="tag tag-lunch">🍽 {a.lunch}</span></td>
-            </tr>)}</tbody></table>
+            <tbody>
+              {sortedRows.length===0&&<tr><td colSpan={4} style={{textAlign:"center",color:"#94a3b8",padding:20}}>No agents</td></tr>}
+              {sortedRows.map((a,i)=>{
+                const{startMin,endMin}=pShift(chatAgents.find(c=>c.name===a.name)?.shift||"8:00-16:30");
+                const outsideStd=(startMin<CHAT_STANDARD_START||endMin>CHAT_STANDARD_END)&&expanded;
+                return(<tr key={i} style={{borderBottom:"1px solid #f1f5f9",background:outsideStd?"#faf5ff":a.role==="B"?"#fafafa":"#fff"}}>
+                  <td style={{fontWeight:600,fontSize:12}}>{a.name}{outsideStd&&<span style={{marginLeft:4,fontSize:10,color:"#7c3aed"}}>↔</span>}</td>
+                  <td style={{textAlign:"center",fontSize:11,color:"#64748b"}}>{a.shift}</td>
+                  <td style={{textAlign:"center"}}>{a.role==="X"?<span className="tag tag-primary">Primary</span>:<span className="tag tag-backup">Backup</span>}</td>
+                  <td style={{textAlign:"center"}}><span className="tag tag-lunch">🍽 {a.lunch}</span></td>
+                </tr>);
+              })}
+            </tbody></table>
             {sortedRows.length>0&&<div style={{padding:"6px 12px",background:"#f8fafc",fontSize:11,color:"#94a3b8"}}>{sortedRows.filter(a=>a.role==="X").length} primary · {sortedRows.filter(a=>a.role==="B").length} backup</div>}
           </div>
         </div>
+
+        {/* Interval headcount */}
         <div>
           <div style={{fontWeight:700,fontSize:14,marginBottom:8}}>📊 Headcount by Interval</div>
           <div style={{borderRadius:12,border:"1px solid #e2e8f0",overflow:"hidden",background:"#fff"}}>
@@ -805,10 +861,14 @@ function ChatScheduleTab(){
             </tr></thead>
             <tbody>{iCounts.map((row,i)=>{
               const isRisk=row.total>0&&row.total<CHAT_MIN_STAFFING;
+              const outsideStd=expanded&&(row.minutes<CHAT_STANDARD_START||row.minutes>=CHAT_STANDARD_END);
               const pct=row.total/maxT,pP=row.total>0?row.pri/row.total:0;
-              return(<tr key={i} style={{borderBottom:"1px solid #f8fafc",background:isRisk?"#fff5f5":""}}>
-                <td style={{fontWeight:600,fontSize:11,color:isRisk?"#991b1b":"#475569"}}>{row.label}{isRisk&&" 🔴"}</td>
-                <td style={{padding:"3px 8px"}}><div style={{position:"relative",height:14,background:"#f1f5f9",borderRadius:3,overflow:"hidden"}}><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pct*100}%`,background:isRisk?"#fca5a5":"#93c5fd",borderRadius:3}}/><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pct*pP*100}%`,background:isRisk?"#ef4444":"#4f46e5",borderRadius:3}}/></div></td>
+              return(<tr key={i} style={{borderBottom:"1px solid #f8fafc",background:outsideStd?"#faf5ff":isRisk?"#fff5f5":""}}>
+                <td style={{fontWeight:600,fontSize:11,color:isRisk?"#991b1b":outsideStd?"#7c3aed":"#475569"}}>{row.label}{isRisk?" 🔴":outsideStd?" ↔":""}</td>
+                <td style={{padding:"3px 8px"}}><div style={{position:"relative",height:14,background:"#f1f5f9",borderRadius:3,overflow:"hidden"}}>
+                  <div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pct*100}%`,background:isRisk?"#fca5a5":outsideStd?"#c4b5fd":"#93c5fd",borderRadius:3}}/>
+                  <div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pct*pP*100}%`,background:isRisk?"#ef4444":outsideStd?"#7c3aed":"#4f46e5",borderRadius:3}}/>
+                </div></td>
                 <td style={{textAlign:"center",fontWeight:700,fontSize:12,color:row.pri>0?"#4f46e5":"#e2e8f0"}}>{row.pri||"–"}</td>
                 {showBackups&&<td style={{textAlign:"center",fontWeight:600,fontSize:12,color:row.bkp>0?"#6b7280":"#e2e8f0"}}>{row.bkp||"–"}</td>}
                 <td style={{textAlign:"center",fontWeight:700,fontSize:12,color:isRisk?"#991b1b":row.total>0?"#1e293b":"#e2e8f0"}}>{row.total||"–"}</td>
@@ -817,21 +877,24 @@ function ChatScheduleTab(){
           </div>
         </div>
       </div>
-      <div style={{fontWeight:700,fontSize:14,marginBottom:8}}>📅 All Days Heatmap</div>
+
+      {/* Heatmap */}
+      <div style={{fontWeight:700,fontSize:14,marginBottom:8}}>📅 All Days Heatmap — {winLabel}</div>
       <div style={{overflowX:"auto",borderRadius:12,border:"1px solid #e2e8f0"}}>
         <table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}>
           <th style={{minWidth:65,position:"sticky",left:0,background:"#f8fafc"}}>Time</th>
           {CHAT_DAY_KEYS.map(d=><th key={d} style={{textAlign:"center",minWidth:90}}>{CHAT_DAY_FULL[d]}</th>)}
         </tr></thead>
-        <tbody>{CHAT_INTERVALS_ALL.filter(r=>r.minutes>=360&&r.minutes<1200).map(({label,minutes},ri)=>{
+        <tbody>{CHAT_INTERVALS_ALL.filter(r=>r.minutes>=winStart&&r.minutes<winEnd).map(({label,minutes},ri)=>{
           const dc=allDC.map(d=>d.find(r=>r.minutes===minutes)||{pri:0,bkp:0,total:0});
           if(dc.every(c=>c.total===0))return null;
-          return(<tr key={ri} style={{borderBottom:"1px solid #f1f5f9"}}>
-            <td style={{fontWeight:600,fontSize:11,color:"#475569",position:"sticky",left:0,background:"#fff"}}>{label}</td>
+          const outsideStd=expanded&&(minutes<CHAT_STANDARD_START||minutes>=CHAT_STANDARD_END);
+          return(<tr key={ri} style={{borderBottom:"1px solid #f1f5f9",background:outsideStd?"#faf5ff":""}}>
+            <td style={{fontWeight:600,fontSize:11,color:outsideStd?"#7c3aed":"#475569",position:"sticky",left:0,background:outsideStd?"#faf5ff":"#fff"}}>{label}{outsideStd&&" ↔"}</td>
             {dc.map((c,ci)=>{
               const isRisk=c.total>0&&c.total<CHAT_MIN_STAFFING;
-              const bg=isRisk?"#fee2e2":c.total===0?"#f8fafc":c.total<4?"#dbeafe":c.total<8?"#93c5fd":c.total<12?"#3b82f6":"#1d4ed8";
-              const tc=isRisk?"#991b1b":["#3b82f6","#1d4ed8"].includes(bg)?"#fff":"#1e293b";
+              const bg=isRisk?"#fee2e2":outsideStd?(c.total===0?"#f5f3ff":c.total<4?"#ede9fe":c.total<8?"#c4b5fd":c.total<12?"#7c3aed":"#4c1d95"):c.total===0?"#f8fafc":c.total<4?"#dbeafe":c.total<8?"#93c5fd":c.total<12?"#3b82f6":"#1d4ed8";
+              const tc=isRisk?"#991b1b":["#7c3aed","#4c1d95","#3b82f6","#1d4ed8"].includes(bg)?"#fff":"#1e293b";
               return<td key={ci} style={{textAlign:"center",background:bg,color:tc,fontWeight:700,fontSize:12,padding:"5px 4px"}} title={`${c.pri} pri, ${c.bkp} bkp`}>{c.total>0?c.total:"–"}</td>;
             })}
           </tr>);})}
