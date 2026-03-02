@@ -66,12 +66,12 @@ const SUPERVISORS = ["Shelby Coldiron","Neyat Abraha","Alex Blair","Lauren Monta
 const SHIFTS = ["6:00–2:30","8:00–4:30","9:00–5:30","10:30–8:00","11:30–8:00"];
 const SHIFT_START_MIN = {"6:00–2:30":360,"8:00–4:30":480,"9:00–5:30":540,"10:30–8:00":630,"11:30–8:00":690};
 const SUP_COLORS = {
-  "Shelby Coldiron":{bg:"#059669",light:"#ecfdf5",border:"#6ee7b7"},
+  "Shelby Coldiron":{bg:"#db2777",light:"#fdf2f8",border:"#f9a8d4"},
   "Neyat Abraha":   {bg:"#7c3aed",light:"#f5f3ff",border:"#c4b5fd"},
   "Alex Blair":     {bg:"#d97706",light:"#fffbeb",border:"#fcd34d"},
-  "Lauren Montanye":{bg:"#e11d48",light:"#fff1f2",border:"#fda4af"},
+  "Lauren Montanye":{bg:"#059669",light:"#ecfdf5",border:"#6ee7b7"},
   "Ainsley Reynolds":{bg:"#0ea5e9",light:"#f0f9ff",border:"#7dd3fc"},
-  "Angy Chang":     {bg:"#8b5cf6",light:"#faf5ff",border:"#c4b5fd"},
+  "Angy Chang":     {bg:"#0d9488",light:"#f0fdfa",border:"#5eead4"},
 };
 const SHIFT_TIMES = {
   "6:00–2:30":{start:360,end:870},"8:00–4:30":{start:480,end:990},
@@ -100,19 +100,17 @@ const IS_SUNDAY=REAL_DOW===0;
 
 const MAR6=new Date(2026,2,6);
 const MAR9=new Date(2026,2,9);
+const MAR18=new Date(2026,2,18);
 const MAR19=new Date(2026,2,19);
 const MAR30=new Date(2026,2,30);
 
-// Permanent schedule changes Mar 30
 const SCHEDULE_CHANGES={
   "Rachel Dunlap":  {effectiveDate:"3/30/26",shift:"11:30–8:00",workDays:["Monday","Tuesday","Wednesday","Thursday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Saturday"]},
   "Ariashe Lowery": {effectiveDate:"3/30/26",shift:"6:00–2:30", workDays:["Monday","Tuesday","Wednesday","Thursday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Saturday"]},
   "Taylor Amos":    {effectiveDate:"3/30/26",shift:"8:00–4:30", workDays:["Monday","Tuesday","Wednesday","Thursday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Saturday"]},
 };
 
-// Mar 9 permanent schedules for early cohort
 const EARLY_OFFICE_AGENTS=new Set(["Amber Bailey","Bo Repko","Andre Cordero","Sarah Hajali"]);
-// Their permanent schedules from Mar 9
 const EARLY_PERM={
   "Amber Bailey":  {shift:"8:00–4:30", workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Wednesday","Thursday","Friday"],wfhDays:["Tuesday","Saturday"]},
   "Bo Repko":      {shift:"6:00–2:30", workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Tuesday","Wednesday","Thursday"],wfhDays:["Friday","Saturday"]},
@@ -123,7 +121,8 @@ const EARLY_PERM={
 function getAgentForDate(agent,dateS){
   const d=parseDate(dateS);
   if(!d) return agent;
-  if(agent.name==="Unaisa Aslam"&&d>=MAR19) agent={...agent,shift:"11:30–8:00"};
+  // Unaisa: 11:30–8:00 starting Mar 18
+  if(agent.name==="Unaisa Aslam"&&d>=MAR18) agent={...agent,shift:"11:30–8:00"};
   if(EARLY_OFFICE_AGENTS.has(agent.name)){
     if(d<MAR9){
       agent={...agent,shift:"9:00–5:30",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],wfhDays:[]};
@@ -141,20 +140,31 @@ function getAgentForDate(agent,dateS){
   return agent;
 }
 
+// SKILLS_TO_REMOVE: phone, billing, tier 2, QA, spanish, training, escalations
+const SKILLS_TO_REMOVE=new Set(["phone","billing","tier 2","qa","spanish","training","escalations"]);
+function filterSkills(skills){
+  if(!skills)return"";
+  return skills.split(",").map(s=>s.trim()).filter(s=>!SKILLS_TO_REMOVE.has(s.toLowerCase())).join(", ");
+}
+
+// Chat schedule — corrected Monday primaries:
+// Rosa Nuno, Bianca Vernando, Cristie Avant, Preston Panetti, Eri Dotson,
+// Chisa Ordu, Jessie Gregory, Blanca Berumen, Balrupe Purewal, Jeremy Carillo = 10 primary
+// Backups Mon: Morgan Lankford, Chassidy Williams, Katie LaCour, Damian Doubrava = 4 backup
 const chatAgents=[
   {name:"Rosa Nuno",         shift:"6:00-14:30",  Mon:"X",Tue:"X",Wed:"X", Thu:"", Fri:""},
-  {name:"Michael Chavez",    shift:"6:00-14:30",  Mon:"X",Tue:"", Wed:"", Thu:"X",Fri:""},
+  {name:"Michael Chavez",    shift:"6:00-14:30",  Mon:"",  Tue:"", Wed:"", Thu:"X",Fri:""},
   {name:"Morgan Lankford",   shift:"6:00-14:30",  Mon:"B",Tue:"X",Wed:"X", Thu:"X",Fri:""},
-  {name:"Chassidy Williams", shift:"6:00-14:30",  Mon:"X",Tue:"B",Wed:"B", Thu:"", Fri:"X"},
+  {name:"Chassidy Williams", shift:"6:00-14:30",  Mon:"B",Tue:"B",Wed:"B", Thu:"", Fri:"X"},
   {name:"Sam De Castro",     shift:"6:00-14:30",  Mon:"", Tue:"", Wed:"X",Thu:"X",Fri:""},
   {name:"Michael Nguyen",    shift:"6:00-14:30",  Mon:"", Tue:"X",Wed:"", Thu:"", Fri:"X"},
   {name:"Bianca Vernando",   shift:"6:00-14:30",  Mon:"X",Tue:"B",Wed:"", Thu:"B",Fri:"B"},
   {name:"Katie LaCour",      shift:"8:00-16:30",  Mon:"B",Tue:"", Wed:"", Thu:"", Fri:""},
-  {name:"Cristie Avant",     shift:"8:00-16:30",  Mon:"B",Tue:"", Wed:"X",Thu:"", Fri:""},
+  {name:"Cristie Avant",     shift:"8:00-16:30",  Mon:"X",Tue:"", Wed:"X",Thu:"", Fri:""},
   {name:"Damian Doubrava",   shift:"8:00-16:30",  Mon:"B",Tue:"X",Wed:"", Thu:"", Fri:""},
   {name:"Preston Panetti",   shift:"8:00-16:30",  Mon:"X",Tue:"", Wed:"", Thu:"", Fri:""},
   {name:"Ramila Chaulagain", shift:"8:00-16:30",  Mon:"", Tue:"", Wed:"X",Thu:"", Fri:""},
-  {name:"Servando Morales",  shift:"8:00-16:30",  Mon:"X",Tue:"", Wed:"", Thu:"X",Fri:""},
+  {name:"Servando Morales",  shift:"8:00-16:30",  Mon:"", Tue:"", Wed:"", Thu:"X",Fri:""},
   {name:"Eri Dotson",        shift:"8:00-16:30",  Mon:"X",Tue:"B",Wed:"", Thu:"", Fri:""},
   {name:"Zhane Alexander",   shift:"9:00-17:30",  Mon:"B",Tue:"X",Wed:"B",Thu:"", Fri:""},
   {name:"Chisa Ordu",        shift:"11:30-20:00", Mon:"X",Tue:"B",Wed:"X",Thu:"", Fri:"B"},
@@ -213,55 +223,56 @@ const defaultTimeOff=[
   {name:"Sarah Hajali",       type:"Jiffy Day",     start:"3/20/26", end:"3/20/26", duration:1,   half:false, note:"Pending"},
 ];
 
+const NO_CHAT_AGENTS=new Set(["Rylie Walker","Lybah Shah Nawz","Jada Brown","Rachel Dunlap","Taylor Amos","Ariashe Lowery"]);
+
 const defaultAgents=[
-  {id:1,   name:"Rosa Nuno",              shift:"6:00–2:30", supervisor:"Neyat Abraha",   workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Tuesday","Wednesday","Thursday"],wfhDays:["Friday","Saturday"],isNew:false,startDate:"7/14/25",skills:"Phone, Chat, Billing, Training"},
-  {id:5,   name:"Cristie Avant",          shift:"8:00–4:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Wednesday","Thursday","Friday"],wfhDays:["Monday","Tuesday"],isNew:false,startDate:"8/11/25",skills:"Email, Chat, Tier 2"},
-  {id:21,  name:"Sam De Castro",          shift:"6:00–2:30", supervisor:"Alex Blair",     workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Wednesday","Thursday"],wfhDays:["Monday","Tuesday","Friday"],isNew:false,startDate:"8/28/25",skills:"Phone, Chat, Billing"},
-  {id:12,  name:"Ramila Chaulagain",      shift:"8:00–4:30", supervisor:"Neyat Abraha",   workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Wednesday","Thursday"],wfhDays:["Tuesday","Friday","Saturday"],isNew:false,startDate:"8/28/25",skills:"Chat, Email"},
-  {id:9,   name:"Chisa Ordu",             shift:"11:30–8:00",supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Friday"],wfhDays:["Wednesday","Thursday"],isNew:false,startDate:"9/29/25",skills:"Chat, Email, Escalations"},
-  {id:16,  name:"Zhane Alexander",        shift:"9:00–5:30", supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"9/29/25",skills:"Chat, Email, QA"},
-  {id:10,  name:"Jessie Gregory",         shift:"11:30–8:00",supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Tuesday","Wednesday","Thursday"],wfhDays:["Monday","Friday"],isNew:false,startDate:"9/29/25",skills:"Phone, Chat, Spanish"},
-  {id:31,  name:"Balrupe Purewal",        shift:"11:30–8:00",supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Tuesday","Wednesday","Thursday"],wfhDays:["Monday","Friday"],isNew:false,startDate:"9/29/25",skills:"Chat, Email"},
-  {id:4,   name:"Chassidy Williams",      shift:"6:00–2:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Friday","Wednesday","Thursday"],officeDays:["Monday","Tuesday","Friday"],wfhDays:["Wednesday","Thursday"],isNew:false,startDate:"10/13/25",skills:"Phone, Chat, QA"},
-  {id:7,   name:"Morgan Lankford",        shift:"6:00–2:30", supervisor:"Shelby Coldiron",workDays:["Monday","Wednesday","Thursday","Saturday","Friday"],officeDays:["Monday","Wednesday","Thursday"],wfhDays:["Saturday","Friday"],isNew:false,startDate:"10/13/25",skills:"Phone, Email, Training"},
-  {id:20,  name:"Preston Panetti",        shift:"8:00–4:30", supervisor:"Alex Blair",     workDays:["Monday","Tuesday","Thursday","Friday","Saturday"],officeDays:["Monday","Tuesday","Friday"],wfhDays:["Thursday","Saturday"],isNew:false,startDate:"10/27/25",skills:"Chat, Email"},
-  {id:22,  name:"Michael Chavez",         shift:"6:00–2:30", supervisor:"Alex Blair",     workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Thursday"],wfhDays:["Tuesday","Wednesday","Friday"],isNew:false,startDate:"10/27/25",skills:"Chat, Email, QA"},
-  {id:6,   name:"Michael Nguyen",         shift:"6:00–2:30", supervisor:"Shelby Coldiron",workDays:["Tuesday","Wednesday","Friday","Saturday","Thursday"],officeDays:["Tuesday","Wednesday","Friday"],wfhDays:["Saturday","Thursday"],isNew:false,startDate:"10/27/25",skills:"Chat, Phone"},
-  {id:1001,name:"Ananya SenthilKumar",    shift:"6:00–2:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Wednesday","Saturday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Saturday","Friday"],isNew:false,lastDay:"3/13/26",startDate:"11/10/25",skills:"Email, Chat, Escalations, Onboarding"},
-  {id:2,   name:"Bianca Vernando",        shift:"6:00–2:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Friday","Saturday","Thursday"],officeDays:["Monday","Tuesday","Friday"],wfhDays:["Saturday","Thursday"],isNew:false,startDate:"11/10/25",skills:"Chat, Phone, Billing"},
-  {id:17,  name:"Damian Doubrava",        shift:"8:00–4:30", supervisor:"Alex Blair",     workDays:["Monday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Monday","Thursday","Friday"],wfhDays:["Wednesday","Saturday"],isNew:false,startDate:"11/10/25",skills:"Phone, Chat"},
-  {id:19,  name:"Eri Dotson",             shift:"8:00–4:30", supervisor:"Alex Blair",     workDays:["Monday","Tuesday","Wednesday","Friday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Friday","Saturday"],isNew:false,startDate:"11/10/25",skills:"Phone, Chat, Escalations"},
-  {id:11,  name:"Jeremy Carillo",         shift:"11:30–8:00",supervisor:"Neyat Abraha",   workDays:["Monday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Monday","Thursday","Friday"],wfhDays:["Wednesday","Saturday"],isNew:false,startDate:"11/10/25",skills:"Phone, Chat, Tier 2, QA"},
-  {id:15,  name:"Servando Morales",       shift:"8:00–4:30", supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Thursday","Friday"],wfhDays:["Tuesday","Wednesday"],isNew:false,startDate:"12/1/25",skills:"Phone, Chat, Billing"},
-  {id:3,   name:"Blanca Berumen",         shift:"11:30–8:00",supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Friday","Saturday","Thursday"],officeDays:["Monday","Tuesday","Friday"],wfhDays:["Saturday","Thursday"],isNew:false,startDate:"12/1/25",skills:"Chat, Email, Spanish"},
-  {id:14,  name:"Sarah Al-Obaidi",        shift:"8:00–4:30", supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Thursday","Friday"],wfhDays:["Tuesday","Wednesday"],isNew:false,startDate:"12/1/25",skills:"Email, Chat"},
-  {id:18,  name:"Denia Bradley",          shift:"11:30–8:00",supervisor:"Alex Blair",     workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Wednesday","Thursday","Friday"],wfhDays:["Tuesday","Saturday"],isNew:false,startDate:"12/1/25",skills:"Chat, Email, Tier 2"},
-  {id:27,  name:"Unaisa Aslam",           shift:"8:00–4:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Friday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Friday","Saturday"],isNew:false,startDate:"1/5/26",skills:"Phone, Chat, Spanish"},
-  {id:28,  name:"Bo Repko",               shift:"6:00–2:30", supervisor:"Lauren Montanye",workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Tuesday","Wednesday","Thursday"],wfhDays:["Friday","Saturday"],isNew:false,startDate:"1/20/26",skills:"Chat, Email"},
-  {id:23,  name:"Andre Cordero",          shift:"8:00–4:30", supervisor:"Alex Blair",     workDays:["Monday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Monday","Wednesday","Thursday"],wfhDays:["Friday","Saturday"],isNew:false,startDate:"1/20/26",skills:"Chat, Phone"},
-  {id:29,  name:"Amber Bailey",           shift:"8:00–4:30", supervisor:"Lauren Montanye",workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Wednesday","Thursday","Friday"],wfhDays:["Tuesday","Saturday"],isNew:false,startDate:"1/20/26",skills:"Chat, Phone"},
-  {id:8,   name:"Sarah Hajali",           shift:"6:00–2:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Wednesday","Thursday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Saturday"],isNew:false,startDate:"1/20/26",skills:"Chat, Email"},
-  {id:25,  name:"Rachel Dunlap",          shift:"9:00–5:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"2/2/26",skills:"Phone, Chat"},
-  {id:26,  name:"Taylor Amos",            shift:"9:00–5:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"2/2/26",skills:"Chat, Email, Training"},
-  {id:24,  name:"Ariashe Lowery",         shift:"9:00–5:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"2/2/26",skills:"Email, Chat, Billing"},
-  {id:30,  name:"Enrico Davis",           shift:"11:30–8:00",supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Thursday"],wfhDays:["Wednesday","Friday"],isNew:false,startDate:"2/2/26",skills:"Chat, Email, Billing"},
-  {id:1003,name:"Rylie Walker",           shift:"9:00–5:30", supervisor:"Angy Chang",     permanentSup:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"2/23/26",skills:"Chat, Email"},
-  {id:1004,name:"Jada Brown",             shift:"9:00–5:30", supervisor:"Angy Chang",     permanentSup:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"2/23/26",skills:"Chat, Email"},
-  {id:1005,name:"Lybah Shah Nawz",        shift:"9:00–5:30", supervisor:"Angy Chang",     permanentSup:"Neyat Abraha",  workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"2/23/26",skills:"Chat, Email"},
-  {id:1006,name:"Vitria Pinkston",        shift:"9:00–5:30", supervisor:"Angy Chang",     permanentSup:"Shelby Coldiron",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"3/9/26",skills:"Chat, Email"},
-  {id:1007,name:"Brianna Miller",         shift:"9:00–5:30", supervisor:"Angy Chang",     permanentSup:"Shelby Coldiron",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"3/9/26",skills:"Chat, Email"},
-  {id:1008,name:"Erick Garcia Cardenas",  shift:"9:00–5:30", supervisor:"Angy Chang",     permanentSup:"Alex Blair",    workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"3/9/26",skills:"Chat, Email"},
-  {id:1009,name:"Salia Kibibi",           shift:"9:00–5:30", supervisor:"Angy Chang",     permanentSup:"Neyat Abraha",  workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"3/9/26",skills:"Chat, Email"},
-  {id:2001,name:"Allen Good",             shift:"8:00–4:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"7/14/25",lastDay:"10/31/25",skills:"Chat, Email",notes:"Attrition"},
-  {id:2002,name:"Clarissa Watson",        shift:"8:00–4:30", supervisor:"Alex Blair",     workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"12/1/25",lastDay:"1/31/26",skills:"Chat, Email",notes:"Attrition"},
-  {id:2003,name:"Shalvi Dalal",           shift:"8:00–4:30", supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"12/1/25",lastDay:"1/31/26",skills:"Chat, Email",notes:"Attrition"},
-  {id:2004,name:"Davion Mayfield-Pearson",shift:"8:00–4:30", supervisor:"Alex Blair",     workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"1/20/26",lastDay:"2/14/26",skills:"Chat, Email",notes:"Attrition"},
-  {id:2005,name:"Alec MacLaughlin",       shift:"8:00–4:30", supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"1/20/26",lastDay:"2/14/26",skills:"Chat, Email",notes:"Attrition"},
-  {id:2006,name:"Abiodun Awe",            shift:"8:00–4:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"2/2/26",lastDay:"2/28/26",skills:"Chat, Email",notes:"Attrition"},
-  {id:2007,name:"Lysette Salinas",        shift:"8:00–4:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"2/2/26",lastDay:"2/28/26",skills:"Chat, Email",notes:"Attrition"},
+  {id:1,   name:"Rosa Nuno",              shift:"6:00–2:30", supervisor:"Neyat Abraha",   workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Tuesday","Wednesday","Thursday"],wfhDays:["Friday","Saturday"],isNew:false,startDate:"7/14/25",skills:"Email, Outbound, Chat"},
+  {id:5,   name:"Cristie Avant",          shift:"8:00–4:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Wednesday","Thursday","Friday"],wfhDays:["Monday","Tuesday"],isNew:false,startDate:"8/11/25",skills:"Email, Outbound, Chat, Bad Sat Revert, Site Jabber"},
+  {id:21,  name:"Sam De Castro",          shift:"6:00–2:30", supervisor:"Alex Blair",     workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Wednesday","Thursday"],wfhDays:["Monday","Tuesday","Friday"],isNew:false,startDate:"8/28/25",skills:"Email, Outbound, Chat, Fraud, Chargebacks, Site Jabber"},
+  {id:12,  name:"Ramila Chaulagain",      shift:"8:00–4:30", supervisor:"Neyat Abraha",   workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Wednesday","Thursday"],wfhDays:["Tuesday","Friday","Saturday"],isNew:false,startDate:"8/28/25",skills:"Email, Outbound, Chat, Fraud, Chargebacks, Site Jabber"},
+  {id:9,   name:"Chisa Ordu",             shift:"11:30–8:00",supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Friday"],wfhDays:["Wednesday","Thursday"],isNew:false,startDate:"9/29/25",skills:"Email, Outbound, Chat, Fraud, Chargebacks"},
+  {id:16,  name:"Zhane Alexander",        shift:"9:00–5:30", supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"9/29/25",skills:"Email, Outbound, Chat"},
+  {id:10,  name:"Jessie Gregory",         shift:"11:30–8:00",supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Tuesday","Wednesday","Thursday"],wfhDays:["Monday","Friday"],isNew:false,startDate:"9/29/25",skills:"Email, Outbound, Chat, Fraud, Chargebacks"},
+  {id:31,  name:"Balrupe Purewal",        shift:"11:30–8:00",supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Tuesday","Wednesday","Thursday"],wfhDays:["Monday","Friday"],isNew:false,startDate:"9/29/25",skills:"Email, Outbound, Chat"},
+  {id:4,   name:"Chassidy Williams",      shift:"6:00–2:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Friday","Wednesday","Thursday"],officeDays:["Monday","Tuesday","Friday"],wfhDays:["Wednesday","Thursday"],isNew:false,startDate:"10/13/25",skills:"Email, Outbound, Chat"},
+  {id:7,   name:"Morgan Lankford",        shift:"6:00–2:30", supervisor:"Shelby Coldiron",workDays:["Monday","Wednesday","Thursday","Saturday","Friday"],officeDays:["Monday","Wednesday","Thursday"],wfhDays:["Saturday","Friday"],isNew:false,startDate:"10/13/25",skills:"Email, Outbound, Chat"},
+  {id:20,  name:"Preston Panetti",        shift:"8:00–4:30", supervisor:"Alex Blair",     workDays:["Monday","Tuesday","Thursday","Friday","Saturday"],officeDays:["Monday","Tuesday","Friday"],wfhDays:["Thursday","Saturday"],isNew:false,startDate:"10/27/25",skills:"Email, Outbound, Chat"},
+  {id:22,  name:"Michael Chavez",         shift:"6:00–2:30", supervisor:"Alex Blair",     workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Thursday"],wfhDays:["Tuesday","Wednesday","Friday"],isNew:false,startDate:"10/27/25",skills:"Email, Outbound, Chat"},
+  {id:6,   name:"Michael Nguyen",         shift:"6:00–2:30", supervisor:"Shelby Coldiron",workDays:["Tuesday","Wednesday","Friday","Saturday","Thursday"],officeDays:["Tuesday","Wednesday","Friday"],wfhDays:["Saturday","Thursday"],isNew:false,startDate:"10/27/25",skills:"Email, Outbound, Chat"},
+  {id:1001,name:"Ananya SenthilKumar",    shift:"6:00–2:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Wednesday","Saturday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Saturday","Friday"],isNew:false,lastDay:"3/13/26",startDate:"11/10/25",skills:"Email, Outbound, Chat, Onboarding"},
+  {id:2,   name:"Bianca Vernando",        shift:"6:00–2:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Friday","Saturday","Thursday"],officeDays:["Monday","Tuesday","Friday"],wfhDays:["Saturday","Thursday"],isNew:false,startDate:"11/10/25",skills:"Email, Outbound, Chat"},
+  {id:17,  name:"Damian Doubrava",        shift:"8:00–4:30", supervisor:"Alex Blair",     workDays:["Monday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Monday","Thursday","Friday"],wfhDays:["Wednesday","Saturday"],isNew:false,startDate:"11/10/25",skills:"Email, Outbound, Chat, Bad Sat Revert, Site Jabber"},
+  {id:19,  name:"Eri Dotson",             shift:"8:00–4:30", supervisor:"Alex Blair",     workDays:["Monday","Tuesday","Wednesday","Friday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Friday","Saturday"],isNew:false,startDate:"11/10/25",skills:"Email, Outbound, Chat"},
+  {id:11,  name:"Jeremy Carillo",         shift:"11:30–8:00",supervisor:"Neyat Abraha",   workDays:["Monday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Monday","Thursday","Friday"],wfhDays:["Wednesday","Saturday"],isNew:false,startDate:"11/10/25",skills:"Email, Outbound, Chat"},
+  {id:15,  name:"Servando Morales",       shift:"8:00–4:30", supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Thursday","Friday"],wfhDays:["Tuesday","Wednesday"],isNew:false,startDate:"12/1/25",skills:"Email, Outbound, Chat"},
+  {id:3,   name:"Blanca Berumen",         shift:"11:30–8:00",supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Friday","Saturday","Thursday"],officeDays:["Monday","Tuesday","Friday"],wfhDays:["Saturday","Thursday"],isNew:false,startDate:"12/1/25",skills:"Email, Outbound, Chat"},
+  {id:14,  name:"Sarah Al-Obaidi",        shift:"8:00–4:30", supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Thursday","Friday"],wfhDays:["Tuesday","Wednesday"],isNew:false,startDate:"12/1/25",skills:"Email, Outbound, Chat"},
+  {id:18,  name:"Denia Bradley",          shift:"11:30–8:00",supervisor:"Alex Blair",     workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Wednesday","Thursday","Friday"],wfhDays:["Tuesday","Saturday"],isNew:false,startDate:"12/1/25",skills:"Email, Outbound, Chat"},
+  {id:27,  name:"Unaisa Aslam",           shift:"8:00–4:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Friday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Friday","Saturday"],isNew:false,startDate:"1/5/26",skills:"Email, Outbound, Chat"},
+  {id:28,  name:"Bo Repko",               shift:"6:00–2:30", supervisor:"Lauren Montanye",workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Tuesday","Wednesday","Thursday"],wfhDays:["Friday","Saturday"],isNew:false,startDate:"1/20/26",skills:"Email, Outbound, Chat"},
+  {id:23,  name:"Andre Cordero",          shift:"8:00–4:30", supervisor:"Alex Blair",     workDays:["Monday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Monday","Wednesday","Thursday"],wfhDays:["Friday","Saturday"],isNew:false,startDate:"1/20/26",skills:"Email, Outbound, Chat"},
+  {id:29,  name:"Amber Bailey",           shift:"8:00–4:30", supervisor:"Lauren Montanye",workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Wednesday","Thursday","Friday"],wfhDays:["Tuesday","Saturday"],isNew:false,startDate:"1/20/26",skills:"Email, Outbound, Chat"},
+  {id:8,   name:"Sarah Hajali",           shift:"6:00–2:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Wednesday","Thursday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Saturday"],isNew:false,startDate:"1/20/26",skills:"Email, Outbound, Chat"},
+  {id:25,  name:"Rachel Dunlap",          shift:"9:00–5:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"2/2/26",skills:"Email, Outbound"},
+  {id:26,  name:"Taylor Amos",            shift:"9:00–5:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"2/2/26",skills:"Email, Outbound"},
+  {id:24,  name:"Ariashe Lowery",         shift:"9:00–5:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"2/2/26",skills:"Email, Outbound"},
+  {id:30,  name:"Enrico Davis",           shift:"11:30–8:00",supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Thursday"],wfhDays:["Wednesday","Friday"],isNew:false,startDate:"2/2/26",skills:"Email, Outbound, Chat"},
+  {id:1003,name:"Rylie Walker",           shift:"9:00–5:30", supervisor:"Angy Chang",     permanentSup:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"2/23/26",skills:"Email, Outbound"},
+  {id:1004,name:"Jada Brown",             shift:"9:00–5:30", supervisor:"Angy Chang",     permanentSup:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"2/23/26",skills:"Email, Outbound"},
+  {id:1005,name:"Lybah Shah Nawz",        shift:"9:00–5:30", supervisor:"Angy Chang",     permanentSup:"Neyat Abraha",  workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"2/23/26",skills:"Email, Outbound"},
+  {id:1006,name:"Vitria Pinkston",        shift:"9:00–5:30", supervisor:"Angy Chang",     permanentSup:"Shelby Coldiron",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"3/9/26",skills:"Email, Outbound, Chat"},
+  {id:1007,name:"Brianna Miller",         shift:"9:00–5:30", supervisor:"Angy Chang",     permanentSup:"Shelby Coldiron",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"3/9/26",skills:"Email, Outbound, Chat"},
+  {id:1008,name:"Erick Garcia Cardenas",  shift:"9:00–5:30", supervisor:"Angy Chang",     permanentSup:"Alex Blair",    workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"3/9/26",skills:"Email, Outbound, Chat"},
+  {id:1009,name:"Salia Kibibi",           shift:"9:00–5:30", supervisor:"Angy Chang",     permanentSup:"Neyat Abraha",  workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"3/9/26",skills:"Email, Outbound, Chat"},
+  {id:2001,name:"Allen Good",             shift:"8:00–4:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"7/14/25",lastDay:"10/31/25",skills:"Email, Outbound, Chat",notes:"Attrition"},
+  {id:2002,name:"Clarissa Watson",        shift:"8:00–4:30", supervisor:"Alex Blair",     workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"12/1/25",lastDay:"1/31/26",skills:"Email, Outbound, Chat",notes:"Attrition"},
+  {id:2003,name:"Shalvi Dalal",           shift:"8:00–4:30", supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"12/1/25",lastDay:"1/31/26",skills:"Email, Outbound, Chat",notes:"Attrition"},
+  {id:2004,name:"Davion Mayfield-Pearson",shift:"8:00–4:30", supervisor:"Alex Blair",     workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"1/20/26",lastDay:"2/14/26",skills:"Email, Outbound, Chat",notes:"Attrition"},
+  {id:2005,name:"Alec MacLaughlin",       shift:"8:00–4:30", supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"1/20/26",lastDay:"2/14/26",skills:"Email, Outbound, Chat",notes:"Attrition"},
+  {id:2006,name:"Abiodun Awe",            shift:"8:00–4:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"2/2/26",lastDay:"2/28/26",skills:"Email, Outbound, Chat",notes:"Attrition"},
+  {id:2007,name:"Lysette Salinas",        shift:"8:00–4:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:false,startDate:"2/2/26",lastDay:"2/28/26",skills:"Email, Outbound, Chat",notes:"Attrition"},
 ];
 
-// ── Change log helpers ───────────────────────────────────────────────────────
 function agentToCode(a){
   const fields=[`id:${a.id}`,`name:${JSON.stringify(a.name)}`,`shift:${JSON.stringify(a.shift)}`,`supervisor:${JSON.stringify(a.supervisor)}`,a.permanentSup?`permanentSup:${JSON.stringify(a.permanentSup)}`:null,`workDays:${JSON.stringify(a.workDays)}`,`officeDays:${JSON.stringify(a.officeDays)}`,`wfhDays:${JSON.stringify(a.wfhDays)}`,`isNew:${a.isNew}`,`startDate:${JSON.stringify(a.startDate||"")}`,a.lastDay?`lastDay:${JSON.stringify(a.lastDay)}`:null,`skills:${JSON.stringify(a.skills||"")}`,a.notes?`notes:${JSON.stringify(a.notes)}`:null].filter(Boolean);
   return`{${fields.join(",")}}`;
@@ -284,7 +295,6 @@ function buildTimeOffChangelog(type,entry){
   return{id:Date.now(),timestamp:ts,type,label:`🗑 Removed time off: ${entry.name} — ${entry.type} (${entry.start}–${entry.end})`,instructions:`In the defaultTimeOff array, find and DELETE this entry:`,code:`// DELETE:\n${timeOffToCode(entry)}`};
 }
 
-// ── Core helpers ─────────────────────────────────────────────────────────────
 function parseDate(s){if(!s)return null;const p=s.split("/");if(p.length<3)return null;const yr=parseInt(p[2])<100?2000+parseInt(p[2]):parseInt(p[2]);return new Date(yr,parseInt(p[0])-1,parseInt(p[1]));}
 function dateStr(d){return`${d.getMonth()+1}/${d.getDate()}/${String(d.getFullYear()).slice(-2)}`;}
 function fmtShort(s){const d=parseDate(s);return d?d.toLocaleDateString("en-US",{month:"short",day:"numeric"}):s;}
@@ -371,7 +381,6 @@ function CellTag({status}){
   return<span className="tag tag-dayoff">—</span>;
 }
 
-// ── EXPORT MODAL ─────────────────────────────────────────────────────────────
 function ExportModal({log,onClose,onClear}){
   const[copied,setCopied]=useState(null);
   const[expanded,setExpanded]=useState(log.length>0?log[log.length-1].id:null);
@@ -411,7 +420,6 @@ function ExportModal({log,onClose,onClear}){
   );
 }
 
-// ── LOGIN ─────────────────────────────────────────────────────────────────────
 function LoginModal({onLogin,onClose}){
   const[pw,setPw]=useState("");const[err,setErr]=useState(false);
   const submit=()=>{pw===MANAGER_PASSWORD?onLogin():(setErr(true),setPw(""));};
@@ -426,7 +434,6 @@ function LoginModal({onLogin,onClose}){
   );
 }
 
-// ── ROSTER EDIT MODAL ─────────────────────────────────────────────────────────
 function RosterEditModal({agent,onSave,onClose}){
   const[form,setForm]=useState({...agent,workDays:[...(agent.workDays||[])],officeDays:[...(agent.officeDays||[])],wfhDays:[...(agent.wfhDays||[])],skills:agent.skills||"",startDate:agent.startDate||"",lastDay:agent.lastDay||""});
   const tog=(arr,d)=>arr.includes(d)?arr.filter(x=>x!==d):[...arr,d];
@@ -465,7 +472,6 @@ function RosterEditModal({agent,onSave,onClose}){
   );
 }
 
-// ── TIME OFF EDIT MODAL ───────────────────────────────────────────────────────
 function TimeOffEditModal({agentNames,onSave,onClose}){
   const[form,setForm]=useState({name:agentNames[0]||"",type:"Jiffy Day",start:"",end:"",duration:1,half:false,note:""});
   const valid=form.name&&form.start&&form.end&&form.duration>0;
@@ -505,14 +511,11 @@ function TodayTab({agents,timeOffData}){
     if(s.type==="office"){inOffice.push(a);working.push(a);}
     if(s.type==="wfh"){wfh.push(a);working.push(a);}
   });
-
-  // Sort inOffice by shift start time
   const sortedInOffice=[...inOffice].sort((a,b)=>{
     const sa=SHIFT_START_MIN[getAgentForDate(a,TODAY_STR).shift]||999;
     const sb=SHIFT_START_MIN[getAgentForDate(b,TODAY_STR).shift]||999;
     return sa-sb;
   });
-
   const CHAT_DAY_KEYS2=["Mon","Tue","Wed","Thu","Fri"];
   const todayKey=CHAT_DAY_KEYS2[["Monday","Tuesday","Wednesday","Thursday","Friday"].indexOf(TODAY_DAY)]||"Mon";
   const chatCounts=getChatIntervalCounts(todayKey);
@@ -521,14 +524,12 @@ function TodayTab({agents,timeOffData}){
   const chatRiskIntervals=chatCounts.filter(r=>r.total>0&&r.total<CHAT_MIN_STAFFING);
   const chatMinTotal=chatCounts.length>0?Math.min(...chatCounts.filter(r=>r.total>0).map(r=>r.total)):0;
   const chatMaxTotal=chatCounts.length>0?Math.max(...chatCounts.map(r=>r.total)):0;
-
   const expected=active.filter(a=>a.workDays.includes(TODAY_DAY)&&!hasNotStarted(a,TODAY_STR)).length;
   const actual=working.length+halfDay.length;
   const pct=expected>0?Math.round(actual/expected*100):100;
   const risk=pct<70?"HIGH":pct<85?"MEDIUM":"OK";
   const starting7=agents.filter(a=>{if(!a.startDate)return false;const sd=parseDate(a.startDate);const diff=(sd-REAL_TODAY)/(1000*60*60*24);return diff>=0&&diff<=7;});
   const todayLabel=DISPLAY_DATE.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
-
   return(
     <div>
       <div style={{background:"linear-gradient(135deg,#1e293b,#334155)",borderRadius:16,padding:"20px 24px",color:"#fff",marginBottom:24}}>
@@ -541,7 +542,6 @@ function TodayTab({agents,timeOffData}){
           {chatRiskIntervals.length>0&&<span className="tag tag-risk" style={{fontSize:13,padding:"4px 12px"}}>💬 Chat risk: {chatRiskIntervals.length} intervals below {CHAT_MIN_STAFFING}</span>}
         </div>
       </div>
-
       <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:12,marginBottom:24}}>
         {[["👥","Working",working.length,`+${halfDay.length} half`,""],["🏢","In Office",inOffice.length,"","ok-card"],["🏠","WFH",wfh.length,"",""],["🌟","Out / PTO",pto.length,"",pto.length>3?"risk-card":""],["💬","Chat Primary",chatPrimary,`+${chatBackup} backup`,chatRiskIntervals.length>0?"risk-card":""]].map(([icon,label,val,sub,cls])=>(
           <div key={label} className={`card ${cls}`} style={{textAlign:"center",padding:"16px 10px"}}>
@@ -552,7 +552,6 @@ function TodayTab({agents,timeOffData}){
           </div>
         ))}
       </div>
-
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,marginBottom:24}}>
         <div className="card">
           <div style={{fontWeight:700,fontSize:14,marginBottom:12}}>🌟 Out Today</div>
@@ -573,34 +572,25 @@ function TodayTab({agents,timeOffData}){
             </div>);})}
         </div>
       </div>
-
       <div style={{fontWeight:700,fontSize:15,marginBottom:12}}>⚠️ Risks & Alerts</div>
       <div style={{display:"grid",gap:10,marginBottom:24}}>
         {risk!=="OK"&&<div className={`card ${risk==="HIGH"?"risk-card":"warn-card"}`}><div style={{fontWeight:700,fontSize:13,marginBottom:4}}>{risk==="HIGH"?"🔴 Staffing Risk":"🟡 Coverage Watch"}</div><p style={{fontSize:12,color:"#475569"}}>Working headcount ({working.length}) is {100-pct}% below expected ({expected} scheduled).{pto.length>0?` ${pto.length} agent${pto.length>1?"s":""} on PTO.`:""}</p></div>}
-
-        {/* Chat coverage alert */}
         {chatRiskIntervals.length>0?(
           <div className="card risk-card">
             <div style={{fontWeight:700,fontSize:13,marginBottom:6}}>💬 Chat Coverage Risk</div>
-            <p style={{fontSize:12,color:"#475569",marginBottom:8}}>
-              {chatRiskIntervals.length} interval{chatRiskIntervals.length!==1?"s":""} fall below the {CHAT_MIN_STAFFING}-agent minimum today. Lowest staffed interval has {chatMinTotal} agent{chatMinTotal!==1?"s":""}.
-            </p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:6}}>
-              {chatRiskIntervals.map((r,i)=><span key={i} style={{background:"#fee2e2",color:"#991b1b",padding:"2px 8px",borderRadius:12,fontSize:11,fontWeight:600}}>{r.label} ({r.total})</span>)}
-            </div>
-            <p style={{fontSize:11,color:"#94a3b8"}}>Peak today: {chatMaxTotal} agents. Consider pulling backup agents or adjusting coverage.</p>
+            <p style={{fontSize:12,color:"#475569",marginBottom:8}}>{chatRiskIntervals.length} interval{chatRiskIntervals.length!==1?"s":""} fall below the {CHAT_MIN_STAFFING}-agent minimum today. Lowest: {chatMinTotal} agent{chatMinTotal!==1?"s":""}.</p>
+            <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:6}}>{chatRiskIntervals.map((r,i)=><span key={i} style={{background:"#fee2e2",color:"#991b1b",padding:"2px 8px",borderRadius:12,fontSize:11,fontWeight:600}}>{r.label} ({r.total})</span>)}</div>
+            <p style={{fontSize:11,color:"#94a3b8"}}>Peak today: {chatMaxTotal} agents.</p>
           </div>
         ):(
           <div className="card ok-card">
             <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>💬 Chat Coverage OK</div>
-            <p style={{fontSize:12,color:"#475569"}}>All intervals are at or above {CHAT_MIN_STAFFING} agents. Peak: {chatMaxTotal} agents · {chatPrimary} primary + {chatBackup} backup scheduled today.</p>
+            <p style={{fontSize:12,color:"#475569"}}>All intervals ≥ {CHAT_MIN_STAFFING} agents. Peak: {chatMaxTotal} · {chatPrimary} primary + {chatBackup} backup.</p>
           </div>
         )}
-
         {starting7.length>0&&<div className="card ok-card"><div style={{fontWeight:700,fontSize:13,marginBottom:6}}>✨ Starting This Week</div>{starting7.map(a=><div key={a.id} style={{fontSize:12,padding:"3px 0",display:"flex",justifyContent:"space-between"}}><span style={{fontWeight:600}}>{a.name}</span><span style={{color:"#059669"}}>Starts: {fmtFull(a.startDate)} · {a.supervisor}</span></div>)}</div>}
         {risk==="OK"&&chatRiskIntervals.length===0&&<div className="card ok-card"><div style={{fontWeight:700,fontSize:13}}>✅ All Clear</div><p style={{fontSize:12,color:"#475569",marginTop:4}}>No major staffing or chat risks today.</p></div>}
       </div>
-
       <div style={{fontWeight:700,fontSize:15,marginBottom:12}}>👤 By Supervisor</div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:12}}>
         {SUPERVISORS.map(sup=>{
@@ -637,7 +627,6 @@ function RosterTab({agents,setAgents,onChangeLogged}){
   const rosterTotal=counts.active+counts.incoming;
   const upcomingDeps=agents.filter(a=>{if(!a.lastDay)return false;const d=parseDate(a.lastDay);return d&&d>=REAL_TODAY;}).sort((a,b)=>parseDate(a.lastDay)-parseDate(b.lastDay));
   const schedChanging=Object.entries(SCHEDULE_CHANGES).map(([name,chg])=>({name,...chg}));
-  // Also show early-cohort schedule changes (Mar 9)
   const earlyChanging=Array.from(EARLY_OFFICE_AGENTS).map(name=>{const p=EARLY_PERM[name];return p?{name,effectiveDate:"3/9/26",...p}:null;}).filter(Boolean);
   return(
     <div>
@@ -712,6 +701,30 @@ function RosterTab({agents,setAgents,onChangeLogged}){
         </table>
       </div></div>
       <p style={{fontSize:11,color:"#94a3b8",marginTop:8}}>{sorted.length} of {agents.length} shown.</p>
+      {(()=>{
+        const activeA=agents.filter(a=>getStatus(a)==="active"||getStatus(a)==="incoming");
+        const total=activeA.length;
+        const skillMap={};
+        activeA.forEach(a=>{(a.skills||"").split(",").map(s=>s.trim()).filter(Boolean).forEach(sk=>{skillMap[sk]=(skillMap[sk]||0)+1;});});
+        const CORE=["Email","Outbound","Chat"];
+        const SPECIALTY=["Onboarding","Fraud","Chargebacks","Bad Sat Revert","Site Jabber"];
+        const coreSkills=CORE.filter(s=>skillMap[s]);
+        const specSkills=SPECIALTY.filter(s=>skillMap[s]);
+        const other=Object.keys(skillMap).filter(s=>![...CORE,...SPECIALTY].includes(s)).sort();
+        const SKILL_COLORS={"Email":"#4f46e5","Outbound":"#7c3aed","Chat":"#0ea5e9","Onboarding":"#0284c7","Fraud":"#dc2626","Chargebacks":"#b91c1c","Bad Sat Revert":"#c2410c","Site Jabber":"#92400e"};
+        function SkillBar({skill,count,total}){
+          const pct=Math.round(count/total*100);const color=SKILL_COLORS[skill]||"#64748b";
+          return(<div style={{marginBottom:8}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}><span style={{fontSize:12,fontWeight:600,color:"#1e293b"}}>{skill}</span><span style={{fontSize:12,fontWeight:700,color}}>{count} <span style={{fontWeight:400,color:"#94a3b8"}}>/ {total} ({pct}%)</span></span></div><div style={{height:8,background:"#f1f5f9",borderRadius:4,overflow:"hidden"}}><div style={{height:"100%",width:`${pct}%`,background:color,borderRadius:4,transition:"width .3s"}}/></div></div>);
+        }
+        return(<div style={{marginTop:32,borderTop:"2px solid #e2e8f0",paddingTop:24}}>
+          <div style={{fontWeight:700,fontSize:16,marginBottom:4}}>📊 Skill Summary</div>
+          <div style={{fontSize:12,color:"#64748b",marginBottom:20}}>Active & incoming agents ({total} total).</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:32}}>
+            <div><div style={{fontWeight:700,fontSize:13,color:"#475569",marginBottom:12,textTransform:"uppercase",letterSpacing:.5}}>Core Skills</div>{coreSkills.map(s=><SkillBar key={s} skill={s} count={skillMap[s]} total={total}/>)}</div>
+            <div><div style={{fontWeight:700,fontSize:13,color:"#475569",marginBottom:12,textTransform:"uppercase",letterSpacing:.5}}>Specialty Skills</div>{specSkills.map(s=><SkillBar key={s} skill={s} count={skillMap[s]} total={total}/>)}{other.map(s=><SkillBar key={s} skill={s} count={skillMap[s]} total={total}/>)}</div>
+          </div>
+        </div>);
+      })()}
       {editAgent&&<RosterEditModal agent={editAgent} onSave={form=>{
         if(form.id){const old=agents.find(a=>a.id===form.id);persist(agents.map(a=>a.id===form.id?form:a),buildAgentChangelog("agent_edit",form,old));}
         else{const newA={...form,id:Math.max(0,...agents.map(a=>a.id))+1};persist([...agents,newA],buildAgentChangelog("agent_add",newA,null));}
@@ -729,68 +742,31 @@ function OverviewTab({agents,timeOffData}){
   function buildData(agents,week){return INTERVALS.map(({label,minutes})=>{const row={label};DAYS.forEach(day=>{let total=0,office=0;agents.forEach(a=>{const dateS=week.dates[DAYS.indexOf(day)];const ea=getAgentForDate(a,dateS);const st=getCellStatus(a,day,week.dates,timeOffData);if(st.type==="dayoff"||st.type==="pto"||st.type==="departed"||st.type==="notstarted")return;const sh=SHIFT_TIMES[ea.shift];if(!sh)return;if(minutes>=sh.start&&minutes<sh.end){total++;if(st.type==="office")office++;}});row[day]={total,office};});return row;});}
   const data=buildData(wAgents,week);
   const maxT=Math.max(...data.map(r=>DAYS.reduce((m,d)=>Math.max(m,r[d].total),0)));
-  const maxO=Math.max(...data.map(r=>DAYS.reduce((m,d)=>Math.max(m,r[d].office),0)));
-
-  // Office risk: >22 seats
-  function officeRiskLevel(n){if(n>OFFICE_SEAT_LIMIT)return"over";return"ok";}
   const tBg=(n,max)=>{if(!n)return"#f8fafc";const p=n/max;return p<0.3?"#dbeafe":p<0.6?"#93c5fd":p<0.85?"#3b82f6":"#1d4ed8";};
   const oBg=(n)=>{if(!n)return"#f8fafc";if(n>OFFICE_SEAT_LIMIT)return"#fee2e2";if(n>OFFICE_SEAT_LIMIT-3)return"#fef3c7";const p=n/OFFICE_SEAT_LIMIT;return p<0.5?"#dcfce7":p<0.8?"#86efac":"#22c55e";};
   const oTc=(n)=>{if(!n)return"#1e293b";if(n>OFFICE_SEAT_LIMIT)return"#991b1b";if(n>OFFICE_SEAT_LIMIT-3)return"#92400e";return n/OFFICE_SEAT_LIMIT>0.7?"#fff":"#1e293b";};
   const tc=bg=>["#3b82f6","#1d4ed8","#22c55e","#15803d"].includes(bg)?"#fff":"#1e293b";
-
-  // Find any days/intervals where office exceeds limit
   const officeRiskDays=DAYS.map(day=>{const peak=Math.max(...data.map(r=>r[day].office));return{day,peak};}).filter(x=>x.peak>OFFICE_SEAT_LIMIT);
-
   return(
     <div>
       <div style={{marginBottom:16}}>{["February","March"].map(month=>{const mw=WEEKS.filter(w=>w.month===month);return(<div key={month} style={{marginBottom:8}}><div style={{fontSize:11,fontWeight:700,color:"#94a3b8",marginBottom:5,textTransform:"uppercase",letterSpacing:1}}>{month}</div><div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{mw.map(w=>{const gi=WEEKS.indexOf(w);return(<button key={gi} onClick={()=>setWeekIdx(gi)} className="btn" style={{background:weekIdx===gi?"#4f46e5":"#fff",color:weekIdx===gi?"#fff":"#475569",border:`1px solid ${weekIdx===gi?"#4f46e5":"#e2e8f0"}`}}>{w.label} <span style={{opacity:.7,fontSize:11}}>({w.display})</span></button>);})}</div></div>);})}</div>
-
-      {officeRiskDays.length>0&&(
-        <div className="card risk-card" style={{marginBottom:16}}>
-          <div style={{fontWeight:700,fontSize:13,marginBottom:6}}>🏢 Office Capacity Risk — Limit: {OFFICE_SEAT_LIMIT} seats</div>
-          <p style={{fontSize:12,color:"#475569",marginBottom:8}}>The following days have peak in-office headcount exceeding {OFFICE_SEAT_LIMIT}:</p>
-          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-            {officeRiskDays.map(x=><span key={x.day} style={{background:"#fee2e2",color:"#991b1b",padding:"3px 10px",borderRadius:12,fontSize:12,fontWeight:700}}>{x.day}: {x.peak} in office</span>)}
-          </div>
-        </div>
-      )}
-
+      {officeRiskDays.length>0&&<div className="card risk-card" style={{marginBottom:16}}><div style={{fontWeight:700,fontSize:13,marginBottom:6}}>🏢 Office Capacity Risk — Limit: {OFFICE_SEAT_LIMIT} seats</div><p style={{fontSize:12,color:"#475569",marginBottom:8}}>Peak in-office exceeding {OFFICE_SEAT_LIMIT} on:</p><div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{officeRiskDays.map(x=><span key={x.day} style={{background:"#fee2e2",color:"#991b1b",padding:"3px 10px",borderRadius:12,fontSize:12,fontWeight:700}}>{x.day}: {x.peak} in office</span>)}</div></div>}
       <div style={{display:"flex",gap:8,marginBottom:16,alignItems:"center",flexWrap:"wrap"}}>
         {[["all","📊 All Days"],["single","📅 Single Day"]].map(([v,l])=><button key={v} onClick={()=>setView(v)} className="btn" style={{background:view===v?"#4f46e5":"#fff",color:view===v?"#fff":"#475569",border:`1px solid ${view===v?"#4f46e5":"#e2e8f0"}`}}>{l}</button>)}
         {view==="single"&&<select value={dayFilter} onChange={e=>setDayFilter(e.target.value)} style={{width:"auto",minWidth:120}}>{DAYS.map(d=><option key={d}>{d}</option>)}</select>}
       </div>
       {view==="all"&&(<>
-        <div style={{marginBottom:20}}>
-          <div style={{fontWeight:700,fontSize:14,marginBottom:8}}>👥 Total Staffed</div>
-          <div style={{overflowX:"auto",borderRadius:12,border:"1px solid #e2e8f0"}}><table style={{minWidth:600}}><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th style={{minWidth:70,position:"sticky",left:0,background:"#f8fafc",zIndex:2}}>Time</th>{DAYS.map((d,i)=><th key={d} style={{textAlign:"center",minWidth:80}}><div>{d.slice(0,3)}</div><div style={{fontWeight:400,fontSize:10,color:"#94a3b8"}}>{fmtShort(week.dates[i])}</div></th>)}</tr></thead><tbody>{data.map((row,ri)=><tr key={ri} style={{borderBottom:"1px solid #f1f5f9"}}><td style={{fontWeight:600,fontSize:11,color:"#475569",position:"sticky",left:0,background:"#fff",zIndex:1}}>{row.label}</td>{DAYS.map(day=>{const n=row[day].total,bg=tBg(n,maxT);return<td key={day} style={{textAlign:"center",background:bg,color:tc(bg),fontWeight:700,fontSize:13,padding:"5px 4px"}}>{n>0?n:"–"}</td>;})}</tr>)}</tbody></table></div>
-        </div>
-        <div>
-          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
-            <div style={{fontWeight:700,fontSize:14}}>🏢 In Office</div>
-            <span style={{fontSize:11,background:"#fee2e2",color:"#991b1b",padding:"2px 8px",borderRadius:8,fontWeight:600}}>🔴 Red = over {OFFICE_SEAT_LIMIT} seats</span>
-            <span style={{fontSize:11,background:"#fef3c7",color:"#92400e",padding:"2px 8px",borderRadius:8,fontWeight:600}}>🟡 Yellow = within 3 of limit</span>
-          </div>
-          <div style={{overflowX:"auto",borderRadius:12,border:"1px solid #e2e8f0"}}><table style={{minWidth:600}}><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th style={{minWidth:70,position:"sticky",left:0,background:"#f8fafc",zIndex:2}}>Time</th>{DAYS.map((d,i)=><th key={d} style={{textAlign:"center",minWidth:80}}><div>{d.slice(0,3)}</div><div style={{fontWeight:400,fontSize:10,color:"#94a3b8"}}>{fmtShort(week.dates[i])}</div></th>)}</tr></thead><tbody>{data.map((row,ri)=><tr key={ri} style={{borderBottom:"1px solid #f1f5f9"}}><td style={{fontWeight:600,fontSize:11,color:"#475569",position:"sticky",left:0,background:"#fff",zIndex:1}}>{row.label}</td>{DAYS.map(day=>{const n=row[day].office,bg=oBg(n),color=oTc(n);return<td key={day} style={{textAlign:"center",background:bg,color,fontWeight:700,fontSize:13,padding:"5px 4px"}} title={n>OFFICE_SEAT_LIMIT?`⚠️ Over limit: ${n}`:""}>{n>0?n:"–"}{n>OFFICE_SEAT_LIMIT?" ⚠️":""}</td>;})}</tr>)}</tbody></table></div>
-        </div>
+        <div style={{marginBottom:20}}><div style={{fontWeight:700,fontSize:14,marginBottom:8}}>👥 Total Staffed</div><div style={{overflowX:"auto",borderRadius:12,border:"1px solid #e2e8f0"}}><table style={{minWidth:600}}><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th style={{minWidth:70,position:"sticky",left:0,background:"#f8fafc",zIndex:2}}>Time</th>{DAYS.map((d,i)=><th key={d} style={{textAlign:"center",minWidth:80}}><div>{d.slice(0,3)}</div><div style={{fontWeight:400,fontSize:10,color:"#94a3b8"}}>{fmtShort(week.dates[i])}</div></th>)}</tr></thead><tbody>{data.map((row,ri)=><tr key={ri} style={{borderBottom:"1px solid #f1f5f9"}}><td style={{fontWeight:600,fontSize:11,color:"#475569",position:"sticky",left:0,background:"#fff",zIndex:1}}>{row.label}</td>{DAYS.map(day=>{const n=row[day].total,bg=tBg(n,maxT);return<td key={day} style={{textAlign:"center",background:bg,color:tc(bg),fontWeight:700,fontSize:13,padding:"5px 4px"}}>{n>0?n:"–"}</td>;})}</tr>)}</tbody></table></div></div>
+        <div><div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}><div style={{fontWeight:700,fontSize:14}}>🏢 In Office</div><span style={{fontSize:11,background:"#fee2e2",color:"#991b1b",padding:"2px 8px",borderRadius:8,fontWeight:600}}>🔴 over {OFFICE_SEAT_LIMIT}</span><span style={{fontSize:11,background:"#fef3c7",color:"#92400e",padding:"2px 8px",borderRadius:8,fontWeight:600}}>🟡 within 3</span></div><div style={{overflowX:"auto",borderRadius:12,border:"1px solid #e2e8f0"}}><table style={{minWidth:600}}><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th style={{minWidth:70,position:"sticky",left:0,background:"#f8fafc",zIndex:2}}>Time</th>{DAYS.map((d,i)=><th key={d} style={{textAlign:"center",minWidth:80}}><div>{d.slice(0,3)}</div><div style={{fontWeight:400,fontSize:10,color:"#94a3b8"}}>{fmtShort(week.dates[i])}</div></th>)}</tr></thead><tbody>{data.map((row,ri)=><tr key={ri} style={{borderBottom:"1px solid #f1f5f9"}}><td style={{fontWeight:600,fontSize:11,color:"#475569",position:"sticky",left:0,background:"#fff",zIndex:1}}>{row.label}</td>{DAYS.map(day=>{const n=row[day].office,bg=oBg(n),color=oTc(n);return<td key={day} style={{textAlign:"center",background:bg,color,fontWeight:700,fontSize:13,padding:"5px 4px"}}>{n>0?n:"–"}{n>OFFICE_SEAT_LIMIT?" ⚠️":""}</td>;})}</tr>)}</tbody></table></div></div>
       </>)}
-      {view==="single"&&(()=>{const sd=data.map(r=>({label:r.label,total:r[dayFilter].total,office:r[dayFilter].office}));const ms=Math.max(...sd.map(r=>r.total));return(<div style={{borderRadius:12,border:"1px solid #e2e8f0",overflow:"hidden",background:"#fff"}}><table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th>Time</th><th>Staffed</th><th style={{width:80,textAlign:"center"}}>Total</th><th style={{width:80,textAlign:"center"}}>Office</th></tr></thead><tbody>{sd.map((row,i)=>{const pT=ms>0?row.total/ms:0,pO=row.total>0?row.office/row.total:0;const overLimit=row.office>OFFICE_SEAT_LIMIT;return(<tr key={i} style={{borderBottom:"1px solid #f8fafc",background:overLimit?"#fff5f5":""}}>
-        <td style={{fontWeight:600,fontSize:11,color:"#475569"}}>{row.label}</td>
-        <td style={{padding:"4px 8px"}}><div style={{position:"relative",height:18,background:"#f1f5f9",borderRadius:3,overflow:"hidden"}}><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pT*100}%`,background:"#93c5fd",borderRadius:3}}/><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pT*pO*100}%`,background:overLimit?"#ef4444":"#22c55e",borderRadius:3}}/></div></td>
-        <td style={{textAlign:"center",fontWeight:700,color:row.total>0?"#1d4ed8":"#cbd5e1"}}>{row.total||"–"}</td>
-        <td style={{textAlign:"center",fontWeight:700,color:overLimit?"#991b1b":row.office>0?"#15803d":"#cbd5e1"}}>{row.office||"–"}{overLimit?" ⚠️":""}</td>
-      </tr>);})}</tbody></table></div>);})()}
+      {view==="single"&&(()=>{const sd=data.map(r=>({label:r.label,total:r[dayFilter].total,office:r[dayFilter].office}));const ms=Math.max(...sd.map(r=>r.total));return(<div style={{borderRadius:12,border:"1px solid #e2e8f0",overflow:"hidden",background:"#fff"}}><table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th>Time</th><th>Staffed</th><th style={{width:80,textAlign:"center"}}>Total</th><th style={{width:80,textAlign:"center"}}>Office</th></tr></thead><tbody>{sd.map((row,i)=>{const pT=ms>0?row.total/ms:0,pO=row.total>0?row.office/row.total:0;const overLimit=row.office>OFFICE_SEAT_LIMIT;return(<tr key={i} style={{borderBottom:"1px solid #f8fafc",background:overLimit?"#fff5f5":""}}><td style={{fontWeight:600,fontSize:11,color:"#475569"}}>{row.label}</td><td style={{padding:"4px 8px"}}><div style={{position:"relative",height:18,background:"#f1f5f9",borderRadius:3,overflow:"hidden"}}><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pT*100}%`,background:"#93c5fd",borderRadius:3}}/><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pT*pO*100}%`,background:overLimit?"#ef4444":"#22c55e",borderRadius:3}}/></div></td><td style={{textAlign:"center",fontWeight:700,color:row.total>0?"#1d4ed8":"#cbd5e1"}}>{row.total||"–"}</td><td style={{textAlign:"center",fontWeight:700,color:overLimit?"#991b1b":row.office>0?"#15803d":"#cbd5e1"}}>{row.office||"–"}{overLimit?" ⚠️":""}</td></tr>);})}</tbody></table></div>);})()}
     </div>
   );
 }
 
 // ── SCHEDULE TAB ──────────────────────────────────────────────────────────────
 function ScheduleTab({agents,setAgents,isManager,timeOffData,onChangeLogged}){
-  const[weekIdx,setWeekIdx]=useState(4);
-  const[filterSup,setFilterSup]=useState("All");
-  const[search,setSearch]=useState("");
-  const[editAgent,setEditAgent]=useState(null);
-  const[delConfirm,setDelConfirm]=useState(null);
-  const[saved,setSaved]=useState(false);
+  const[weekIdx,setWeekIdx]=useState(4);const[filterSup,setFilterSup]=useState("All");const[search,setSearch]=useState("");const[editAgent,setEditAgent]=useState(null);const[delConfirm,setDelConfirm]=useState(null);const[saved,setSaved]=useState(false);
   const week=WEEKS[weekIdx];
   const persist=(a,logEntry)=>{setAgents(a);if(logEntry)onChangeLogged(logEntry);setSaved(true);setTimeout(()=>setSaved(false),2000);};
   const weekStart=parseDate(week.dates[0]),weekEnd=parseDate(week.dates[5]);
@@ -800,34 +776,20 @@ function ScheduleTab({agents,setAgents,isManager,timeOffData,onChangeLogged}){
   const{sorted,SortTh}=useSortableData(enriched,"name");
   const supCounts=SUPERVISORS.map(sup=>({sup,count:weekAgents.filter(a=>a.supervisor===sup).length})).filter(s=>s.count>0);
   const daySummary=DAYS.map((day,di)=>{let w=0,p=0,h=0;weekAgents.forEach(a=>{const s=getCellStatus(a,day,week.dates,timeOffData);if(s.type==="pto")p++;else if(s.type==="half")h++;else if(s.type==="office"||s.type==="wfh")w++;});return{day,date:week.dates[di],working:w,pto:p,half:h};});
-
-  // All schedule change banners for this week
   const mar30Changes=Object.entries(SCHEDULE_CHANGES).filter(([,chg])=>{const eff=parseDate(chg.effectiveDate);return eff&&eff>=weekStart&&eff<=weekEnd;});
   const mar9Changes=Array.from(EARLY_OFFICE_AGENTS).filter(()=>{const mar9=new Date(2026,2,9);return mar9>=weekStart&&mar9<=weekEnd;});
-
   return(
     <div>
-      {saved&&<div style={{background:"#dcfce7",color:"#166534",padding:"8px 14px",borderRadius:8,marginBottom:12,fontSize:12,fontWeight:600}}>✓ Saved — check Export Changes for the code</div>}
+      {saved&&<div style={{background:"#dcfce7",color:"#166534",padding:"8px 14px",borderRadius:8,marginBottom:12,fontSize:12,fontWeight:600}}>✓ Saved</div>}
       <div style={{marginBottom:16}}>{["February","March"].map(month=>{const mw=WEEKS.filter(w=>w.month===month);return(<div key={month} style={{marginBottom:8}}><div style={{fontSize:11,fontWeight:700,color:"#94a3b8",marginBottom:5,textTransform:"uppercase",letterSpacing:1}}>{month}</div><div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{mw.map(w=>{const gi=WEEKS.indexOf(w);return(<button key={gi} onClick={()=>setWeekIdx(gi)} className="btn" style={{background:weekIdx===gi?"#4f46e5":"#fff",color:weekIdx===gi?"#fff":"#475569",border:`1px solid ${weekIdx===gi?"#4f46e5":"#e2e8f0"}`}}>{w.label} <span style={{opacity:.7,fontSize:11}}>({w.display})</span></button>);})}</div></div>);})}</div>
-
-      {mar9Changes.length>0&&<div style={{background:"#fffbeb",border:"1px solid #fcd34d",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#92400e",marginBottom:10}}>📅 <strong>Schedule changes take effect this week (Mar 9):</strong> {mar9Changes.join(", ")} — new permanent shift/days begin Mon Mar 9.</div>}
-      {mar30Changes.length>0&&<div style={{background:"#fffbeb",border:"1px solid #fcd34d",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#92400e",marginBottom:10}}>📅 <strong>Schedule changes take effect this week (Mar 30):</strong> {mar30Changes.map(([n])=>n).join(", ")} — new shift/days apply from Mar 30.</div>}
-
+      {mar9Changes.length>0&&<div style={{background:"#fffbeb",border:"1px solid #fcd34d",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#92400e",marginBottom:10}}>📅 <strong>Schedule changes effective this week (Mar 9):</strong> {mar9Changes.join(", ")}</div>}
+      {mar30Changes.length>0&&<div style={{background:"#fffbeb",border:"1px solid #fcd34d",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#92400e",marginBottom:10}}>📅 <strong>Schedule changes effective this week (Mar 30):</strong> {mar30Changes.map(([n])=>n).join(", ")}</div>}
       <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:8,marginBottom:20}}>
-        {daySummary.map(d=>(
-          <div key={d.day} style={{background:"#fff",borderRadius:10,border:"1px solid #e2e8f0",padding:"10px 8px",textAlign:"center"}}>
-            <div style={{fontWeight:700,fontSize:12,color:"#475569"}}>{d.day.slice(0,3)}</div>
-            <div style={{fontSize:10,color:"#94a3b8",marginBottom:4}}>{fmtShort(d.date)}</div>
-            <div style={{fontSize:22,fontWeight:800}}>{d.working+d.half}</div>
-            {d.pto>0&&<div style={{marginTop:2}}><span className="tag tag-vacation" style={{fontSize:10}}>{d.pto} out</span></div>}
-          </div>
-        ))}
+        {daySummary.map(d=>(<div key={d.day} style={{background:"#fff",borderRadius:10,border:"1px solid #e2e8f0",padding:"10px 8px",textAlign:"center"}}><div style={{fontWeight:700,fontSize:12,color:"#475569"}}>{d.day.slice(0,3)}</div><div style={{fontSize:10,color:"#94a3b8",marginBottom:4}}>{fmtShort(d.date)}</div><div style={{fontSize:22,fontWeight:800}}>{d.working+d.half}</div>{d.pto>0&&<div style={{marginTop:2}}><span className="tag tag-vacation" style={{fontSize:10}}>{d.pto} out</span></div>}</div>))}
       </div>
       <div style={{fontSize:12,fontWeight:700,color:"#64748b",marginBottom:8,textTransform:"uppercase",letterSpacing:.5}}>Filter by Supervisor</div>
       <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:12}}>
-        <div onClick={()=>setFilterSup("All")} style={{background:filterSup==="All"?"#4f46e5":"#fff",color:filterSup==="All"?"#fff":"#475569",border:`2px solid ${filterSup==="All"?"#4f46e5":"#e2e8f0"}`,borderRadius:10,padding:"8px 14px",cursor:"pointer",fontSize:12,fontWeight:700,display:"flex",gap:8,alignItems:"center"}}>
-          <span>All</span><span style={{background:filterSup==="All"?"#ffffff33":"#f1f5f9",padding:"1px 7px",borderRadius:10,fontWeight:800}}>{weekAgents.length}</span>
-        </div>
+        <div onClick={()=>setFilterSup("All")} style={{background:filterSup==="All"?"#4f46e5":"#fff",color:filterSup==="All"?"#fff":"#475569",border:`2px solid ${filterSup==="All"?"#4f46e5":"#e2e8f0"}`,borderRadius:10,padding:"8px 14px",cursor:"pointer",fontSize:12,fontWeight:700,display:"flex",gap:8,alignItems:"center"}}><span>All</span><span style={{background:filterSup==="All"?"#ffffff33":"#f1f5f9",padding:"1px 7px",borderRadius:10,fontWeight:800}}>{weekAgents.length}</span></div>
         {supCounts.map(({sup,count})=>{const c=SUP_COLORS[sup]||{bg:"#64748b",light:"#f8fafc",border:"#e2e8f0"};const sel=filterSup===sup;return(<div key={sup} onClick={()=>setFilterSup(sel?"All":sup)} style={{background:sel?c.bg:c.light,color:sel?"#fff":c.bg,border:`2px solid ${sel?c.bg:c.border}`,borderRadius:10,padding:"8px 14px",cursor:"pointer",fontSize:12,fontWeight:700,display:"flex",gap:8,alignItems:"center"}}><span>{sup}</span><span style={{background:sel?"#ffffff33":c.bg+"22",padding:"1px 7px",borderRadius:10,fontWeight:800}}>{count}</span></div>);})}
       </div>
       <div style={{display:"flex",gap:10,marginBottom:14,alignItems:"center"}}>
@@ -849,37 +811,21 @@ function ScheduleTab({agents,setAgents,isManager,timeOffData,onChangeLogged}){
               const hasPto=DAYS.some(d=>{const s=getCellStatus(agent,d,week.dates,timeOffData);return s.type==="pto"||s.type==="half";});
               const ea=getAgentForDate(agent,week.dates[0]);
               const c=SUP_COLORS[agent.supervisor]||{bg:"#64748b"};
-              const hasChg=!!SCHEDULE_CHANGES[agent.name];
-              const isEarlyChg=EARLY_OFFICE_AGENTS.has(agent.name);
+              const hasChg=!!SCHEDULE_CHANGES[agent.name];const isEarlyChg=EARLY_OFFICE_AGENTS.has(agent.name);
               return(<tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",background:hasPto?"#fffbeb":agent.isNew?"#f0fdf4":"#fff"}}>
-                <td style={{fontWeight:600,position:"sticky",left:0,background:"inherit",zIndex:1}}>
-                  {agent.isNew&&<span style={{marginRight:4}}>✨</span>}{agent.name}
-                  {hasChg&&<span className="tag tag-changed" style={{marginLeft:6,fontSize:10}}>📅 Mar 30</span>}
-                  {isEarlyChg&&<span className="tag tag-changed" style={{marginLeft:4,fontSize:10}}>📅 Mar 9</span>}
-                </td>
+                <td style={{fontWeight:600,position:"sticky",left:0,background:"inherit",zIndex:1}}>{agent.isNew&&<span style={{marginRight:4}}>✨</span>}{agent.name}{hasChg&&<span className="tag tag-changed" style={{marginLeft:6,fontSize:10}}>📅 Mar 30</span>}{isEarlyChg&&<span className="tag tag-changed" style={{marginLeft:4,fontSize:10}}>📅 Mar 9</span>}</td>
                 <td style={{fontSize:11,color:"#64748b"}}>{ea.shift}</td>
                 <td><span style={{fontSize:11,fontWeight:600,color:c.bg}}>{agent.supervisor}</span></td>
                 {DAYS.map(day=>{const st=getCellStatus(agent,day,week.dates,timeOffData);return<td key={day} style={{textAlign:"center",padding:"6px 4px"}}><CellTag status={st}/></td>;})}
-                {isManager&&<td style={{textAlign:"center"}}>
-                  <button className="btn btn-ghost" style={{fontSize:11,padding:"3px 8px",marginRight:4}} onClick={()=>setEditAgent(agent)}>✏️</button>
-                  <button className="btn btn-danger" style={{fontSize:11,padding:"3px 8px"}} onClick={()=>setDelConfirm(agent.id)}>🗑</button>
-                </td>}
+                {isManager&&<td style={{textAlign:"center"}}><button className="btn btn-ghost" style={{fontSize:11,padding:"3px 8px",marginRight:4}} onClick={()=>setEditAgent(agent)}>✏️</button><button className="btn btn-danger" style={{fontSize:11,padding:"3px 8px"}} onClick={()=>setDelConfirm(agent.id)}>🗑</button></td>}
               </tr>);
             })}
           </tbody>
         </table>
       </div></div>
       <p style={{fontSize:11,color:"#94a3b8",marginTop:6}}>{sorted.length} agents shown</p>
-      {editAgent&&<RosterEditModal agent={editAgent} onSave={form=>{
-        if(form.id){const old=agents.find(a=>a.id===form.id);persist(agents.map(a=>a.id===form.id?form:a),buildAgentChangelog("agent_edit",form,old));}
-        else{const newA={...form,id:Math.max(0,...agents.map(a=>a.id))+1};persist([...agents,newA],buildAgentChangelog("agent_add",newA,null));}
-        setEditAgent(null);
-      }} onClose={()=>setEditAgent(null)}/>}
-      {delConfirm&&<div className="modal-overlay" onClick={()=>setDelConfirm(null)}><div className="modal" style={{width:340}} onClick={e=>e.stopPropagation()}>
-        <h2 style={{fontWeight:700,fontSize:16,marginBottom:8}}>Remove Agent?</h2>
-        <p style={{fontSize:13,color:"#64748b",marginBottom:20}}>Remove <strong>{agents.find(a=>a.id===delConfirm)?.name}</strong>?</p>
-        <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button className="btn btn-ghost" onClick={()=>setDelConfirm(null)}>Cancel</button><button className="btn btn-danger" onClick={()=>{const removed=agents.find(a=>a.id===delConfirm);persist(agents.filter(a=>a.id!==delConfirm),buildAgentChangelog("agent_remove",null,removed));setDelConfirm(null);}}>Remove</button></div>
-      </div></div>}
+      {editAgent&&<RosterEditModal agent={editAgent} onSave={form=>{if(form.id){const old=agents.find(a=>a.id===form.id);persist(agents.map(a=>a.id===form.id?form:a),buildAgentChangelog("agent_edit",form,old));}else{const newA={...form,id:Math.max(0,...agents.map(a=>a.id))+1};persist([...agents,newA],buildAgentChangelog("agent_add",newA,null));}setEditAgent(null);}} onClose={()=>setEditAgent(null)}/>}
+      {delConfirm&&<div className="modal-overlay" onClick={()=>setDelConfirm(null)}><div className="modal" style={{width:340}} onClick={e=>e.stopPropagation()}><h2 style={{fontWeight:700,fontSize:16,marginBottom:8}}>Remove Agent?</h2><p style={{fontSize:13,color:"#64748b",marginBottom:20}}>Remove <strong>{agents.find(a=>a.id===delConfirm)?.name}</strong>?</p><div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button className="btn btn-ghost" onClick={()=>setDelConfirm(null)}>Cancel</button><button className="btn btn-danger" onClick={()=>{const removed=agents.find(a=>a.id===delConfirm);persist(agents.filter(a=>a.id!==delConfirm),buildAgentChangelog("agent_remove",null,removed));setDelConfirm(null);}}>Remove</button></div></div></div>}
     </div>
   );
 }
@@ -905,10 +851,9 @@ function ChatScheduleTab(){
   return(
     <div>
       <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16,flexWrap:"wrap"}}>
-        <div style={{flex:1}}><div style={{fontWeight:700,fontSize:15}}>💬 Chat Coverage</div><div style={{fontSize:11,color:"#64748b",marginTop:2}}>{expanded?<span style={{color:"#7c3aed",fontWeight:600}}>🔭 Expanded view: 6:00 am – 8:00 pm</span>:<span style={{color:"#059669",fontWeight:600}}>✅ Standard hours: 8:00 am – 6:00 pm</span>}</div></div>
-        <button onClick={()=>setExpanded(e=>!e)} className="btn" style={{background:expanded?"#7c3aed":"#f5f3ff",color:expanded?"#fff":"#7c3aed",border:`2px solid ${expanded?"#7c3aed":"#c4b5fd"}`,fontWeight:700}}>{expanded?"📊 Standard Hours (8am–6pm)":"🔭 Expanded Hours (6am–8pm)"}</button>
+        <div style={{flex:1}}><div style={{fontWeight:700,fontSize:15}}>💬 Chat Coverage</div><div style={{fontSize:11,color:"#64748b",marginTop:2}}>{expanded?<span style={{color:"#7c3aed",fontWeight:600}}>🔭 Expanded: 6:00 am – 8:00 pm</span>:<span style={{color:"#059669",fontWeight:600}}>✅ Standard: 8:00 am – 6:00 pm</span>}</div></div>
+        <button onClick={()=>setExpanded(e=>!e)} className="btn" style={{background:expanded?"#7c3aed":"#f5f3ff",color:expanded?"#fff":"#7c3aed",border:`2px solid ${expanded?"#7c3aed":"#c4b5fd"}`,fontWeight:700}}>{expanded?"📊 Standard":"🔭 Expanded"}</button>
       </div>
-      {expanded&&<div style={{background:"#f5f3ff",border:"1px solid #c4b5fd",borderRadius:8,padding:"8px 14px",fontSize:12,color:"#5b21b6",marginBottom:12}}>🔭 <strong>Expanded view</strong> — showing potential coverage if chat ran 6am–8pm.</div>}
       <div style={{background:"#fff5f5",border:"1px solid #fca5a5",borderRadius:8,padding:"8px 14px",fontSize:12,color:"#991b1b",marginBottom:12,fontWeight:600}}>🔴 Risk threshold: fewer than {CHAT_MIN_STAFFING} agents in any interval.</div>
       <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap",alignItems:"center"}}>
         {CHAT_DAY_KEYS.map(d=>{const dc=getChatIntervalCounts(d,expanded);const hasRisk=dc.some(r=>r.total>0&&r.total<CHAT_MIN_STAFFING);return<button key={d} onClick={()=>setDayKey(d)} className="btn" style={{background:dayKey===d?"#4f46e5":"#fff",color:dayKey===d?"#fff":"#475569",border:`2px solid ${dayKey===d?"#4f46e5":hasRisk?"#ef4444":"#e2e8f0"}`}}>{CHAT_DAY_FULL[d]}{hasRisk&&<span style={{marginLeft:4}}>🔴</span>}</button>;})}
@@ -952,8 +897,7 @@ function ChatScheduleTab(){
 
 // ── TIME OFF TAB ──────────────────────────────────────────────────────────────
 function TimeOffTab({agents,timeOffData,setTimeOffData,isManager,onChangeLogged}){
-  const[mf,setMf]=useState("All");const[nf,setNf]=useState("All");const[search,setSearch]=useState("");
-  const[addModal,setAddModal]=useState(false);const[delConfirm,setDelConfirm]=useState(null);const[saved,setSaved]=useState(false);
+  const[mf,setMf]=useState("All");const[nf,setNf]=useState("All");const[search,setSearch]=useState("");const[addModal,setAddModal]=useState(false);const[delConfirm,setDelConfirm]=useState(null);const[saved,setSaved]=useState(false);
   const persist=(newData,logEntry)=>{setTimeOffData(newData);if(logEntry)onChangeLogged(logEntry);setSaved(true);setTimeout(()=>setSaved(false),2000);};
   const names=["All",...[...new Set(timeOffData.map(r=>r.name))].sort()];
   const rm=r=>{const d=parseDate(r.start);return d?.getMonth()===1?"February":d?.getMonth()===2?"March":"Other";};
@@ -965,15 +909,9 @@ function TimeOffTab({agents,timeOffData,setTimeOffData,isManager,onChangeLogged}
   const activeNames=[...new Set(getActiveAgents(agents).map(a=>a.name))].sort();
   return(
     <div>
-      {saved&&<div style={{background:"#dcfce7",color:"#166534",padding:"8px 14px",borderRadius:8,marginBottom:12,fontSize:12,fontWeight:600}}>✓ Saved — check Export Changes for the code</div>}
+      {saved&&<div style={{background:"#dcfce7",color:"#166534",padding:"8px 14px",borderRadius:8,marginBottom:12,fontSize:12,fontWeight:600}}>✓ Saved</div>}
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20,maxWidth:400}}>
-        {[["February",febC],["March",marC]].map(([m,c])=>(
-          <div key={m} onClick={()=>setMf(mf===m?"All":m)} style={{background:mf===m?"#eff6ff":"#fff",border:`2px solid ${mf===m?"#93c5fd":"#e2e8f0"}`,borderRadius:12,padding:"12px 16px",cursor:"pointer"}}>
-            <div style={{fontSize:11,fontWeight:700,color:"#3b82f6",marginBottom:4}}>{m}</div>
-            <div style={{fontSize:26,fontWeight:800}}>{c}</div>
-            <div style={{fontSize:11,color:"#94a3b8"}}>agents with time off</div>
-          </div>
-        ))}
+        {[["February",febC],["March",marC]].map(([m,c])=>(<div key={m} onClick={()=>setMf(mf===m?"All":m)} style={{background:mf===m?"#eff6ff":"#fff",border:`2px solid ${mf===m?"#93c5fd":"#e2e8f0"}`,borderRadius:12,padding:"12px 16px",cursor:"pointer"}}><div style={{fontSize:11,fontWeight:700,color:"#3b82f6",marginBottom:4}}>{m}</div><div style={{fontSize:26,fontWeight:800}}>{c}</div><div style={{fontSize:11,color:"#94a3b8"}}>agents with time off</div></div>))}
       </div>
       <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
         <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search…" style={{maxWidth:200}}/>
@@ -982,9 +920,7 @@ function TimeOffTab({agents,timeOffData,setTimeOffData,isManager,onChangeLogged}
         <button className="btn btn-ghost" onClick={()=>{setMf("All");setNf("All");setSearch("");}}>Clear</button>
         {isManager&&<button className="btn btn-success" style={{marginLeft:"auto"}} onClick={()=>setAddModal(true)}>+ Add Time Off</button>}
       </div>
-      <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
-        <span className="tag tag-vacation">✈️ Vacation</span><span className="tag tag-jiffy">🌟 Jiffy Day</span><span className="tag tag-half">½ Half Day</span><span className="tag tag-parental">👶 Parental Leave</span>
-      </div>
+      <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}><span className="tag tag-vacation">✈️ Vacation</span><span className="tag tag-jiffy">🌟 Jiffy Day</span><span className="tag tag-half">½ Half Day</span><span className="tag tag-parental">👶 Parental Leave</span></div>
       <div style={{borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0"}}>
         <table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}>
           <SortTh colKey="name" style={{minWidth:160}}>Agent</SortTh>
@@ -1011,108 +947,32 @@ function TimeOffTab({agents,timeOffData,setTimeOffData,isManager,onChangeLogged}
       </div>
       <p style={{fontSize:11,color:"#94a3b8",marginTop:6}}>{sorted.length} records.</p>
       {addModal&&<TimeOffEditModal agentNames={activeNames} onSave={entry=>{persist([...timeOffData,entry],buildTimeOffChangelog("timeoff_add",entry));setAddModal(false);}} onClose={()=>setAddModal(false)}/>}
-      {delConfirm!==null&&<div className="modal-overlay" onClick={()=>setDelConfirm(null)}><div className="modal" style={{width:340}} onClick={e=>e.stopPropagation()}>
-        <h2 style={{fontWeight:700,fontSize:16,marginBottom:8}}>Remove Time Off?</h2>
-        <p style={{fontSize:13,color:"#64748b",marginBottom:20}}>Remove <strong>{sorted[delConfirm]?.name}</strong> — {sorted[delConfirm]?.type} ({sorted[delConfirm]?.start})?</p>
-        <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button className="btn btn-ghost" onClick={()=>setDelConfirm(null)}>Cancel</button><button className="btn btn-danger" onClick={()=>{const removed=sorted[delConfirm];const newData=timeOffData.filter(r=>!(r.name===removed.name&&r.start===removed.start&&r.end===removed.end&&r.type===removed.type));persist(newData,buildTimeOffChangelog("timeoff_remove",removed));setDelConfirm(null);}}>Remove</button></div>
-      </div></div>}
+      {delConfirm!==null&&<div className="modal-overlay" onClick={()=>setDelConfirm(null)}><div className="modal" style={{width:340}} onClick={e=>e.stopPropagation()}><h2 style={{fontWeight:700,fontSize:16,marginBottom:8}}>Remove Time Off?</h2><p style={{fontSize:13,color:"#64748b",marginBottom:20}}>Remove <strong>{sorted[delConfirm]?.name}</strong> — {sorted[delConfirm]?.type} ({sorted[delConfirm]?.start})?</p><div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button className="btn btn-ghost" onClick={()=>setDelConfirm(null)}>Cancel</button><button className="btn btn-danger" onClick={()=>{const removed=sorted[delConfirm];const newData=timeOffData.filter(r=>!(r.name===removed.name&&r.start===removed.start&&r.end===removed.end&&r.type===removed.type));persist(newData,buildTimeOffChangelog("timeoff_remove",removed));setDelConfirm(null);}}>Remove</button></div></div></div>}
     </div>
   );
 }
 
 // ── GITHUB GUIDE TAB ──────────────────────────────────────────────────────────
 function GitHubGuideTab(){
-  const[copied,setCopied]=useState(null);
-  function copy(id,text){navigator.clipboard.writeText(text).then(()=>{setCopied(id);setTimeout(()=>setCopied(null),2000);});}
   const steps=[
-    {
-      num:1,icon:"🔑",title:"Log in as Manager & make your changes",
-      body:"Use the Manager Login button (top right). Once logged in, make any edits in the Roster, Schedule, or Time Off tabs — add agents, edit schedules, add time off entries, etc.",
-      note:"Every change you make is automatically tracked in the Export Changes log.",
-    },
-    {
-      num:2,icon:"📋",title:"Open Export Changes and copy the code",
-      body:`Click the orange "📋 Export Changes" button in the top right (a red badge shows how many unsaved changes you have). Inside the panel, expand each change to see its instructions and code snippet. Click "Copy Code" for individual changes, or "Copy All" to grab everything at once.`,
-      note:"Each entry tells you exactly what to do: whether to add, replace, or delete a line in the file.",
-    },
-    {
-      num:3,icon:"🐙",title:"Open your file on GitHub",
-      body:"Go to your GitHub repository. Click on the HTML file (e.g. index.html). Click the ✏️ pencil icon in the top right of the file preview to open the editor.",
-      code:"https://github.com/YOUR-USERNAME/YOUR-REPO/blob/main/index.html",
-      codeLabel:"Your file URL will look like:",
-    },
-    {
-      num:4,icon:"🔍",title:"Find the right array in the file",
-      body:"Use Ctrl+F (or Cmd+F on Mac) to search inside the GitHub editor. Search for the array name shown in the export instructions:",
-      bullets:["defaultAgents — for agent edits, additions, or removals","defaultTimeOff — for time off additions or removals"],
-    },
-    {
-      num:5,icon:"✂️",title:"Paste your change",
-      body:"Follow the instructions from the Export panel exactly:",
-      bullets:[
-        "ADD: Paste the new entry at the end of the array, just before the closing ];",
-        "EDIT: Find the existing entry by id, select the entire {...} block, and replace it with the copied code.",
-        "DELETE: Find the entry matching the code shown and delete the entire {...} line (including the trailing comma if present).",
-      ],
-    },
-    {
-      num:6,icon:"💾",title:"Commit the change",
-      body:`Scroll to the bottom of the GitHub editor. You'll see a "Commit changes" section. Add a short description (e.g. "Added Taylor Amos time off 3/20") then click the green "Commit changes" button.`,
-      note:"Changes go live within seconds — everyone who refreshes the page will see the updated data.",
-    },
-    {
-      num:7,icon:"✅",title:"Verify",
-      body:"Refresh the Team Hub page and confirm your change appears correctly in the relevant tab. If something looks off, repeat from Step 3 and double-check the pasted code.",
-    },
+    {num:1,icon:"🔑",title:"Log in as Manager & make your changes",body:"Use the Manager Login button (top right). Once logged in, make any edits in the Roster, Schedule, or Time Off tabs.",note:"Every change is automatically tracked in the Export Changes log."},
+    {num:2,icon:"📋",title:"Open Export Changes and copy the code",body:`Click the orange "📋 Export Changes" button. Expand each change to see instructions and code. Click "Copy Code" or "Copy All".`,note:"Each entry tells you exactly what to do: add, replace, or delete a line."},
+    {num:3,icon:"🐙",title:"Open your file on GitHub",body:"Go to your GitHub repository. Click the HTML file. Click the ✏️ pencil icon to open the editor.",code:"https://github.com/YOUR-USERNAME/YOUR-REPO/blob/main/index.html",codeLabel:"Your file URL:"},
+    {num:4,icon:"🔍",title:"Find the right array",body:"Use Ctrl+F to search for the array name:",bullets:["defaultAgents — for agent edits","defaultTimeOff — for time off changes"]},
+    {num:5,icon:"✂️",title:"Paste your change",body:"Follow the export instructions:",bullets:["ADD: Paste before closing ];","EDIT: Find entry by id, replace entire block","DELETE: Remove the matching {...} line"]},
+    {num:6,icon:"💾",title:"Commit the change",body:`Scroll to "Commit changes", add a short description, click the green button.`,note:"Changes go live within seconds."},
+    {num:7,icon:"✅",title:"Verify",body:"Refresh the Team Hub and confirm your change appears correctly."},
   ];
   return(
     <div style={{maxWidth:780}}>
       <div style={{background:"linear-gradient(135deg,#1e293b,#334155)",borderRadius:16,padding:"20px 24px",color:"#fff",marginBottom:28}}>
         <div style={{fontSize:11,color:"#94a3b8",fontWeight:600,marginBottom:4,textTransform:"uppercase",letterSpacing:1}}>Reference Guide</div>
         <div style={{fontSize:22,fontWeight:800}}>🐙 How to Update the Team Hub on GitHub</div>
-        <div style={{fontSize:13,color:"#94a3b8",marginTop:6}}>Follow these steps to make any manager change permanent so everyone sees it when they visit the page.</div>
+        <div style={{fontSize:13,color:"#94a3b8",marginTop:6}}>Steps to make manager changes permanent.</div>
       </div>
-
-      <div style={{background:"#f0fdf4",border:"1px solid #86efac",borderRadius:12,padding:"12px 18px",marginBottom:24,fontSize:13,color:"#166534"}}>
-        <strong>How it works:</strong> This app's data lives directly in the HTML file on GitHub. When you make changes via Manager Login, the app generates the exact code you need to paste into the file. Once committed to GitHub, the update is live for everyone.
-      </div>
-
-      {steps.map(s=>(
-        <div key={s.num} className="guide-step">
-          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:8}}>
-            <div style={{background:"#4f46e5",color:"#fff",borderRadius:"50%",width:28,height:28,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:13,flexShrink:0}}>{s.num}</div>
-            <div style={{fontWeight:700,fontSize:15}}>{s.icon} {s.title}</div>
-          </div>
-          <p style={{fontSize:13,color:"#475569",lineHeight:1.6,marginBottom:s.bullets||s.code||s.note?10:0}}>{s.body}</p>
-          {s.bullets&&<ul style={{paddingLeft:20,marginBottom:s.note?10:0}}>{s.bullets.map((b,i)=><li key={i} style={{fontSize:13,color:"#475569",marginBottom:4,lineHeight:1.5}}>{b}</li>)}</ul>}
-          {s.code&&<div>
-            <div style={{fontSize:11,color:"#94a3b8",marginBottom:4,fontWeight:600}}>{s.codeLabel}</div>
-            <div className="guide-code">{s.code}</div>
-          </div>}
-          {s.note&&<div style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#1d4ed8",marginTop:8}}><strong>💡 Note:</strong> {s.note}</div>}
-        </div>
-      ))}
-
-      <div style={{background:"#fffbeb",border:"1px solid #fcd34d",borderRadius:12,padding:"16px 20px",marginTop:8}}>
-        <div style={{fontWeight:700,fontSize:14,color:"#92400e",marginBottom:10}}>⚡ Quick Reference: Common Edits</div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-          {[
-            ["Add a new agent","Roster tab → + Add Agent → fill form → Save → Export Changes → paste into defaultAgents array → commit"],
-            ["Edit an agent's schedule","Roster or Schedule tab → ✏️ edit icon → make changes → Save → Export Changes → replace the agent entry in defaultAgents → commit"],
-            ["Add time off","Time Off tab → + Add Time Off → fill form → Save → Export Changes → paste into defaultTimeOff array → commit"],
-            ["Mark an agent as departed","Roster tab → ✏️ edit → add Last Day date → Save → Export Changes → update lastDay in defaultAgents → commit"],
-          ].map(([title,desc])=>(
-            <div key={title} style={{background:"#fff",border:"1px solid #fcd34d",borderRadius:8,padding:"10px 14px"}}>
-              <div style={{fontWeight:700,fontSize:12,color:"#92400e",marginBottom:4}}>{title}</div>
-              <div style={{fontSize:11,color:"#64748b",lineHeight:1.5}}>{desc}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div style={{background:"#fff5f5",border:"1px solid #fca5a5",borderRadius:12,padding:"14px 18px",marginTop:12,fontSize:12,color:"#991b1b"}}>
-        <strong>⚠️ Important:</strong> Changes made via Manager Login are only temporary (they live in memory and reset on page refresh). Always export and commit to GitHub to make them permanent.
-      </div>
+      <div style={{background:"#f0fdf4",border:"1px solid #86efac",borderRadius:12,padding:"12px 18px",marginBottom:24,fontSize:13,color:"#166534"}}><strong>How it works:</strong> Data lives in the HTML file on GitHub. Manager changes generate exact code to paste in. Once committed, the update is live for everyone.</div>
+      {steps.map(s=>(<div key={s.num} className="guide-step"><div style={{display:"flex",alignItems:"center",gap:12,marginBottom:8}}><div style={{background:"#4f46e5",color:"#fff",borderRadius:"50%",width:28,height:28,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:13,flexShrink:0}}>{s.num}</div><div style={{fontWeight:700,fontSize:15}}>{s.icon} {s.title}</div></div><p style={{fontSize:13,color:"#475569",lineHeight:1.6,marginBottom:s.bullets||s.code||s.note?10:0}}>{s.body}</p>{s.bullets&&<ul style={{paddingLeft:20,marginBottom:s.note?10:0}}>{s.bullets.map((b,i)=><li key={i} style={{fontSize:13,color:"#475569",marginBottom:4,lineHeight:1.5}}>{b}</li>)}</ul>}{s.code&&<div><div style={{fontSize:11,color:"#94a3b8",marginBottom:4,fontWeight:600}}>{s.codeLabel}</div><div className="guide-code">{s.code}</div></div>}{s.note&&<div style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#1d4ed8",marginTop:8}}><strong>💡 Note:</strong> {s.note}</div>}</div>))}
+      <div style={{background:"#fff5f5",border:"1px solid #fca5a5",borderRadius:12,padding:"14px 18px",marginTop:12,fontSize:12,color:"#991b1b"}}><strong>⚠️ Important:</strong> Changes via Manager Login are temporary (reset on refresh). Always export and commit to GitHub to make them permanent.</div>
     </div>
   );
 }
@@ -1123,13 +983,23 @@ function App(){
   const[timeOffData,setTimeOffData]=useState(defaultTimeOff);
   const[isManager,setIsManager]=useState(false);
   const[showLogin,setShowLogin]=useState(false);
-  const[tab,setTab]=useState("today");
+  const[tab,setTab]=useState("overview");
   const[rosterUnlocked,setRosterUnlocked]=useState(false);
   const[showRosterLogin,setShowRosterLogin]=useState(false);
   const[changeLog,setChangeLog]=useState([]);
   const[showExport,setShowExport]=useState(false);
   const onChangeLogged=useCallback(entry=>{setChangeLog(prev=>[...prev,entry]);},[]);
   const activeCount=useMemo(()=>getActiveAgents(agents).length,[agents]);
+  // Tab order: Overview, Today, Schedule, Chat, Time Off, Roster, GitHub Guide
+  const TABS=[
+    {id:"overview",label:"📊 Overview"},
+    {id:"today",label:"🌅 Today"},
+    {id:"schedule",label:"📅 Schedule"},
+    {id:"chat",label:"💬 Chat"},
+    {id:"timeoff",label:"🏖️ Time Off"},
+    {id:"roster",label:"👥 Roster",locked:true},
+    {id:"guide",label:"📖 GitHub Guide"},
+  ];
   function handleTabClick(t){if(t==="roster"&&!rosterUnlocked){setShowRosterLogin(true);return;}setTab(t);}
   return(
     <div style={{minHeight:"100vh",background:"#f8fafc"}}>
@@ -1144,20 +1014,9 @@ function App(){
         </div>
       </div>
       <div style={{background:"#fff",borderBottom:"1px solid #e2e8f0",padding:"0 24px",display:"flex",gap:4,overflowX:"auto"}}>
-        <button className={`nav-tab${tab==="today"?" active":""}`}    onClick={()=>handleTabClick("today")}>🌅 Today</button>
-        <button className={`nav-tab${tab==="roster"?" active":""}`}   onClick={()=>handleTabClick("roster")}>👥 Roster {!rosterUnlocked&&<span style={{fontSize:10,marginLeft:4,opacity:.6}}>🔒</span>}</button>
-        <button className={`nav-tab${tab==="overview"?" active":""}`} onClick={()=>handleTabClick("overview")}>📊 Overview</button>
-        <button className={`nav-tab${tab==="schedule"?" active":""}`} onClick={()=>handleTabClick("schedule")}>📅 Schedule</button>
-        <button className={`nav-tab${tab==="chat"?" active":""}`}     onClick={()=>handleTabClick("chat")}>💬 Chat</button>
-        <button className={`nav-tab${tab==="timeoff"?" active":""}`}  onClick={()=>handleTabClick("timeoff")}>🏖️ Time Off</button>
-        <button className={`nav-tab${tab==="guide"?" active":""}`}    onClick={()=>handleTabClick("guide")}>📖 GitHub Guide</button>
+        {TABS.map(t=><button key={t.id} className={`nav-tab${tab===t.id?" active":""}`} onClick={()=>handleTabClick(t.id)}>{t.label}{t.locked&&!rosterUnlocked&&<span style={{fontSize:10,marginLeft:4,opacity:.6}}>🔒</span>}</button>)}
       </div>
-      {isManager&&changeLog.length>0&&(
-        <div className="export-banner" style={{margin:"12px 24px 0"}}>
-          <div><span style={{fontWeight:700,fontSize:13}}>📋 {changeLog.length} unsaved change{changeLog.length!==1?"s":""} this session</span><span style={{fontSize:12,color:"#92400e",marginLeft:8}}>Export and commit to GitHub to make them permanent for everyone.</span></div>
-          <button className="btn btn-export" onClick={()=>setShowExport(true)}>View Export Code →</button>
-        </div>
-      )}
+      {isManager&&changeLog.length>0&&(<div className="export-banner" style={{margin:"12px 24px 0"}}><div><span style={{fontWeight:700,fontSize:13}}>📋 {changeLog.length} unsaved change{changeLog.length!==1?"s":""} this session</span><span style={{fontSize:12,color:"#92400e",marginLeft:8}}>Export and commit to GitHub to make permanent.</span></div><button className="btn btn-export" onClick={()=>setShowExport(true)}>View Export Code →</button></div>)}
       <div style={{padding:"20px 24px",maxWidth:1300,margin:"0 auto"}}>
         {tab==="today"   &&<TodayTab agents={agents} timeOffData={timeOffData}/>}
         {tab==="roster"  &&rosterUnlocked&&<RosterTab agents={agents} setAgents={setAgents} onChangeLogged={onChangeLogged}/>}
@@ -1167,7 +1026,7 @@ function App(){
         {tab==="timeoff" &&<TimeOffTab agents={agents} timeOffData={timeOffData} setTimeOffData={setTimeOffData} isManager={isManager} onChangeLogged={onChangeLogged}/>}
         {tab==="guide"   &&<GitHubGuideTab/>}
       </div>
-      {showLogin&&<LoginModal onLogin={()=>{setIsManager(true);setRosterUnlocked(true);setShowLogin(false);setTab("today");}} onClose={()=>setShowLogin(false)}/>}
+      {showLogin&&<LoginModal onLogin={()=>{setIsManager(true);setRosterUnlocked(true);setShowLogin(false);setTab("overview");}} onClose={()=>setShowLogin(false)}/>}
       {showRosterLogin&&<LoginModal onLogin={()=>{setRosterUnlocked(true);setIsManager(true);setShowRosterLogin(false);setTab("roster");}} onClose={()=>setShowRosterLogin(false)}/>}
       {showExport&&<ExportModal log={changeLog} onClose={()=>setShowExport(false)} onClear={()=>setChangeLog([])}/>}
     </div>
