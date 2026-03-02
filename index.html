@@ -516,8 +516,8 @@ function TodayTab({agents,timeOffData}){
     const sb=SHIFT_START_MIN[getAgentForDate(b,TODAY_STR).shift]||999;
     return sa-sb;
   });
-  const CHAT_DAY_KEYS2=["Mon","Tue","Wed","Thu","Fri"];
-  const todayKey=CHAT_DAY_KEYS2[["Monday","Tuesday","Wednesday","Thursday","Friday"].indexOf(TODAY_DAY)]||"Mon";
+  const CHAT_DAY_KEYS2=["Mon","Tue","Wed","Thu","Fri","Sat"];
+  const todayKey=CHAT_DAY_KEYS2[["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"].indexOf(TODAY_DAY)]||"Mon";
   const chatCounts=getChatIntervalCounts(todayKey);
   const chatPrimary=chatAgents.filter(a=>a[todayKey]==="X").length;
   const chatBackup=chatAgents.filter(a=>a[todayKey]==="B").length;
