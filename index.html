@@ -43,7 +43,6 @@ th.sortable:not(.asc):not(.desc) .sort-icon::after{content:"⇅"}
 .tag-approved{background:#dcfce7;color:#166534}
 .tag-denied{background:#fee2e2;color:#991b1b}
 .tag-pending{background:#fef3c7;color:#92400e}
-.tag-flex{background:#e0e7ff;color:#3730a3}
 .nav-tab{padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;color:#64748b;background:none;border-top:none;border-left:none;border-right:none;white-space:nowrap}
 .nav-tab.active{border-bottom-color:#4f46e5;color:#4f46e5}
 .card{background:#fff;border-radius:12px;border:1px solid #e2e8f0;padding:16px;box-shadow:0 1px 4px #0001}
@@ -51,7 +50,6 @@ th.sortable:not(.asc):not(.desc) .sort-icon::after{content:"⇅"}
 .warn-card{border-left:4px solid #f59e0b;background:#fffbeb}
 .ok-card{border-left:4px solid #10b981;background:#f0fdf4}
 .skill-chip{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;background:#e0e7ff;color:#3730a3;margin:2px}
-.flex-chip{display:inline-block;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:700;background:#e0e7ff;color:#3730a3;margin-left:4px;vertical-align:middle}
 .code-block{background:#1e293b;color:#e2e8f0;border-radius:8px;padding:14px;font-family:monospace;font-size:11px;line-height:1.6;overflow-x:auto;white-space:pre;max-height:320px;overflow-y:auto}
 .export-banner{background:#fffbeb;border:2px solid #f59e0b;border-radius:12px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .guide-step{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 20px;margin-bottom:12px;border-left:4px solid #4f46e5}
@@ -69,8 +67,6 @@ const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const SUPERVISORS = ["Shelby Coldiron","Neyat Abraha","Alex Blair","Lauren Montanye","Ainsley Reynolds","Angy Chang"];
 const SHIFTS = ["6:00–2:30","8:00–4:30","9:00–5:30","10:30–8:00","11:30–8:00"];
 const SHIFT_START_MIN = {"6:00–2:30":360,"8:00–4:30":480,"9:00–5:30":540,"10:30–8:00":630,"11:30–8:00":690};
-const FLEX_TYPES = ["Early Leave","Late Start","Extended Lunch","Shift Swap","WFH","Full-Day Adjustment","Other"];
-const FLEX_STATUSES = ["Approved","Pending","Denied"];
 const SUP_COLORS = {
   "Shelby Coldiron":{bg:"#db2777",light:"#fdf2f8",border:"#f9a8d4"},
   "Neyat Abraha":   {bg:"#7c3aed",light:"#f5f3ff",border:"#c4b5fd"},
@@ -86,7 +82,6 @@ const SHIFT_TIMES = {
 const INTERVALS=[];
 for(let m=360;m<1200;m+=30){const h=Math.floor(m/60),mn=m%60;INTERVALS.push({label:`${String(h).padStart(2,"0")}:${String(mn).padStart(2,"0")}`,minutes:m});}
 
-// ── FIXED WEEKS ARRAY — complete through end of April ──────────────────────
 const WEEKS=[
   {month:"February",label:"W1",display:"Feb 2–8",    dates:["2/2/26","2/3/26","2/4/26","2/5/26","2/6/26","2/7/26"]},
   {month:"February",label:"W2",display:"Feb 9–15",   dates:["2/9/26","2/10/26","2/11/26","2/12/26","2/13/26","2/14/26"]},
@@ -102,7 +97,6 @@ const WEEKS=[
   {month:"April",   label:"W3",display:"Apr 20–25",  dates:["4/20/26","4/21/26","4/22/26","4/23/26","4/24/26","4/25/26"]},
   {month:"April",   label:"W4",display:"Apr 27–30",  dates:["4/27/26","4/28/26","4/29/26","4/30/26","4/30/26","4/30/26"]},
 ];
-
 const MONTH_GROUPS = ["February","March","April"];
 
 const REAL_TODAY=(()=>{const d=new Date();d.setHours(0,0,0,0);return d;})();
@@ -111,7 +105,6 @@ const DISPLAY_DATE=(()=>{if(REAL_DOW===0){const d=new Date(REAL_TODAY);d.setDate
 const TODAY_STR=`${DISPLAY_DATE.getMonth()+1}/${DISPLAY_DATE.getDate()}/${String(DISPLAY_DATE.getFullYear()).slice(-2)}`;
 const TODAY_DAY=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][DISPLAY_DATE.getDay()];
 const IS_SUNDAY=REAL_DOW===0;
-const MAR6=new Date(2026,2,6);
 const MAR9=new Date(2026,2,9);
 const MAR18=new Date(2026,2,18);
 const MAR30=new Date(2026,2,30);
@@ -128,67 +121,6 @@ const EARLY_PERM={
   "Andre Cordero": {shift:"8:00–4:30", workDays:["Monday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Monday","Wednesday","Thursday"],wfhDays:["Friday","Saturday"]},
   "Sarah Hajali":  {shift:"6:00–2:30", workDays:["Monday","Tuesday","Wednesday","Thursday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Saturday"]},
 };
-
-const defaultShiftFlexes=[
-  {id:1,  name:"Jessie Gregory",      date:"12/5/25", type:"Shift Swap",        status:"Approved", requestedTime:"8:00–4:00",  originalTime:"10:00–6:00",  makeupRequired:false,makeupPlan:"",notes:"Early start"},
-  {id:2,  name:"Ericquisha Dotson",   date:"12/8/25", type:"Early Leave",       status:"Approved", requestedTime:"7:00–2:30",  originalTime:"8:00–4:30",   makeupRequired:true, makeupPlan:"Start 7AM, makeup after shift",notes:"Labwork appt"},
-  {id:3,  name:"Chassidy Williams",   date:"12/17/25",type:"Extended Lunch",    status:"Approved", requestedTime:"10:00–11:30",originalTime:"",            makeupRequired:true, makeupPlan:"End 1 hour late on 12/17",notes:"Extended lunch 10–11:30am"},
-  {id:4,  name:"Ananya SenthilKumar",date:"12/18/25",type:"Extended Lunch",    status:"Approved", requestedTime:"9:30–10:30", originalTime:"",            makeupRequired:true, makeupPlan:"Stay late 4:30–5:00pm",notes:"Extended lunch 9:30–10:30am"},
-  {id:5,  name:"Preston Panetti",     date:"12/20/25",type:"Full-Day Adjustment",status:"Approved",requestedTime:"9:00–1:00",  originalTime:"9:00–5:30",   makeupRequired:true, makeupPlan:"12/24 9:00–1:00",notes:"Half day + half day on 12/24"},
-  {id:6,  name:"Balrupe Purewal",     date:"12/29/25",type:"Shift Swap",        status:"Approved", requestedTime:"Work 12/29", originalTime:"1/3/26 off",  makeupRequired:false,makeupPlan:"Work 12/29 instead",notes:"Swap 12/29 for 1/3"},
-  {id:7,  name:"Bianca Vernando",     date:"1/6/26",  type:"Shift Swap",        status:"Approved", requestedTime:"Office 1/6", originalTime:"Day off",     makeupRequired:false,makeupPlan:"Off 1/10",notes:"Office opening day"},
-  {id:8,  name:"Cristie Avant",       date:"1/13/26", type:"Early Leave",       status:"Approved", requestedTime:"8:30–3:00",  originalTime:"8:30–5:00",   makeupRequired:true, makeupPlan:"1/14 5:30–6:30pm & 1/15 5:30–6:30pm",notes:"Leave at 3pm"},
-  {id:9,  name:"Servando Morales",    date:"1/14/26", type:"Shift Swap",        status:"Approved", requestedTime:"9:00–5:30",  originalTime:"11:30–8:00",  makeupRequired:false,makeupPlan:"",notes:"Working 9–5:30 instead"},
-  {id:10, name:"Eri Dotson",          date:"1/21/26", type:"Early Leave",       status:"Approved", requestedTime:"8:00–12:45", originalTime:"8:00–4:30",   makeupRequired:true, makeupPlan:"1/18 or 1/24 – 3 makeup hours",notes:"Leaving at 12:45pm"},
-  {id:11, name:"Ramila Chaulagain",   date:"1/21/26", type:"Early Leave",       status:"Approved", requestedTime:"8:00–2:00",  originalTime:"8:00–4:30",   makeupRequired:true, makeupPlan:"1/21 evening 6–8:30pm",notes:"Appointment"},
-  {id:12, name:"Balrupe Purewal",     date:"1/21/26", type:"WFH",               status:"Approved", requestedTime:"WFH",        originalTime:"",            makeupRequired:false,makeupPlan:"",notes:"Car accident – WFH 1/21–1/30",endDate:"1/30/26"},
-  {id:13, name:"Servando Morales",    date:"1/23/26", type:"Early Leave",       status:"Pending",  requestedTime:"11:30–5:45", originalTime:"11:30–8:00",  makeupRequired:true, makeupPlan:"1/24 10:00–11:30am",notes:"Left at 5:45pm"},
-  {id:14, name:"Cristie Avant",       date:"1/28/26", type:"WFH",               status:"Approved", requestedTime:"WFH",        originalTime:"",            makeupRequired:false,makeupPlan:"",notes:"Weather – working from home"},
-  {id:15, name:"Bianca Vernando",     date:"1/28/26", type:"WFH",               status:"Approved", requestedTime:"WFH",        originalTime:"",            makeupRequired:false,makeupPlan:"",notes:"Weather WFH"},
-  {id:16, name:"Bianca Vernando",     date:"2/4/26",  type:"WFH",               status:"Approved", requestedTime:"WFH",        originalTime:"",            makeupRequired:false,makeupPlan:"",notes:"New WFH day (storm makeup)"},
-  {id:17, name:"Bianca Vernando",     date:"2/9/26",  type:"WFH",               status:"Approved", requestedTime:"WFH",        originalTime:"",            makeupRequired:false,makeupPlan:"",notes:"WFH"},
-  {id:18, name:"Balrupe Purewal",     date:"2/2/26",  type:"WFH",               status:"Approved", requestedTime:"WFH",        originalTime:"",            makeupRequired:false,makeupPlan:"",notes:"Car still in repair – WFH until fixed",endDate:"2/6/26"},
-  {id:19, name:"Cristie Avant",       date:"2/10/26", type:"Late Start",        status:"Pending",  requestedTime:"9:00–4:30",  originalTime:"8:00–4:30",   makeupRequired:false,makeupPlan:"",notes:"Doctors appt 9–11am"},
-  {id:20, name:"Zhane Alexander",     date:"2/10/26", type:"WFH",               status:"Approved", requestedTime:"WFH",        originalTime:"",            makeupRequired:false,makeupPlan:"",notes:"WFH swap for 2/12"},
-  {id:21, name:"Cristie Avant",       date:"2/10/26", type:"Late Start",        status:"Approved", requestedTime:"9:30–4:30",  originalTime:"8:00–4:30",   makeupRequired:true, makeupPlan:"12/15 during the day",notes:"9:30–11am appt"},
-  {id:22, name:"Ramila Chaulagain",   date:"2/11/26", type:"Early Leave",       status:"Approved", requestedTime:"8:00–2:00",  originalTime:"8:00–4:30",   makeupRequired:true, makeupPlan:"2/11 work late 7:00–9:30pm",notes:"Early leave"},
-  {id:23, name:"Bianca Vernando",     date:"2/11/26", type:"WFH",               status:"Approved", requestedTime:"WFH",        originalTime:"",            makeupRequired:false,makeupPlan:"",notes:"WFH"},
-  {id:24, name:"Eri Dotson",          date:"2/13/26", type:"Shift Swap",        status:"Approved", requestedTime:"8:00–4:30",  originalTime:"Off 2/13",    makeupRequired:true, makeupPlan:"Work 2/12 instead",notes:"Swap 2/13 off day for 2/12"},
-  {id:25, name:"Denia Bradley",       date:"2/13/26", type:"Early Leave",       status:"Approved", requestedTime:"4:00–8:00",  originalTime:"11:30–8:00",  makeupRequired:false,makeupPlan:"",notes:"Half Jiffy Day – work 4–8pm only"},
-  {id:26, name:"Denia Bradley",       date:"2/14/26", type:"Early Leave",       status:"Approved", requestedTime:"4:00–8:00",  originalTime:"11:30–8:00",  makeupRequired:false,makeupPlan:"",notes:"Half Jiffy Day – work 4–8pm only"},
-  {id:27, name:"Bianca Vernando",     date:"2/16/26", type:"WFH",               status:"Approved", requestedTime:"WFH",        originalTime:"",            makeupRequired:false,makeupPlan:"",notes:"WFH"},
-  {id:28, name:"Bianca Vernando",     date:"2/17/26", type:"WFH",               status:"Approved", requestedTime:"WFH",        originalTime:"",            makeupRequired:false,makeupPlan:"",notes:"EH over Presidents Day"},
-  {id:29, name:"Cristie Avant",       date:"2/18/26", type:"WFH",               status:"Approved", requestedTime:"WFH",        originalTime:"",            makeupRequired:false,makeupPlan:"",notes:"EH over Presidents Day"},
-  {id:30, name:"Unaisa Aslam",        date:"2/18/26", type:"WFH",               status:"Approved", requestedTime:"WFH",        originalTime:"",            makeupRequired:false,makeupPlan:"",notes:"Worked 4 hrs on Presidents Day. Start of Ramadan"},
-  {id:31, name:"Cristie Avant",       date:"2/19/26", type:"Full-Day Adjustment",status:"Approved",requestedTime:"Off",        originalTime:"8:00–4:30",   makeupRequired:false,makeupPlan:"",notes:"Jiffy Day 2/19–2/20"},
-  {id:32, name:"Andre Cordero",       date:"2/20/26", type:"WFH",               status:"Pending",  requestedTime:"WFH",        originalTime:"",            makeupRequired:false,makeupPlan:"",notes:"Work remote 9–5:30pm"},
-  {id:33, name:"Lysette Salinas",     date:"2/24/26", type:"Late Start",        status:"Approved", requestedTime:"11:00–5:30", originalTime:"9:00–5:30",   makeupRequired:true, makeupPlan:"2/25 start 8am, 2/26 start 8am",notes:"Arriving 11am"},
-  {id:34, name:"Eri Dotson",          date:"2/27/26", type:"Shift Swap",        status:"Approved", requestedTime:"Work 2/26",  originalTime:"Off 2/27",    makeupRequired:true, makeupPlan:"Work 2/26 8–4:30",notes:"Swap day off"},
-  {id:35, name:"Cristie Avant",       date:"3/10/26", type:"Full-Day Adjustment",status:"Approved",requestedTime:"Off",        originalTime:"8:00–4:30",   makeupRequired:false,makeupPlan:"",notes:"Jiffy Day"},
-  {id:36, name:"Ramila Chaulagain",   date:"2/19/26", type:"WFH",               status:"Approved", requestedTime:"WFH",        originalTime:"",            makeupRequired:false,makeupPlan:"",notes:"Overtime on 2/16 approved 2/13"},
-  {id:37, name:"Bianca Vernando",     date:"2/24/26", type:"WFH",               status:"Approved", requestedTime:"WFH",        originalTime:"",            makeupRequired:false,makeupPlan:"",notes:"Extra hours delivered"},
-  {id:38, name:"Rosa Nuno",           date:"2/24/26", type:"WFH",               status:"Approved", requestedTime:"WFH",        originalTime:"",            makeupRequired:false,makeupPlan:"",notes:"WFH"},
-  {id:39, name:"Cristie Avant",       date:"3/4/26",  type:"Shift Swap",        status:"Approved", requestedTime:"8:00–4:30",  originalTime:"",            makeupRequired:true, makeupPlan:"3/7 full shift",notes:"Swap with Blanca"},
-  {id:40, name:"Ariashe Lowery",      date:"3/4/26",  type:"Late Start",        status:"Approved", requestedTime:"11:30–8:00", originalTime:"9:00–5:30",   makeupRequired:false,makeupPlan:"",notes:"Child appt – coming in at 11:30"},
-  {id:41, name:"Unaisa Aslam",        date:"3/15/26", type:"Shift Swap",        status:"Approved", requestedTime:"Work 3/15",  originalTime:"Off 3/17",    makeupRequired:false,makeupPlan:"Work Sunday 3/15 instead",notes:"Flying out Tuesday 3/17"},
-  {id:42, name:"Bianca Vernando",     date:"3/3/26",  type:"WFH",               status:"Approved", requestedTime:"WFH",        originalTime:"",            makeupRequired:false,makeupPlan:"",notes:"Extra hours"},
-  {id:43, name:"Chassidy Williams",   date:"3/25/26", type:"Early Leave",       status:"Pending",  requestedTime:"6:00–1:00",  originalTime:"6:00–2:30",   makeupRequired:true, makeupPlan:"3/25 6–7:30pm",notes:"Leaving at 1pm"},
-  {id:44, name:"Ramila Chaulagain",   date:"2/26/26", type:"WFH",               status:"Approved", requestedTime:"WFH",        originalTime:"",            makeupRequired:false,makeupPlan:"",notes:"Extra hours completed"},
-];
-
-function getAgentForDate(agent,dateS){
-  const d=parseDate(dateS);
-  if(!d) return agent;
-  if(agent.name==="Unaisa Aslam"&&d>=MAR18) agent={...agent,shift:"11:30–8:00"};
-  if(EARLY_OFFICE_AGENTS.has(agent.name)){
-    if(d<MAR9) agent={...agent,shift:"9:00–5:30",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],wfhDays:[]};
-    else{const perm=EARLY_PERM[agent.name];if(perm) agent={...agent,...perm};}
-  }
-  if(agent.name==="Enrico Davis"){const mar2=new Date(2026,2,2);if(d>=mar2&&d<=MAR6) agent={...agent,workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],wfhDays:[]};}
-  const chg=SCHEDULE_CHANGES[agent.name];
-  if(chg&&d>=MAR30) agent={...agent,shift:chg.shift,workDays:chg.workDays,officeDays:chg.officeDays,wfhDays:chg.wfhDays};
-  return agent;
-}
 
 const chatAgents=[
   {name:"Rosa Nuno",          shift:"6:00-14:30",  supervisor:"Neyat Abraha",    Mon:"X", Tue:"",  Wed:"",  Thu:"",  Fri:"X", Sat:"X"},
@@ -220,6 +152,10 @@ const CHAT_STANDARD_END=1080;
 const CHAT_EXPANDED_START=360;
 const CHAT_EXPANDED_END=1200;
 const OFFICE_SEAT_LIMIT=22;
+const CHAT_DAY_KEYS=["Mon","Tue","Wed","Thu","Fri","Sat"];
+const CHAT_DAY_FULL={Mon:"Monday",Tue:"Tuesday",Wed:"Wednesday",Thu:"Thursday",Fri:"Friday",Sat:"Saturday"};
+const CHAT_INTERVALS_ALL=[];
+for(let m=360;m<=1200;m+=30){const h=Math.floor(m/60),mn=m%60;CHAT_INTERVALS_ALL.push({label:`${String(h).padStart(2,"0")}:${String(mn).padStart(2,"0")}`,minutes:m});}
 
 const defaultTimeOff=[
   {name:"Lauren Montanye",    type:"Vacation",      start:"1/31/26",end:"2/8/26",  duration:5,   half:false},
@@ -338,22 +274,25 @@ function dateRange(start,end){const dates=[];let d=new Date(parseDate(start));co
 function getTimeOff(name,dateS,toData){return(toData||defaultTimeOff).find(r=>r.name===name&&dateRange(r.start,r.end).includes(dateS))||null;}
 function hasDeparted(agent,dateS){if(!agent.lastDay)return false;const last=parseDate(agent.lastDay),d=parseDate(dateS);return last&&d&&d>last;}
 function hasNotStarted(agent,dateS){if(!agent.startDate)return false;const start=parseDate(agent.startDate),d=parseDate(dateS);return start&&d&&d<start;}
-function timeToMin(t){if(!t)return 0;const p=t.trim().split(":");return parseInt(p[0])*60+(parseInt(p[1])||0);}
 function minToTime(m){const h=Math.floor(m/60),mn=m%60;return`${h}:${String(mn).padStart(2,"0")}`;}
+function timeToMin(t){if(!t)return 0;const p=t.trim().split(":");return parseInt(p[0])*60+(parseInt(p[1])||0);}
 function tenure(sd,refDate=REAL_TODAY){if(!sd)return"—";const d=parseDate(sd);if(!d)return"—";const diff=(refDate-d)/(1000*60*60*24*365);if(diff<0)return"Not started";if(diff<1)return`${Math.floor(diff*12)}mo`;return`${diff.toFixed(1)}yr`;}
 
-function getFlexForDate(name,dateS,flexData){
-  return flexData.filter(f=>{
-    if(f.status!=="Approved")return false;
-    if(f.name!==name)return false;
-    const fDate=parseDate(f.date);if(!fDate)return false;
-    const endDate=f.endDate?parseDate(f.endDate):fDate;
-    const target=parseDate(dateS);if(!target)return false;
-    return target>=fDate&&target<=endDate;
-  });
+function getAgentForDate(agent,dateS){
+  const d=parseDate(dateS);
+  if(!d)return agent;
+  if(agent.name==="Unaisa Aslam"&&d>=MAR18)agent={...agent,shift:"11:30–8:00"};
+  if(EARLY_OFFICE_AGENTS.has(agent.name)){
+    if(d<MAR9)agent={...agent,shift:"9:00–5:30",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],wfhDays:[]};
+    else{const perm=EARLY_PERM[agent.name];if(perm)agent={...agent,...perm};}
+  }
+  if(agent.name==="Enrico Davis"){const mar2=new Date(2026,2,2);const mar6=new Date(2026,2,6);if(d>=mar2&&d<=mar6)agent={...agent,workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],wfhDays:[]};}
+  const chg=SCHEDULE_CHANGES[agent.name];
+  if(chg&&d>=MAR30)agent={...agent,shift:chg.shift,workDays:chg.workDays,officeDays:chg.officeDays,wfhDays:chg.wfhDays};
+  return agent;
 }
 
-function getCellStatus(agent,day,weekDates,toData,flexData){
+function getCellStatus(agent,day,weekDates,toData){
   const dateS=weekDates[DAYS.indexOf(day)];
   const ea=getAgentForDate(agent,dateS);
   if(hasDeparted(agent,dateS))return{type:"departed",dateS,shift:ea.shift};
@@ -361,11 +300,8 @@ function getCellStatus(agent,day,weekDates,toData,flexData){
   if(!ea.workDays.includes(day))return{type:"dayoff",dateS,shift:ea.shift};
   const to=getTimeOff(agent.name,dateS,toData);
   if(to)return{type:to.half?"half":"pto",label:to.type,dateS,to,shift:ea.shift};
-  const flexes=flexData?getFlexForDate(agent.name,dateS,flexData):[];
   const baseType=ea.officeDays.includes(day)?"office":"wfh";
-  const wfhFlex=flexes.find(f=>f.type==="WFH");
-  if(wfhFlex&&baseType==="office")return{type:"wfh",dateS,shift:ea.shift,flex:wfhFlex};
-  return{type:baseType,dateS,shift:ea.shift,flex:flexes.length>0?flexes[0]:null};
+  return{type:baseType,dateS,shift:ea.shift};
 }
 
 function getStatus(a,refDate=REAL_TODAY){
@@ -382,11 +318,6 @@ function getWeekAgents(agents,week){
     return true;
   });
 }
-
-const CHAT_INTERVALS_ALL=[];
-for(let m=360;m<=1200;m+=30){const h=Math.floor(m/60),mn=m%60;CHAT_INTERVALS_ALL.push({label:`${String(h).padStart(2,"0")}:${String(mn).padStart(2,"0")}`,minutes:m});}
-const CHAT_DAY_KEYS=["Mon","Tue","Wed","Thu","Fri","Sat"];
-const CHAT_DAY_FULL={Mon:"Monday",Tue:"Tuesday",Wed:"Wednesday",Thu:"Thursday",Fri:"Friday",Sat:"Saturday"};
 
 function getChatIntervalCounts(dayKey,expanded=false){
   const winStart=expanded?CHAT_EXPANDED_START:CHAT_STANDARD_START;
@@ -429,13 +360,13 @@ function timeOffToCode(r){
 }
 function buildAgentChangelog(type,newAgent,oldAgent){
   const ts=new Date().toLocaleString();
-  if(type==="agent_add") return{id:Date.now(),timestamp:ts,type,label:`➕ Added agent: ${newAgent.name}`,instructions:`In the defaultAgents array, add this new entry before the closing ]:`,code:agentToCode(newAgent)};
-  if(type==="agent_remove") return{id:Date.now(),timestamp:ts,type,label:`🗑 Removed agent: ${oldAgent.name} (id:${oldAgent.id})`,instructions:`In the defaultAgents array, find and DELETE the entire object where id:${oldAgent.id}.`,code:`// DELETE:\n${agentToCode(oldAgent)}`};
+  if(type==="agent_add")return{id:Date.now(),timestamp:ts,type,label:`➕ Added agent: ${newAgent.name}`,instructions:`In the defaultAgents array, add this new entry before the closing ]:`,code:agentToCode(newAgent)};
+  if(type==="agent_remove")return{id:Date.now(),timestamp:ts,type,label:`🗑 Removed agent: ${oldAgent.name} (id:${oldAgent.id})`,instructions:`In the defaultAgents array, find and DELETE the entire object where id:${oldAgent.id}.`,code:`// DELETE:\n${agentToCode(oldAgent)}`};
   return{id:Date.now(),timestamp:ts,type,label:`✏️ Edited agent: ${newAgent.name} (id:${newAgent.id})`,instructions:`Find id:${newAgent.id} in defaultAgents and replace the ENTIRE entry with:`,code:agentToCode(newAgent)};
 }
 function buildTimeOffChangelog(type,entry){
   const ts=new Date().toLocaleString();
-  if(type==="timeoff_add") return{id:Date.now(),timestamp:ts,type,label:`➕ Added time off: ${entry.name} — ${entry.type} (${entry.start}–${entry.end})`,instructions:`In the defaultTimeOff array, add this entry sorted by start date:`,code:timeOffToCode(entry)};
+  if(type==="timeoff_add")return{id:Date.now(),timestamp:ts,type,label:`➕ Added time off: ${entry.name} — ${entry.type} (${entry.start}–${entry.end})`,instructions:`In the defaultTimeOff array, add this entry sorted by start date:`,code:timeOffToCode(entry)};
   return{id:Date.now(),timestamp:ts,type,label:`🗑 Removed time off: ${entry.name} — ${entry.type} (${entry.start}–${entry.end})`,instructions:`In the defaultTimeOff array, find and DELETE this entry:`,code:`// DELETE:\n${timeOffToCode(entry)}`};
 }
 
@@ -443,8 +374,8 @@ function CellTag({status}){
   if(status.type==="departed")   return<span className="tag tag-departed">🚪</span>;
   if(status.type==="notstarted") return<span className="tag tag-incoming">⏳ N/A</span>;
   if(status.type==="dayoff")     return<span className="tag tag-dayoff">—</span>;
-  if(status.type==="office")     return<span className="tag tag-office">🏢{status.flex&&<span className="flex-chip">⚡</span>}</span>;
-  if(status.type==="wfh")        return<span className="tag tag-wfh">🏠{status.flex&&<span className="flex-chip">⚡</span>}</span>;
+  if(status.type==="office")     return<span className="tag tag-office">🏢</span>;
+  if(status.type==="wfh")        return<span className="tag tag-wfh">🏠</span>;
   if(status.type==="half")       return<span className="tag tag-half">½{status.to?.type==="Vacation"?" Vac":" Jiffy"}</span>;
   if(status.type==="pto"){
     if(status.to?.type==="Vacation")      return<span className="tag tag-vacation">✈️</span>;
@@ -455,13 +386,12 @@ function CellTag({status}){
   return<span className="tag tag-dayoff">—</span>;
 }
 
-// ── WEEK PICKER (shared component) ──────────────────────────────────────────
 function WeekPicker({weekIdx,setWeekIdx}){
   return(
     <div style={{marginBottom:16}}>
       {MONTH_GROUPS.map(month=>{
         const mw=WEEKS.filter(w=>w.month===month);
-        if(mw.length===0)return null;
+        if(!mw.length)return null;
         return(
           <div key={month} style={{marginBottom:8}}>
             <div style={{fontSize:11,fontWeight:700,color:"#94a3b8",marginBottom:5,textTransform:"uppercase",letterSpacing:1}}>{month}</div>
@@ -593,57 +523,19 @@ function TimeOffEditModal({agentNames,onSave,onClose}){
   );
 }
 
-function ShiftFlexModal({agents,entry,onSave,onClose}){
-  const blank={name:"",date:"",endDate:"",type:"WFH",status:"Pending",requestedTime:"",originalTime:"",makeupRequired:false,makeupPlan:"",notes:""};
-  const[form,setForm]=useState(entry?{...entry}:{...blank});
-  const agentNames=[...new Set(getActiveAgents(agents).map(a=>a.name))].sort();
-  const valid=form.name&&form.date&&form.type&&form.status;
-  return(
-    <div className="modal-overlay" onClick={onClose}><div className="modal" onClick={e=>e.stopPropagation()}>
-      <h2 style={{fontWeight:700,fontSize:16,marginBottom:16}}>{entry?"Edit Flex Request":"Add Flex Request"}</h2>
-      <div style={{display:"grid",gap:10,marginBottom:16}}>
-        <div><label style={{fontSize:11,color:"#64748b",fontWeight:600,display:"block",marginBottom:3}}>AGENT</label>
-          <select value={form.name} onChange={e=>setForm({...form,name:e.target.value})}><option value="">— select —</option>{agentNames.map(n=><option key={n}>{n}</option>)}</select></div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-          <div><label style={{fontSize:11,color:"#64748b",fontWeight:600,display:"block",marginBottom:3}}>DATE AFFECTED</label><input value={form.date} onChange={e=>setForm({...form,date:e.target.value})} placeholder="M/D/YY"/></div>
-          <div><label style={{fontSize:11,color:"#64748b",fontWeight:600,display:"block",marginBottom:3}}>END DATE (if range)</label><input value={form.endDate||""} onChange={e=>setForm({...form,endDate:e.target.value})} placeholder="M/D/YY"/></div>
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-          <div><label style={{fontSize:11,color:"#64748b",fontWeight:600,display:"block",marginBottom:3}}>TYPE</label>
-            <select value={form.type} onChange={e=>setForm({...form,type:e.target.value})}>{FLEX_TYPES.map(t=><option key={t}>{t}</option>)}</select></div>
-          <div><label style={{fontSize:11,color:"#64748b",fontWeight:600,display:"block",marginBottom:3}}>STATUS</label>
-            <select value={form.status} onChange={e=>setForm({...form,status:e.target.value})}>{FLEX_STATUSES.map(s=><option key={s}>{s}</option>)}</select></div>
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-          <div><label style={{fontSize:11,color:"#64748b",fontWeight:600,display:"block",marginBottom:3}}>REQUESTED TIME</label><input value={form.requestedTime} onChange={e=>setForm({...form,requestedTime:e.target.value})} placeholder="e.g. 9:00–1:00 or WFH"/></div>
-          <div><label style={{fontSize:11,color:"#64748b",fontWeight:600,display:"block",marginBottom:3}}>ORIGINAL TIME</label><input value={form.originalTime} onChange={e=>setForm({...form,originalTime:e.target.value})} placeholder="e.g. 8:00–4:30"/></div>
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"auto 1fr",gap:10,alignItems:"start"}}>
-          <div style={{paddingTop:20,display:"flex",alignItems:"center",gap:6}}><input type="checkbox" checked={form.makeupRequired} onChange={e=>setForm({...form,makeupRequired:e.target.checked})} style={{width:"auto"}}/><label style={{fontSize:12,fontWeight:600,whiteSpace:"nowrap"}}>Makeup required?</label></div>
-          <div><label style={{fontSize:11,color:"#64748b",fontWeight:600,display:"block",marginBottom:3}}>MAKEUP PLAN</label><input value={form.makeupPlan} onChange={e=>setForm({...form,makeupPlan:e.target.value})} placeholder="Date + time"/></div>
-        </div>
-        <div><label style={{fontSize:11,color:"#64748b",fontWeight:600,display:"block",marginBottom:3}}>NOTES</label><textarea value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})} style={{height:50}}/></div>
-      </div>
-      <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button className="btn btn-ghost" onClick={onClose}>Cancel</button><button className="btn btn-primary" disabled={!valid} onClick={()=>onSave(form)} style={{opacity:valid?1:0.5}}>Save</button></div>
-    </div></div>
-  );
-}
-
-function TodayTab({agents,timeOffData,flexData}){
+function TodayTab({agents,timeOffData}){
   const weekForToday=WEEKS.find(w=>w.dates.includes(TODAY_STR))||WEEKS[4];
   const weekDates=weekForToday.dates;
   const active=getActiveAgents(agents);
   const working=[],pto=[],halfDay=[],wfh=[],inOffice=[];
   active.forEach(a=>{
-    const s=getCellStatus(a,TODAY_DAY,weekDates,timeOffData,flexData);
+    const s=getCellStatus(a,TODAY_DAY,weekDates,timeOffData);
     if(s.type==="dayoff"||s.type==="departed"||s.type==="notstarted")return;
     if(s.type==="pto"){pto.push({agent:a,to:s.to});return;}
     if(s.type==="half"){halfDay.push({agent:a,to:s.to});return;}
     if(s.type==="office"){inOffice.push(a);working.push(a);}
     if(s.type==="wfh"){wfh.push(a);working.push(a);}
   });
-  const todayFlexes=flexData.filter(f=>f.status==="Approved"&&f.date===TODAY_STR);
-  const sortedInOffice=[...inOffice].sort((a,b)=>{const sa=SHIFT_START_MIN[getAgentForDate(a,TODAY_STR).shift]||999,sb=SHIFT_START_MIN[getAgentForDate(b,TODAY_STR).shift]||999;return sa-sb;});
   const todayKey=CHAT_DAY_KEYS[["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"].indexOf(TODAY_DAY)]||"Mon";
   const chatCounts=getChatIntervalCounts(todayKey);
   const chatPrimary=chatAgents.filter(a=>a[todayKey]==="X").length;
@@ -655,6 +547,7 @@ function TodayTab({agents,timeOffData,flexData}){
   const risk=pct<70?"HIGH":pct<85?"MEDIUM":"OK";
   const starting7=agents.filter(a=>{if(!a.startDate)return false;const sd=parseDate(a.startDate);const diff=(sd-REAL_TODAY)/(1000*60*60*24);return diff>=0&&diff<=7;});
   const todayLabel=DISPLAY_DATE.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+  const sortedInOffice=[...inOffice].sort((a,b)=>{const sa=SHIFT_START_MIN[getAgentForDate(a,TODAY_STR).shift]||999,sb=SHIFT_START_MIN[getAgentForDate(b,TODAY_STR).shift]||999;return sa-sb;});
   return(
     <div>
       <div style={{background:"linear-gradient(135deg,#1e293b,#334155)",borderRadius:16,padding:"20px 24px",color:"#fff",marginBottom:24}}>
@@ -664,7 +557,6 @@ function TodayTab({agents,timeOffData,flexData}){
         <div style={{marginTop:14,display:"flex",gap:10,flexWrap:"wrap"}}>
           <span className={`tag tag-${risk==="HIGH"?"risk":risk==="MEDIUM"?"warn":"ok"}`} style={{fontSize:13,padding:"4px 12px"}}>{risk==="HIGH"?"🔴 HIGH RISK":risk==="MEDIUM"?"🟡 MEDIUM RISK":"🟢 STAFFING OK"}</span>
           <span className="tag" style={{background:"#ffffff22",color:"#fff",fontSize:13,padding:"4px 12px"}}>{pct}% coverage</span>
-          {todayFlexes.length>0&&<span className="tag tag-flex" style={{fontSize:13,padding:"4px 12px",background:"#e0e7ff",color:"#3730a3"}}>⚡ {todayFlexes.length} flex adjustment{todayFlexes.length!==1?"s":""} today</span>}
           {chatRiskIntervals.length>0&&<span className="tag tag-risk" style={{fontSize:13,padding:"4px 12px"}}>💬 Chat risk: {chatRiskIntervals.length} intervals below {CHAT_MIN_STAFFING}</span>}
         </div>
       </div>
@@ -689,26 +581,6 @@ function TodayTab({agents,timeOffData,flexData}){
             </div>);})}
         </div>
         <div className="card">
-          <div style={{fontWeight:700,fontSize:14,marginBottom:12}}>⚡ Flex Adjustments Today</div>
-          {todayFlexes.length===0?<p style={{fontSize:12,color:"#94a3b8"}}>No flex changes today ✓</p>
-          :todayFlexes.map((f,i)=>{const agent=agents.find(a=>a.name===f.name);const c=SUP_COLORS[agent?.supervisor]||{bg:"#64748b"};return(
-            <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid #f1f5f9"}}>
-              <div><div style={{fontWeight:600,fontSize:12}}>{f.name}</div><div style={{fontSize:11,color:c.bg}}>{f.type}{f.requestedTime?` · ${f.requestedTime}`:""}</div></div>
-              {f.makeupRequired&&<span className="tag tag-warn" style={{fontSize:10}}>🔄 Makeup</span>}
-            </div>);})}
-        </div>
-      </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
-        <div className="card">
-          <div style={{fontWeight:700,fontSize:14,marginBottom:12}}>🏢 In Office ({sortedInOffice.length})</div>
-          {sortedInOffice.length===0?<p style={{fontSize:12,color:"#94a3b8"}}>No in-office agents</p>
-          :sortedInOffice.map((a,i)=>{const ea=getAgentForDate(a,TODAY_STR);const c=SUP_COLORS[a.supervisor]||{bg:"#64748b"};const flex=getFlexForDate(a.name,TODAY_STR,flexData);return(
-            <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",borderBottom:"1px solid #f1f5f9"}}>
-              <div style={{fontWeight:600,fontSize:12}}>{a.name}{flex.length>0&&<span className="flex-chip">⚡</span>}</div>
-              <div style={{fontSize:11,color:c.bg}}>{flex.length>0&&flex[0].requestedTime?flex[0].requestedTime:ea.shift}</div>
-            </div>);})}
-        </div>
-        <div className="card">
           <div style={{fontWeight:700,fontSize:13}}>⚠️ Risks & Alerts</div>
           <div style={{marginTop:10,display:"flex",flexDirection:"column",gap:8}}>
             {risk!=="OK"&&<div style={{background:"#fff5f5",border:"1px solid #fca5a5",borderRadius:8,padding:"8px 10px",fontSize:12}}><strong style={{color:"#991b1b"}}>{risk==="HIGH"?"🔴 Staffing Risk":"🟡 Coverage Watch"}</strong><p style={{color:"#475569",marginTop:2}}>Working headcount ({working.length}) is {100-pct}% below expected ({expected} scheduled).</p></div>}
@@ -718,80 +590,16 @@ function TodayTab({agents,timeOffData,flexData}){
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function ShiftFlexTab({agents,flexData,setFlexData,isManager}){
-  const[search,setSearch]=useState("");const[filterType,setFilterType]=useState("All");const[filterStatus,setFilterStatus]=useState("All");const[filterAgent,setFilterAgent]=useState("All");const[weekView,setWeekView]=useState(false);const[weekIdx,setWeekIdx]=useState(4);const[editEntry,setEditEntry]=useState(null);const[addModal,setAddModal]=useState(false);const[delConfirm,setDelConfirm]=useState(null);const[saved,setSaved]=useState(false);
-  const persist=(newData)=>{setFlexData(newData);setSaved(true);setTimeout(()=>setSaved(false),2000);};
-  const agentNames=["All",...[...new Set(flexData.map(f=>f.name))].sort()];
-  const enriched=flexData.map(f=>{const agent=agents.find(a=>a.name===f.name);return{...f,_sup:agent?.supervisor||"—",_dateObj:parseDate(f.date)||new Date(0)};});
-  const filtered=enriched.filter(f=>(filterType==="All"||f.type===filterType)&&(filterStatus==="All"||f.status===filterStatus)&&(filterAgent==="All"||f.name===filterAgent)&&(!search||f.name.toLowerCase().includes(search.toLowerCase())||f.notes.toLowerCase().includes(search.toLowerCase())));
-  const{sorted,SortTh}=useSortableData(filtered,"_dateObj");
-  const week=WEEKS[weekIdx];const weekDates=week.dates;
-  const approvedCount=flexData.filter(f=>f.status==="Approved").length;const pendingCount=flexData.filter(f=>f.status==="Pending").length;const deniedCount=flexData.filter(f=>f.status==="Denied").length;const makeupCount=flexData.filter(f=>f.makeupRequired&&f.status==="Approved").length;
-  const weekFlexes=weekDates.map((dateS,di)=>{const dayFlexes=flexData.filter(f=>{if(f.status!=="Approved")return false;const fd=parseDate(f.date);const ed=f.endDate?parseDate(f.endDate):fd;const td=parseDate(dateS);return td&&fd&&ed&&td>=fd&&td<=ed;});return{day:DAYS[di],date:dateS,flexes:dayFlexes};});
-  const FLEX_TYPE_COLORS={"WFH":"#dbeafe","Early Leave":"#fce7f3","Late Start":"#ede9fe","Extended Lunch":"#fef3c7","Shift Swap":"#dcfce7","Full-Day Adjustment":"#ffedd5","Other":"#f1f5f9"};
-  const FLEX_TYPE_TC={"WFH":"#1e40af","Early Leave":"#9d174d","Late Start":"#5b21b6","Extended Lunch":"#92400e","Shift Swap":"#166534","Full-Day Adjustment":"#9a3412","Other":"#475569"};
-  return(
-    <div>
-      {saved&&<div style={{background:"#dcfce7",color:"#166534",padding:"8px 14px",borderRadius:8,marginBottom:12,fontSize:12,fontWeight:600}}>✓ Saved</div>}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
-        {[["✅","Approved",approvedCount,"#059669"],["⏳","Pending",pendingCount,"#d97706"],["❌","Denied",deniedCount,"#ef4444"],["🔄","Makeup Req.",makeupCount,"#7c3aed"]].map(([icon,label,val,color])=>(
-          <div key={label} className="card" style={{textAlign:"center",padding:"14px 10px"}}><div style={{fontSize:20}}>{icon}</div><div style={{fontSize:26,fontWeight:800,color,margin:"4px 0"}}>{val}</div><div style={{fontSize:11,fontWeight:700,color:"#475569"}}>{label}</div></div>
-        ))}
+      <div className="card">
+        <div style={{fontWeight:700,fontSize:14,marginBottom:12}}>🏢 In Office ({sortedInOffice.length})</div>
+        {sortedInOffice.length===0?<p style={{fontSize:12,color:"#94a3b8"}}>No in-office agents</p>
+        :<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:8}}>{sortedInOffice.map((a,i)=>{const ea=getAgentForDate(a,TODAY_STR);const c=SUP_COLORS[a.supervisor]||{bg:"#64748b"};return(
+          <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"6px 10px",borderRadius:8,background:"#f8fafc",border:"1px solid #e2e8f0"}}>
+            <div style={{fontWeight:600,fontSize:12}}>{a.name}</div>
+            <div style={{fontSize:11,color:c.bg}}>{ea.shift}</div>
+          </div>);})}
+        </div>}
       </div>
-      <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap",alignItems:"center"}}>
-        <button onClick={()=>setWeekView(false)} className="btn" style={{background:!weekView?"#4f46e5":"#fff",color:!weekView?"#fff":"#475569",border:`1px solid ${!weekView?"#4f46e5":"#e2e8f0"}`}}>📋 Log</button>
-        <button onClick={()=>setWeekView(true)} className="btn" style={{background:weekView?"#4f46e5":"#fff",color:weekView?"#fff":"#475569",border:`1px solid ${weekView?"#4f46e5":"#e2e8f0"}`}}>📅 Weekly</button>
-        {!weekView&&<><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search…" style={{maxWidth:180}}/><select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)} style={{width:"auto",minWidth:110}}><option value="All">All Status</option>{FLEX_STATUSES.map(s=><option key={s}>{s}</option>)}</select><select value={filterType} onChange={e=>setFilterType(e.target.value)} style={{width:"auto",minWidth:140}}><option value="All">All Types</option>{FLEX_TYPES.map(t=><option key={t}>{t}</option>)}</select><select value={filterAgent} onChange={e=>setFilterAgent(e.target.value)} style={{width:"auto",minWidth:160}}>{agentNames.map(n=><option key={n}>{n}</option>)}</select><button className="btn btn-ghost" onClick={()=>{setSearch("");setFilterStatus("All");setFilterType("All");setFilterAgent("All");}}>Clear</button></>}
-        {isManager&&<button className="btn btn-success" style={{marginLeft:"auto"}} onClick={()=>setAddModal(true)}>+ Add Flex</button>}
-      </div>
-      {weekView&&(
-        <div>
-          <WeekPicker weekIdx={weekIdx} setWeekIdx={setWeekIdx}/>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:10}}>
-            {weekFlexes.map(({day,date,flexes})=>(
-              <div key={day} style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:"12px 10px",minHeight:120}}>
-                <div style={{fontWeight:700,fontSize:12,color:"#475569",marginBottom:2}}>{day.slice(0,3)}</div>
-                <div style={{fontSize:10,color:"#94a3b8",marginBottom:8}}>{fmtShort(date)}</div>
-                {flexes.length===0?<div style={{fontSize:11,color:"#cbd5e1",textAlign:"center",marginTop:12}}>—</div>:flexes.map((f,i)=>(<div key={i} style={{marginBottom:6,padding:"4px 6px",borderRadius:6,background:FLEX_TYPE_COLORS[f.type]||"#f1f5f9"}}><div style={{fontWeight:700,fontSize:10,color:FLEX_TYPE_TC[f.type]||"#475569"}}>{f.name.split(" ")[0]}</div><div style={{fontSize:10,color:FLEX_TYPE_TC[f.type]||"#64748b"}}>{f.type}</div>{f.requestedTime&&<div style={{fontSize:9,color:"#64748b"}}>{f.requestedTime}</div>}</div>))}
-                <div style={{marginTop:6,fontSize:10,color:"#94a3b8",fontWeight:700}}>{flexes.length>0?`${flexes.length} flex${flexes.length!==1?"es":""}`:"No flexes"}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-      {!weekView&&(
-        <div>
-          <div style={{borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0"}}><div style={{overflowX:"auto"}}>
-            <table>
-              <thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}>
-                <SortTh colKey="name" style={{minWidth:150}}>Agent</SortTh><SortTh colKey="_dateObj" style={{minWidth:90}}>Date</SortTh><SortTh colKey="type" style={{minWidth:130}}>Type</SortTh><SortTh colKey="status" style={{minWidth:90}}>Status</SortTh><th style={{minWidth:130}}>Requested Time</th><th style={{minWidth:130}}>Original Time</th><th style={{minWidth:110}}>Makeup</th><th style={{minWidth:180}}>Notes</th><SortTh colKey="_sup" style={{minWidth:130}}>Supervisor</SortTh>
-                {isManager&&<th style={{minWidth:80,textAlign:"center"}}>Actions</th>}
-              </tr></thead>
-              <tbody>
-                {sorted.length===0&&<tr><td colSpan={10} style={{textAlign:"center",color:"#94a3b8",padding:24}}>No flex records found</td></tr>}
-                {sorted.map((f,i)=>{const c=SUP_COLORS[f._sup]||{bg:"#64748b"};return(<tr key={f.id||i} style={{borderBottom:"1px solid #f1f5f9",background:f.status==="Denied"?"#fff5f5":f.status==="Pending"?"#fffbeb":"#fff"}}>
-                  <td style={{fontWeight:600,fontSize:12}}>{f.name}</td>
-                  <td style={{fontSize:11,color:"#475569",whiteSpace:"nowrap"}}>{fmtShort(f.date)}{f.endDate&&f.endDate!==f.date?`–${fmtShort(f.endDate)}`:""}</td>
-                  <td><span style={{background:FLEX_TYPE_COLORS[f.type]||"#f1f5f9",color:FLEX_TYPE_TC[f.type]||"#475569",padding:"2px 8px",borderRadius:12,fontSize:11,fontWeight:600}}>{f.type}</span></td>
-                  <td>{f.status==="Approved"?<span className="tag tag-approved">✅ Approved</span>:f.status==="Denied"?<span className="tag tag-denied">❌ Denied</span>:<span className="tag tag-pending">⏳ Pending</span>}</td>
-                  <td style={{fontSize:11,color:"#475569"}}>{f.requestedTime||"—"}</td><td style={{fontSize:11,color:"#94a3b8"}}>{f.originalTime||"—"}</td>
-                  <td>{f.makeupRequired?<div><span className="tag tag-warn" style={{fontSize:10}}>🔄 Yes</span>{f.makeupPlan&&<div style={{fontSize:10,color:"#64748b",marginTop:2}}>{f.makeupPlan}</div>}</div>:<span style={{fontSize:11,color:"#94a3b8"}}>No</span>}</td>
-                  <td style={{fontSize:11,color:"#475569",maxWidth:180}}>{f.notes||"—"}</td>
-                  <td><span style={{fontSize:11,fontWeight:600,color:c.bg}}>{f._sup}</span></td>
-                  {isManager&&<td style={{textAlign:"center"}}><button className="btn btn-ghost" style={{fontSize:11,padding:"2px 7px",marginRight:3}} onClick={()=>setEditEntry(f)}>✏️</button><button className="btn btn-danger" style={{fontSize:11,padding:"2px 7px"}} onClick={()=>setDelConfirm(f.id)}>🗑</button></td>}
-                </tr>);})}
-              </tbody>
-            </table>
-          </div></div>
-          <p style={{fontSize:11,color:"#94a3b8",marginTop:6}}>{sorted.length} of {flexData.length} records shown.</p>
-        </div>
-      )}
-      {(addModal||editEntry)&&<ShiftFlexModal agents={agents} entry={editEntry||null} onSave={form=>{if(editEntry){persist(flexData.map(f=>f.id===editEntry.id?{...form,id:editEntry.id}:f));}else{persist([...flexData,{...form,id:Math.max(0,...flexData.map(f=>f.id||0))+1}]);}setEditEntry(null);setAddModal(false);}} onClose={()=>{setEditEntry(null);setAddModal(false);}}/>}
-      {delConfirm!==null&&<div className="modal-overlay" onClick={()=>setDelConfirm(null)}><div className="modal" style={{width:340}} onClick={e=>e.stopPropagation()}><h2 style={{fontWeight:700,fontSize:16,marginBottom:8}}>Remove Flex Entry?</h2><p style={{fontSize:13,color:"#64748b",marginBottom:20}}>This will permanently remove the entry from the log.</p><div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button className="btn btn-ghost" onClick={()=>setDelConfirm(null)}>Cancel</button><button className="btn btn-danger" onClick={()=>{persist(flexData.filter(f=>f.id!==delConfirm));setDelConfirm(null);}}>Remove</button></div></div></div>}
     </div>
   );
 }
@@ -811,8 +619,8 @@ function RosterTab({agents,setAgents,onChangeLogged}){
     <div>
       {saved&&<div style={{background:"#dcfce7",color:"#166534",padding:"8px 14px",borderRadius:8,marginBottom:12,fontSize:12,fontWeight:600}}>✓ Saved</div>}
       {upcomingDeps.length>0&&<div style={{background:"#fff5f5",border:"1px solid #fca5a5",borderRadius:10,padding:"12px 16px",marginBottom:16}}><div style={{fontWeight:700,fontSize:13,color:"#991b1b",marginBottom:8}}>🚪 Upcoming Departures</div><div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{upcomingDeps.map(a=><div key={a.id} style={{background:"#fff",border:"1px solid #fca5a5",borderRadius:8,padding:"5px 12px",fontSize:12}}><span style={{fontWeight:600}}>{a.name}</span><span style={{color:"#94a3b8",margin:"0 4px"}}>·</span><span style={{color:"#991b1b",fontWeight:600}}>{fmtShort(a.lastDay)}</span></div>)}</div></div>}
-      <div style={{background:"#fffbeb",border:"1px solid #fcd34d",borderRadius:10,padding:"12px 16px",marginBottom:12}}><div style={{fontWeight:700,fontSize:13,color:"#92400e",marginBottom:8}}>📅 Permanent Schedule Changes — Effective Mar 9</div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:8}}>{earlyChanging.map(chg=><div key={chg.name} style={{background:"#fff",border:"1px solid #fcd34d",borderRadius:8,padding:"8px 12px",fontSize:12}}><div style={{fontWeight:700,marginBottom:3}}>{chg.name}</div><div style={{color:"#64748b"}}><span style={{fontWeight:600,color:"#92400e"}}>{chg.shift}</span><span style={{margin:"0 6px",color:"#cbd5e1"}}>·</span>{chg.workDays.map(d=>d.slice(0,3)).join(", ")}</div><div style={{fontSize:11,color:"#94a3b8",marginTop:2}}>Office: {chg.officeDays.map(d=>d.slice(0,3)).join(", ")} · WFH: {chg.wfhDays.map(d=>d.slice(0,3)).join(", ")}</div></div>)}</div></div>
-      <div style={{background:"#fffbeb",border:"1px solid #fcd34d",borderRadius:10,padding:"12px 16px",marginBottom:20}}><div style={{fontWeight:700,fontSize:13,color:"#92400e",marginBottom:8}}>📅 Permanent Schedule Changes — Effective Mar 30</div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:8}}>{schedChanging.map(chg=><div key={chg.name} style={{background:"#fff",border:"1px solid #fcd34d",borderRadius:8,padding:"8px 12px",fontSize:12}}><div style={{fontWeight:700,marginBottom:3}}>{chg.name}</div><div style={{color:"#64748b"}}><span style={{fontWeight:600,color:"#92400e"}}>{chg.shift}</span><span style={{margin:"0 6px",color:"#cbd5e1"}}>·</span>{chg.workDays.map(d=>d.slice(0,3)).join(", ")}</div><div style={{fontSize:11,color:"#94a3b8",marginTop:2}}>Office: {chg.officeDays.map(d=>d.slice(0,3)).join(", ")} · WFH: {chg.wfhDays.map(d=>d.slice(0,3)).join(", ")}</div></div>)}</div></div>
+      <div style={{background:"#fffbeb",border:"1px solid #fcd34d",borderRadius:10,padding:"12px 16px",marginBottom:12}}><div style={{fontWeight:700,fontSize:13,color:"#92400e",marginBottom:8}}>📅 Schedule Changes — Effective Mar 9</div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:8}}>{earlyChanging.map(chg=><div key={chg.name} style={{background:"#fff",border:"1px solid #fcd34d",borderRadius:8,padding:"8px 12px",fontSize:12}}><div style={{fontWeight:700,marginBottom:3}}>{chg.name}</div><div style={{color:"#64748b"}}><span style={{fontWeight:600,color:"#92400e"}}>{chg.shift}</span><span style={{margin:"0 6px",color:"#cbd5e1"}}>·</span>{chg.workDays.map(d=>d.slice(0,3)).join(", ")}</div><div style={{fontSize:11,color:"#94a3b8",marginTop:2}}>Office: {chg.officeDays.map(d=>d.slice(0,3)).join(", ")} · WFH: {chg.wfhDays.map(d=>d.slice(0,3)).join(", ")}</div></div>)}</div></div>
+      <div style={{background:"#fffbeb",border:"1px solid #fcd34d",borderRadius:10,padding:"12px 16px",marginBottom:20}}><div style={{fontWeight:700,fontSize:13,color:"#92400e",marginBottom:8}}>📅 Schedule Changes — Effective Mar 30</div><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:8}}>{schedChanging.map(chg=><div key={chg.name} style={{background:"#fff",border:"1px solid #fcd34d",borderRadius:8,padding:"8px 12px",fontSize:12}}><div style={{fontWeight:700,marginBottom:3}}>{chg.name}</div><div style={{color:"#64748b"}}><span style={{fontWeight:600,color:"#92400e"}}>{chg.shift}</span><span style={{margin:"0 6px",color:"#cbd5e1"}}>·</span>{chg.workDays.map(d=>d.slice(0,3)).join(", ")}</div><div style={{fontSize:11,color:"#94a3b8",marginTop:2}}>Office: {chg.officeDays.map(d=>d.slice(0,3)).join(", ")} · WFH: {chg.wfhDays.map(d=>d.slice(0,3)).join(", ")}</div></div>)}</div></div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>{[["Total Roster","All","#4f46e5",rosterTotal],["Active","active","#059669",counts.active],["Incoming","incoming","#7c3aed",counts.incoming],["Departed","departed","#ef4444",counts.departed]].map(([label,val,color,count])=>(<div key={label} onClick={()=>setFilterStatus(val)} style={{background:filterStatus===val?color+"15":"#fff",border:`2px solid ${filterStatus===val?color:"#e2e8f0"}`,borderRadius:12,padding:"14px",cursor:"pointer"}}><div style={{fontSize:11,fontWeight:700,color,marginBottom:2,textTransform:"uppercase"}}>{label}</div><div style={{fontSize:28,fontWeight:800}}>{count}</div></div>))}</div>
       <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search name or skill…" style={{maxWidth:240}}/><select value={filterSup} onChange={e=>setFilterSup(e.target.value)} style={{width:"auto",minWidth:160}}><option value="All">All Supervisors</option>{SUPERVISORS.map(s=><option key={s}>{s}</option>)}</select><button className="btn btn-success" style={{marginLeft:"auto"}} onClick={()=>setEditAgent({workDays:[],officeDays:[],wfhDays:[],shift:"6:00–2:30",supervisor:"Shelby Coldiron",isNew:true,skills:"",startDate:"",lastDay:""})}>+ Add Agent</button></div>
       <div style={{borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0"}}><div style={{overflowX:"auto"}}><table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><SortTh colKey="name" style={{minWidth:170}}>Agent</SortTh><SortTh colKey="_status" style={{minWidth:90}}>Status</SortTh><SortTh colKey="supervisor" style={{minWidth:140}}>Supervisor</SortTh><SortTh colKey="shift" style={{minWidth:90}}>Shift</SortTh><SortTh colKey="startDate" style={{minWidth:90}}>Start Date</SortTh><SortTh colKey="_tenure" style={{minWidth:70}}>Tenure</SortTh><th style={{minWidth:230}}>Skills</th><th style={{minWidth:60,textAlign:"center"}}>Edit</th></tr></thead>
@@ -823,11 +631,26 @@ function RosterTab({agents,setAgents,onChangeLogged}){
   );
 }
 
-function OverviewTab({agents,timeOffData,flexData}){
+function OverviewTab({agents,timeOffData}){
   const[weekIdx,setWeekIdx]=useState(4);const[view,setView]=useState("all");const[dayFilter,setDayFilter]=useState("Monday");
   const week=WEEKS[weekIdx];const wAgents=getWeekAgents(agents,week);
-  function buildData(agents,week){return INTERVALS.map(({label,minutes})=>{const row={label};DAYS.forEach(day=>{let total=0,office=0;agents.forEach(a=>{const dateS=week.dates[DAYS.indexOf(day)];const ea=getAgentForDate(a,dateS);const st=getCellStatus(a,day,week.dates,timeOffData,flexData);if(st.type==="dayoff"||st.type==="pto"||st.type==="departed"||st.type==="notstarted")return;const sh=SHIFT_TIMES[ea.shift];if(!sh)return;if(minutes>=sh.start&&minutes<sh.end){total++;if(st.type==="office")office++;}});row[day]={total,office};});return row;});}
-  const data=buildData(wAgents,week);
+  const data=useMemo(()=>INTERVALS.map(({label,minutes})=>{
+    const row={label};
+    DAYS.forEach(day=>{
+      let total=0,office=0;
+      wAgents.forEach(a=>{
+        const dateS=week.dates[DAYS.indexOf(day)];
+        const ea=getAgentForDate(a,dateS);
+        const st=getCellStatus(a,day,week.dates,timeOffData);
+        if(st.type==="dayoff"||st.type==="pto"||st.type==="departed"||st.type==="notstarted")return;
+        const sh=SHIFT_TIMES[ea.shift];
+        if(!sh)return;
+        if(minutes>=sh.start&&minutes<sh.end){total++;if(st.type==="office")office++;}
+      });
+      row[day]={total,office};
+    });
+    return row;
+  }),[wAgents,week,timeOffData]);
   const maxT=Math.max(...data.map(r=>DAYS.reduce((m,d)=>Math.max(m,r[d].total),0)));
   const tBg=(n,max)=>{if(!n)return"#f8fafc";const p=n/max;return p<0.3?"#dbeafe":p<0.6?"#93c5fd":p<0.85?"#3b82f6":"#1d4ed8";};
   const oBg=(n)=>{if(!n)return"#f8fafc";if(n>OFFICE_SEAT_LIMIT)return"#fee2e2";if(n>OFFICE_SEAT_LIMIT-3)return"#fef3c7";const p=n/OFFICE_SEAT_LIMIT;return p<0.5?"#dcfce7":p<0.8?"#86efac":"#22c55e";};
@@ -848,7 +671,7 @@ function OverviewTab({agents,timeOffData,flexData}){
   );
 }
 
-function ScheduleTab({agents,setAgents,isManager,timeOffData,flexData,onChangeLogged}){
+function ScheduleTab({agents,setAgents,isManager,timeOffData,onChangeLogged}){
   const[weekIdx,setWeekIdx]=useState(4);const[filterSup,setFilterSup]=useState("All");const[search,setSearch]=useState("");const[editAgent,setEditAgent]=useState(null);const[delConfirm,setDelConfirm]=useState(null);const[saved,setSaved]=useState(false);
   const week=WEEKS[weekIdx];
   const persist=(a,logEntry)=>{setAgents(a);if(logEntry)onChangeLogged(logEntry);setSaved(true);setTimeout(()=>setSaved(false),2000);};
@@ -858,8 +681,7 @@ function ScheduleTab({agents,setAgents,isManager,timeOffData,flexData,onChangeLo
   const enriched=base.map(a=>({...a,_status:getStatus(a,weekStart)}));
   const{sorted,SortTh}=useSortableData(enriched,"name");
   const supCounts=SUPERVISORS.map(sup=>({sup,count:weekAgents.filter(a=>a.supervisor===sup).length})).filter(s=>s.count>0);
-  const daySummary=DAYS.map((day,di)=>{let w=0,p=0,h=0;weekAgents.forEach(a=>{const s=getCellStatus(a,day,week.dates,timeOffData,flexData);if(s.type==="pto")p++;else if(s.type==="half")h++;else if(s.type==="office"||s.type==="wfh")w++;});return{day,date:week.dates[di],working:w,pto:p,half:h};});
-  const dayFlexCounts=DAYS.map((day,di)=>{const dateS=week.dates[di];return flexData.filter(f=>{if(f.status!=="Approved")return false;const fd=parseDate(f.date),ed=f.endDate?parseDate(f.endDate):fd,td=parseDate(dateS);return td&&fd&&ed&&td>=fd&&td<=ed;}).length;});
+  const daySummary=DAYS.map((day,di)=>{let w=0,p=0,h=0;weekAgents.forEach(a=>{const s=getCellStatus(a,day,week.dates,timeOffData);if(s.type==="pto")p++;else if(s.type==="half")h++;else if(s.type==="office"||s.type==="wfh")w++;});return{day,date:week.dates[di],working:w,pto:p,half:h};});
   const mar30Changes=Object.entries(SCHEDULE_CHANGES).filter(([,chg])=>{const eff=parseDate(chg.effectiveDate);return eff&&eff>=weekStart&&eff<=weekEnd;});
   const mar9Changes=Array.from(EARLY_OFFICE_AGENTS).filter(()=>{const mar9=new Date(2026,2,9);return mar9>=weekStart&&mar9<=weekEnd;});
   return(
@@ -868,14 +690,13 @@ function ScheduleTab({agents,setAgents,isManager,timeOffData,flexData,onChangeLo
       <WeekPicker weekIdx={weekIdx} setWeekIdx={setWeekIdx}/>
       {mar9Changes.length>0&&<div style={{background:"#fffbeb",border:"1px solid #fcd34d",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#92400e",marginBottom:10}}>📅 <strong>Schedule changes effective this week (Mar 9):</strong> {mar9Changes.join(", ")}</div>}
       {mar30Changes.length>0&&<div style={{background:"#fffbeb",border:"1px solid #fcd34d",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#92400e",marginBottom:10}}>📅 <strong>Schedule changes effective this week (Mar 30):</strong> {mar30Changes.map(([n])=>n).join(", ")}</div>}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:8,marginBottom:20}}>{daySummary.map((d,di)=>(<div key={d.day} style={{background:"#fff",borderRadius:10,border:"1px solid #e2e8f0",padding:"10px 8px",textAlign:"center"}}><div style={{fontWeight:700,fontSize:12,color:"#475569"}}>{d.day.slice(0,3)}</div><div style={{fontSize:10,color:"#94a3b8",marginBottom:4}}>{fmtShort(d.date)}</div><div style={{fontSize:22,fontWeight:800}}>{d.working+d.half}</div>{d.pto>0&&<div style={{marginTop:2}}><span className="tag tag-vacation" style={{fontSize:10}}>{d.pto} out</span></div>}{dayFlexCounts[di]>0&&<div style={{marginTop:2}}><span className="tag tag-flex" style={{fontSize:10}}>⚡ {dayFlexCounts[di]} flex</span></div>}</div>))}</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:8,marginBottom:20}}>{daySummary.map((d)=>(<div key={d.day} style={{background:"#fff",borderRadius:10,border:"1px solid #e2e8f0",padding:"10px 8px",textAlign:"center"}}><div style={{fontWeight:700,fontSize:12,color:"#475569"}}>{d.day.slice(0,3)}</div><div style={{fontSize:10,color:"#94a3b8",marginBottom:4}}>{fmtShort(d.date)}</div><div style={{fontSize:22,fontWeight:800}}>{d.working+d.half}</div>{d.pto>0&&<div style={{marginTop:2}}><span className="tag tag-vacation" style={{fontSize:10}}>{d.pto} out</span></div>}</div>))}</div>
       <div style={{fontSize:12,fontWeight:700,color:"#64748b",marginBottom:8,textTransform:"uppercase",letterSpacing:.5}}>Filter by Supervisor</div>
       <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:12}}>
         <div onClick={()=>setFilterSup("All")} style={{background:filterSup==="All"?"#4f46e5":"#fff",color:filterSup==="All"?"#fff":"#475569",border:`2px solid ${filterSup==="All"?"#4f46e5":"#e2e8f0"}`,borderRadius:10,padding:"8px 14px",cursor:"pointer",fontSize:12,fontWeight:700,display:"flex",gap:8,alignItems:"center"}}><span>All</span><span style={{background:filterSup==="All"?"#ffffff33":"#f1f5f9",padding:"1px 7px",borderRadius:10,fontWeight:800}}>{weekAgents.length}</span></div>
         {supCounts.map(({sup,count})=>{const c=SUP_COLORS[sup]||{bg:"#64748b",light:"#f8fafc",border:"#e2e8f0"};const sel=filterSup===sup;return(<div key={sup} onClick={()=>setFilterSup(sel?"All":sup)} style={{background:sel?c.bg:c.light,color:sel?"#fff":c.bg,border:`2px solid ${sel?c.bg:c.border}`,borderRadius:10,padding:"8px 14px",cursor:"pointer",fontSize:12,fontWeight:700,display:"flex",gap:8,alignItems:"center"}}><span>{sup}</span><span style={{background:sel?"#ffffff33":c.bg+"22",padding:"1px 7px",borderRadius:10,fontWeight:800}}>{count}</span></div>);})}
       </div>
       <div style={{display:"flex",gap:10,marginBottom:14,alignItems:"center"}}><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search agent…" style={{maxWidth:220}}/>{isManager&&<button className="btn btn-success" style={{marginLeft:"auto"}} onClick={()=>setEditAgent({workDays:[],officeDays:[],wfhDays:[],shift:"6:00–2:30",supervisor:"Shelby Coldiron",isNew:true,skills:"",startDate:"",lastDay:""})}>+ Add Agent</button>}</div>
-      <div style={{marginBottom:8,fontSize:11,color:"#64748b"}}>⚡ <strong>= flex adjustment applied</strong></div>
       <div style={{borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0"}}><div style={{overflowX:"auto"}}>
         <table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}>
           <SortTh colKey="name" style={{minWidth:160,position:"sticky",left:0,background:"#f8fafc",zIndex:2}}>Agent</SortTh><SortTh colKey="shift" style={{minWidth:90}}>Shift</SortTh><SortTh colKey="supervisor" style={{minWidth:120}}>Supervisor</SortTh>
@@ -885,16 +706,15 @@ function ScheduleTab({agents,setAgents,isManager,timeOffData,flexData,onChangeLo
         <tbody>
           {sorted.length===0&&<tr><td colSpan={10} style={{textAlign:"center",color:"#94a3b8",padding:24}}>No agents found</td></tr>}
           {sorted.map(agent=>{
-            const hasPto=DAYS.some(d=>{const s=getCellStatus(agent,d,week.dates,timeOffData,flexData);return s.type==="pto"||s.type==="half";});
-            const hasFlex=DAYS.some(d=>{const s=getCellStatus(agent,d,week.dates,timeOffData,flexData);return s.flex;});
+            const hasPto=DAYS.some(d=>{const s=getCellStatus(agent,d,week.dates,timeOffData);return s.type==="pto"||s.type==="half";});
             const ea=getAgentForDate(agent,week.dates[0]);
             const c=SUP_COLORS[agent.supervisor]||{bg:"#64748b"};
             const hasChg=!!SCHEDULE_CHANGES[agent.name];const isEarlyChg=EARLY_OFFICE_AGENTS.has(agent.name);
-            return(<tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",background:hasPto?"#fffbeb":hasFlex?"#f5f3ff":agent.isNew?"#f0fdf4":"#fff"}}>
-              <td style={{fontWeight:600,position:"sticky",left:0,background:"inherit",zIndex:1}}>{agent.isNew&&<span style={{marginRight:4}}>✨</span>}{agent.name}{hasChg&&<span className="tag tag-changed" style={{marginLeft:6,fontSize:10}}>📅 Mar 30</span>}{isEarlyChg&&<span className="tag tag-changed" style={{marginLeft:4,fontSize:10}}>📅 Mar 9</span>}{hasFlex&&<span className="flex-chip">⚡</span>}</td>
+            return(<tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",background:hasPto?"#fffbeb":agent.isNew?"#f0fdf4":"#fff"}}>
+              <td style={{fontWeight:600,position:"sticky",left:0,background:"inherit",zIndex:1}}>{agent.isNew&&<span style={{marginRight:4}}>✨</span>}{agent.name}{hasChg&&<span className="tag tag-changed" style={{marginLeft:6,fontSize:10}}>📅 Mar 30</span>}{isEarlyChg&&<span className="tag tag-changed" style={{marginLeft:4,fontSize:10}}>📅 Mar 9</span>}</td>
               <td style={{fontSize:11,color:"#64748b"}}>{ea.shift}</td>
               <td><span style={{fontSize:11,fontWeight:600,color:c.bg}}>{agent.supervisor}</span></td>
-              {DAYS.map(day=>{const st=getCellStatus(agent,day,week.dates,timeOffData,flexData);return<td key={day} style={{textAlign:"center",padding:"6px 4px",background:st.flex?"#f5f3ff":""}}><CellTag status={st}/>{st.flex&&st.type!=="pto"&&st.type!=="half"&&<div style={{fontSize:9,color:"#7c3aed",marginTop:1,lineHeight:1.2}}>{st.flex.type==="WFH"?"🏠 flex":st.flex.requestedTime?st.flex.requestedTime.slice(0,7):"⚡"}</div>}</td>;})}
+              {DAYS.map(day=>{const st=getCellStatus(agent,day,week.dates,timeOffData);return<td key={day} style={{textAlign:"center",padding:"6px 4px"}}><CellTag status={st}/></td>;})}
               {isManager&&<td style={{textAlign:"center"}}><button className="btn btn-ghost" style={{fontSize:11,padding:"3px 8px",marginRight:4}} onClick={()=>setEditAgent(agent)}>✏️</button><button className="btn btn-danger" style={{fontSize:11,padding:"3px 8px"}} onClick={()=>setDelConfirm(agent.id)}>🗑</button></td>}
             </tr>);
           })}
@@ -966,75 +786,11 @@ function ChatScheduleTab(){
   );
 }
 
-function ChatStaffingScenarioTab(){
-  const[dayKey,setDayKey]=useState("Mon");
-  function pShift(s){const p=s.split("-");return{startMin:timeToMin(p[0]),endMin:timeToMin(p[1])};}
-  const scenarioByDay=useMemo(()=>{
-    const result={};
-    CHAT_DAY_KEYS.forEach(dk=>{
-      const allChatThisDay=chatAgents.filter(a=>a[dk]==="X"||a[dk]==="B");
-      const total=allChatThisDay.length;const target80=Math.ceil(total*0.8);
-      const sortedA=[...allChatThisDay].sort((a,b)=>{if(a[dk]!==b[dk]){return a[dk]==="X"?-1:1;}return pShift(a.shift).startMin-pShift(b.shift).startMin;});
-      const staffed=sortedA.slice(0,target80);
-      const LUNCH_SLOTS=[];for(let m=600;m<=870;m+=30)LUNCH_SLOTS.push(m);
-      const lunchUsage={};LUNCH_SLOTS.forEach(s=>{lunchUsage[s]=0;});
-      const assigned=staffed.map(a=>{
-        const{startMin,endMin}=pShift(a.shift);const shiftMid=Math.round((startMin+endMin)/2/30)*30;
-        const prefSlots=LUNCH_SLOTS.filter(s=>s>=startMin+60&&s<=endMin-60);
-        if(prefSlots.length===0){const fallback=LUNCH_SLOTS[0];return{...a,lunchMin:fallback,lunchLabel:`${minToTime(fallback)}–${minToTime(fallback+30)}`};}
-        const bestSlot=prefSlots.sort((x,y)=>{const useDiff=(lunchUsage[x]||0)-(lunchUsage[y]||0);if(useDiff!==0)return useDiff;return Math.abs(x-shiftMid)-Math.abs(y-shiftMid);}).find(s=>(lunchUsage[s]||0)<2)||prefSlots[0];
-        lunchUsage[bestSlot]=(lunchUsage[bestSlot]||0)+1;
-        return{...a,lunchMin:bestSlot,lunchLabel:`${minToTime(bestSlot)}–${minToTime(bestSlot+30)}`};
-      });
-      const coverage=[];
-      for(let m=360;m<1200;m+=30){const h=Math.floor(m/60),mn=m%60;const label=`${String(h).padStart(2,"0")}:${String(mn).padStart(2,"0")}`;let onChat=0,onLunch=0;assigned.forEach(a=>{const{startMin,endMin}=pShift(a.shift);if(m>=startMin&&m<endMin){if(a.lunchMin===m)onLunch++;else onChat++;}});coverage.push({label,minutes:m,onChat,onLunch,total:onChat+onLunch});}
-      result[dk]={total,target80,staffed:assigned,coverage,lunchUsage};
-    });
-    return result;
-  },[]);
-  const day=scenarioByDay[dayKey];const maxChat=Math.max(...day.coverage.map(c=>c.onChat),1);
-  const lunchViolations=Object.entries(day.lunchUsage).filter(([,v])=>v>2);
-  const supColor=name=>{const a=chatAgents.find(c=>c.name===name);return(SUP_COLORS[a?.supervisor]||{bg:"#64748b"}).bg;};
-  return(
-    <div>
-      <div style={{background:"linear-gradient(135deg,#0f172a,#1e3a5f)",borderRadius:16,padding:"20px 24px",color:"#fff",marginBottom:20}}>
-        <div style={{fontSize:11,color:"#94a3b8",fontWeight:600,marginBottom:4,textTransform:"uppercase",letterSpacing:1}}>Staffing Scenario</div>
-        <div style={{fontSize:20,fontWeight:800}}>📋 80% Chat Staffing — 6:00 AM – 8:00 PM</div>
-        <div style={{fontSize:12,color:"#94a3b8",marginTop:6}}>Mon–Sat · Chat-skilled agents only · Max 2 on lunch at any interval</div>
-      </div>
-      <div style={{display:"flex",gap:8,marginBottom:20,flexWrap:"wrap"}}>
-        {CHAT_DAY_KEYS.map(dk=>{const d=scenarioByDay[dk];return(<button key={dk} onClick={()=>setDayKey(dk)} className="btn" style={{background:dayKey===dk?"#0f172a":"#fff",color:dayKey===dk?"#fff":"#475569",border:`2px solid ${dayKey===dk?"#0f172a":"#e2e8f0"}`,padding:"8px 16px"}}><div style={{fontWeight:700}}>{CHAT_DAY_FULL[dk]}</div><div style={{fontSize:10,opacity:.8,marginTop:1}}>{d.target80}/{d.total} staffed</div></button>);})}
-      </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
-        {[["👥","Chat Agents",day.total,"Total with skill"],["✅","80% Target",day.target80,"Agents to staff"],["🍽️","Lunch Slots",Object.values(day.lunchUsage).reduce((a,b)=>a+b,0),"Assigned lunches"],["⚠️","Violations",lunchViolations.length,lunchViolations.length===0?"No conflicts":"Slots >2 concurrent"]].map(([icon,label,val,sub])=>(
-          <div key={label} className="card" style={{textAlign:"center",padding:"14px 10px"}}><div style={{fontSize:20}}>{icon}</div><div style={{fontSize:26,fontWeight:800,color:label==="Violations"&&val>0?"#ef4444":"#1e293b",margin:"4px 0"}}>{val}</div><div style={{fontSize:11,fontWeight:700,color:"#475569"}}>{label}</div><div style={{fontSize:10,color:"#94a3b8",marginTop:2}}>{sub}</div></div>
-        ))}
-      </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,marginBottom:24}}>
-        <div>
-          <div style={{fontWeight:700,fontSize:14,marginBottom:10}}>👥 {CHAT_DAY_FULL[dayKey]} — Staffed Agents ({day.target80})</div>
-          <div style={{borderRadius:12,border:"1px solid #e2e8f0",overflow:"hidden",background:"#fff"}}>
-            <table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th style={{fontSize:11,fontWeight:700,color:"#64748b"}}>Agent</th><th style={{fontSize:11,fontWeight:700,color:"#64748b",textAlign:"center"}}>Role</th><th style={{fontSize:11,fontWeight:700,color:"#64748b",textAlign:"center"}}>Shift</th><th style={{fontSize:11,fontWeight:700,color:"#92400e",textAlign:"center"}}>🍽 Lunch</th></tr></thead>
-            <tbody>{day.staffed.map((a,i)=>(<tr key={i} style={{borderBottom:"1px solid #f1f5f9",background:a[dayKey]==="B"?"#fafafa":"#fff"}}><td style={{fontWeight:600,fontSize:12}}><span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:supColor(a.name),marginRight:6,verticalAlign:"middle"}}/>{a.name}</td><td style={{textAlign:"center"}}>{a[dayKey]==="X"?<span className="tag tag-primary">Primary</span>:<span className="tag tag-backup">Backup</span>}</td><td style={{textAlign:"center",fontSize:11,color:"#64748b"}}>{a.shift.replace("-","–")}</td><td style={{textAlign:"center"}}><span className="tag tag-lunch">🍽 {a.lunchLabel}</span></td></tr>))}</tbody></table>
-          </div>
-        </div>
-        <div>
-          <div style={{fontWeight:700,fontSize:14,marginBottom:10}}>📊 Coverage by Interval (6am–8pm)</div>
-          <div style={{borderRadius:12,border:"1px solid #e2e8f0",overflow:"hidden",background:"#fff",maxHeight:480,overflowY:"auto"}}>
-            <table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0",position:"sticky",top:0,zIndex:1}}><th style={{fontSize:11,fontWeight:700,color:"#64748b",width:60}}>Time</th><th style={{fontSize:11,fontWeight:700,color:"#64748b"}}>Chat Coverage</th><th style={{fontSize:11,fontWeight:700,color:"#92400e",textAlign:"center",width:50}}>🍽</th><th style={{fontSize:11,fontWeight:700,color:"#4f46e5",textAlign:"center",width:45}}>On</th></tr></thead>
-            <tbody>{day.coverage.filter(r=>r.total>0).map((r,i)=>{const pct=r.onChat/maxChat;const isRisk=r.onChat<Math.ceil(day.target80*0.5);return(<tr key={i} style={{borderBottom:"1px solid #f8fafc",background:isRisk?"#fff5f5":"#fff"}}><td style={{fontSize:11,fontWeight:600,color:isRisk?"#991b1b":"#475569"}}>{r.label}</td><td style={{padding:"3px 8px"}}><div style={{position:"relative",height:14,background:"#f1f5f9",borderRadius:3,overflow:"hidden"}}><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pct*100}%`,background:isRisk?"#fca5a5":"#4f46e5",borderRadius:3}}/></div></td><td style={{textAlign:"center",fontSize:11,color:r.onLunch>0?"#92400e":"#e2e8f0",fontWeight:700}}>{r.onLunch>0?r.onLunch:"–"}</td><td style={{textAlign:"center",fontWeight:700,fontSize:12,color:isRisk?"#991b1b":"#4f46e5"}}>{r.onChat}</td></tr>);})}</tbody></table>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function TimeOffTab({agents,timeOffData,setTimeOffData,isManager,onChangeLogged}){
   const[mf,setMf]=useState("All");const[nf,setNf]=useState("All");const[supf,setSupf]=useState("All");const[search,setSearch]=useState("");const[addModal,setAddModal]=useState(false);const[delConfirm,setDelConfirm]=useState(null);const[saved,setSaved]=useState(false);
   const persist=(newData,logEntry)=>{setTimeOffData(newData);if(logEntry)onChangeLogged(logEntry);setSaved(true);setTimeout(()=>setSaved(false),2000);};
   const names=["All",...[...new Set(timeOffData.map(r=>r.name))].sort()];
-  function getMonth(r){const d=parseDate(r.start);if(!d)return"Other";const mo=d.getMonth();if(mo===0)return"January";if(mo===1)return"February";if(mo===2)return"March";if(mo===3)return"April";if(mo===4)return"May";if(mo===5)return"June";if(mo===6)return"July";return"Other";}
+  function getMonth(r){const d=parseDate(r.start);if(!d)return"Other";const mo=d.getMonth();const labels=["January","February","March","April","May","June","July"];return labels[mo]||"Other";}
   const enriched=timeOffData.map(r=>{const agent=agents.find(a=>a.name===r.name);return{...r,_sup:agent?.supervisor||"—",_month:getMonth(r),_startDate:parseDate(r.start)||new Date(0)};});
   const filtered=enriched.filter(r=>(mf==="All"||r._month===mf)&&(nf==="All"||r.name===nf)&&(supf==="All"||r._sup===supf)&&(!search||r.name.toLowerCase().includes(search.toLowerCase())||r.type.toLowerCase().includes(search.toLowerCase())));
   const{sorted,SortTh}=useSortableData(filtered,"_startDate");
@@ -1057,7 +813,7 @@ function TimeOffTab({agents,timeOffData,setTimeOffData,isManager,onChangeLogged}
       </div>
       <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:14}}>
         <span onClick={()=>setSupf("All")} style={{cursor:"pointer",background:supf==="All"?"#1e293b":"#f1f5f9",color:supf==="All"?"#fff":"#475569",padding:"3px 10px",borderRadius:20,fontSize:11,fontWeight:600,border:`1px solid ${supf==="All"?"#1e293b":"#e2e8f0"}`}}>All</span>
-        {SUPERVISORS.map(s=>{const c=SUP_COLORS[s]||{bg:"#64748b",light:"#f8fafc"};const sel=supf===s;const cnt=enriched.filter(r=>r._sup===s).length;if(cnt===0)return null;return<span key={s} onClick={()=>setSupf(sel?"All":s)} style={{cursor:"pointer",background:sel?c.bg:c.light,color:sel?"#fff":c.bg,padding:"3px 10px",borderRadius:20,fontSize:11,fontWeight:600,border:`1px solid ${sel?c.bg:"#e2e8f0"}`}}>{s} ({cnt})</span>;})}
+        {SUPERVISORS.map(s=>{const c=SUP_COLORS[s]||{bg:"#64748b",light:"#f8fafc"};const sel=supf===s;const cnt=enriched.filter(r=>r._sup===s).length;if(!cnt)return null;return<span key={s} onClick={()=>setSupf(sel?"All":s)} style={{cursor:"pointer",background:sel?c.bg:c.light,color:sel?"#fff":c.bg,padding:"3px 10px",borderRadius:20,fontSize:11,fontWeight:600,border:`1px solid ${sel?c.bg:"#e2e8f0"}`}}>{s} ({cnt})</span>;})}
       </div>
       <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}><span className="tag tag-vacation">✈️ Vacation</span><span className="tag tag-jiffy">🌟 Jiffy Day</span><span className="tag tag-half">½ Half Day</span><span className="tag tag-parental">👶 Parental Leave</span><span className="tag" style={{background:"#f1f5f9",color:"#475569"}}>🔸 Unpaid Leave</span></div>
       <div style={{borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0"}}>
@@ -1086,10 +842,10 @@ function TimeOffTab({agents,timeOffData,setTimeOffData,isManager,onChangeLogged}
 
 function GitHubGuideTab(){
   const steps=[
-    {num:1,icon:"🔑",title:"Log in as Manager & make your changes",body:"Use the Manager Login button (top right). Once logged in, make any edits in the Roster, Schedule, Shift Flex, or Time Off tabs.",note:"Every agent/time-off change is automatically tracked in the Export Changes log."},
+    {num:1,icon:"🔑",title:"Log in as Manager & make your changes",body:"Use the Manager Login button (top right). Once logged in, make any edits in the Roster, Schedule, or Time Off tabs.",note:"Every agent/time-off change is automatically tracked in the Export Changes log."},
     {num:2,icon:"📋",title:"Open Export Changes and copy the code",body:`Click the orange "📋 Export Changes" button. Expand each change to see instructions and code. Click "Copy Code" or "Copy All".`,note:"Each entry tells you exactly what to do: add, replace, or delete a line."},
     {num:3,icon:"🐙",title:"Open your file on GitHub",body:"Go to your GitHub repository. Click the HTML file. Click the ✏️ pencil icon to open the editor.",code:"https://github.com/YOUR-USERNAME/YOUR-REPO/blob/main/index.html",codeLabel:"Your file URL:"},
-    {num:4,icon:"🔍",title:"Find the right array",body:"Use Ctrl+F to search for the array name:",bullets:["defaultAgents — for agent edits","defaultTimeOff — for time off changes","defaultShiftFlexes — for flex request changes"]},
+    {num:4,icon:"🔍",title:"Find the right array",body:"Use Ctrl+F to search for the array name:",bullets:["defaultAgents — for agent edits","defaultTimeOff — for time off changes"]},
     {num:5,icon:"✂️",title:"Paste your change",body:"Follow the export instructions:",bullets:["ADD: Paste before closing ];","EDIT: Find entry by id, replace entire block","DELETE: Remove the matching {...} line"]},
     {num:6,icon:"💾",title:"Commit the change",body:`Scroll to "Commit changes", add a short description, click the green button.`,note:"Changes go live within seconds."},
     {num:7,icon:"✅",title:"Verify",body:"Refresh the Team Hub and confirm your change appears correctly."},
@@ -1111,7 +867,6 @@ function GitHubGuideTab(){
 function App(){
   const[agents,setAgents]=useState(defaultAgents);
   const[timeOffData,setTimeOffData]=useState(defaultTimeOff);
-  const[flexData,setFlexData]=useState(defaultShiftFlexes);
   const[isManager,setIsManager]=useState(false);
   const[showLogin,setShowLogin]=useState(false);
   const[tab,setTab]=useState("overview");
@@ -1121,14 +876,11 @@ function App(){
   const[showExport,setShowExport]=useState(false);
   const onChangeLogged=useCallback(entry=>{setChangeLog(prev=>[...prev,entry]);},[]);
   const activeCount=useMemo(()=>getActiveAgents(agents).length,[agents]);
-  const pendingFlexCount=useMemo(()=>flexData.filter(f=>f.status==="Pending").length,[flexData]);
   const TABS=[
     {id:"overview",label:"📊 Overview"},
     {id:"today",label:"🌅 Today"},
     {id:"schedule",label:"📅 Schedule"},
     {id:"chat",label:"💬 Chat"},
-    {id:"scenario",label:"🎯 Chat Scenario"},
-    {id:"flex",label:"⚡ Shift Flex"},
     {id:"timeoff",label:"🏖️ Time Off"},
     {id:"roster",label:"👥 Roster",locked:true},
     {id:"guide",label:"📖 GitHub Guide"},
@@ -1147,20 +899,15 @@ function App(){
         </div>
       </div>
       <div style={{background:"#fff",borderBottom:"1px solid #e2e8f0",padding:"0 24px",display:"flex",gap:4,overflowX:"auto"}}>
-        {TABS.map(t=><button key={t.id} className={`nav-tab${tab===t.id?" active":""}`} onClick={()=>handleTabClick(t.id)} style={{position:"relative"}}>
-          {t.label}{t.locked&&!rosterUnlocked&&<span style={{fontSize:10,marginLeft:4,opacity:.6}}>🔒</span>}
-          {t.id==="flex"&&pendingFlexCount>0&&<span style={{position:"absolute",top:4,right:2,background:"#f59e0b",color:"#fff",borderRadius:10,fontSize:9,padding:"1px 4px",fontWeight:800}}>{pendingFlexCount}</span>}
-        </button>)}
+        {TABS.map(t=><button key={t.id} className={`nav-tab${tab===t.id?" active":""}`} onClick={()=>handleTabClick(t.id)}>{t.label}{t.locked&&!rosterUnlocked&&<span style={{fontSize:10,marginLeft:4,opacity:.6}}>🔒</span>}</button>)}
       </div>
       {isManager&&changeLog.length>0&&(<div className="export-banner" style={{margin:"12px 24px 0"}}><div><span style={{fontWeight:700,fontSize:13}}>📋 {changeLog.length} unsaved change{changeLog.length!==1?"s":""} this session</span><span style={{fontSize:12,color:"#92400e",marginLeft:8}}>Export and commit to GitHub to make permanent.</span></div><button className="btn btn-export" onClick={()=>setShowExport(true)}>View Export Code →</button></div>)}
       <div style={{padding:"20px 24px",maxWidth:1300,margin:"0 auto"}}>
-        {tab==="today"   &&<TodayTab agents={agents} timeOffData={timeOffData} flexData={flexData}/>}
+        {tab==="today"   &&<TodayTab agents={agents} timeOffData={timeOffData}/>}
         {tab==="roster"  &&rosterUnlocked&&<RosterTab agents={agents} setAgents={setAgents} onChangeLogged={onChangeLogged}/>}
-        {tab==="overview"&&<OverviewTab agents={agents} timeOffData={timeOffData} flexData={flexData}/>}
-        {tab==="schedule"&&<ScheduleTab agents={agents} setAgents={setAgents} isManager={isManager} timeOffData={timeOffData} flexData={flexData} onChangeLogged={onChangeLogged}/>}
+        {tab==="overview"&&<OverviewTab agents={agents} timeOffData={timeOffData}/>}
+        {tab==="schedule"&&<ScheduleTab agents={agents} setAgents={setAgents} isManager={isManager} timeOffData={timeOffData} onChangeLogged={onChangeLogged}/>}
         {tab==="chat"    &&<ChatScheduleTab/>}
-        {tab==="scenario"&&<ChatStaffingScenarioTab/>}
-        {tab==="flex"    &&<ShiftFlexTab agents={agents} flexData={flexData} setFlexData={setFlexData} isManager={isManager}/>}
         {tab==="timeoff" &&<TimeOffTab agents={agents} timeOffData={timeOffData} setTimeOffData={setTimeOffData} isManager={isManager} onChangeLogged={onChangeLogged}/>}
         {tab==="guide"   &&<GitHubGuideTab/>}
       </div>
