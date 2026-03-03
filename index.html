@@ -122,35 +122,42 @@ const EARLY_PERM={
   "Sarah Hajali":  {shift:"6:00–2:30", workDays:["Monday","Tuesday","Wednesday","Thursday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Saturday"]},
 };
 
+// Chat hours per PDF: "8:00-14:30" = early shift on chat, "8:00-16:30" = mid, "9:00-17:30" = mid-late, "11:30-18:00" = late
+// X = works chat that day, "" = day off
 const chatAgents=[
-  {name:"Rosa Nuno",          shift:"6:00-14:30",  supervisor:"Neyat Abraha",    Mon:"X", Tue:"",  Wed:"",  Thu:"",  Fri:"X", Sat:"X"},
-  {name:"Bianca Vernando",    shift:"6:00-14:30",  supervisor:"Shelby Coldiron", Mon:"X", Tue:"",  Wed:"",  Thu:"",  Fri:"X", Sat:""},
-  {name:"Morgan Lankford",    shift:"6:00-14:30",  supervisor:"Shelby Coldiron", Mon:"",  Tue:"X", Wed:"X", Thu:"",  Fri:"",  Sat:""},
-  {name:"Chassidy Williams",  shift:"6:00-14:30",  supervisor:"Shelby Coldiron", Mon:"",  Tue:"X", Wed:"",  Thu:"X", Fri:"X", Sat:""},
-  {name:"Sam De Castro",      shift:"6:00-14:30",  supervisor:"Alex Blair",      Mon:"",  Tue:"",  Wed:"X", Thu:"X", Fri:"",  Sat:""},
-  {name:"Michael Chavez",     shift:"6:00-14:30",  supervisor:"Alex Blair",      Mon:"",  Tue:"",  Wed:"",  Thu:"X", Fri:"",  Sat:""},
-  {name:"Michael Nguyen",     shift:"6:00-14:30",  supervisor:"Shelby Coldiron", Mon:"",  Tue:"",  Wed:"",  Thu:"X", Fri:"X", Sat:"X"},
-  {name:"Unaisa Aslam",       shift:"8:00-16:30",  supervisor:"Lauren Montanye", Mon:"",  Tue:"B", Wed:"",  Thu:"X", Fri:"X", Sat:""},
-  {name:"Ramila Chaulagain",  shift:"8:00-16:30",  supervisor:"Neyat Abraha",    Mon:"",  Tue:"",  Wed:"X", Thu:"X", Fri:"",  Sat:"X"},
-  {name:"Damian Doubrava",    shift:"8:00-16:30",  supervisor:"Alex Blair",      Mon:"",  Tue:"X", Wed:"",  Thu:"B", Fri:"B", Sat:"X"},
-  {name:"Cristie Avant",      shift:"8:00-16:30",  supervisor:"Shelby Coldiron", Mon:"X", Tue:"X", Wed:"",  Thu:"",  Fri:"",  Sat:""},
-  {name:"Preston Panetti",    shift:"8:00-16:30",  supervisor:"Alex Blair",      Mon:"X", Tue:"",  Wed:"",  Thu:"",  Fri:"X", Sat:"X"},
-  {name:"Servando Morales",   shift:"8:00-16:30",  supervisor:"Neyat Abraha",    Mon:"X", Tue:"X", Wed:"X", Thu:"",  Fri:"",  Sat:""},
-  {name:"Eri Dotson",         shift:"8:00-16:30",  supervisor:"Alex Blair",      Mon:"X", Tue:"X", Wed:"X", Thu:"",  Fri:"",  Sat:"X"},
-  {name:"Zhane Alexander",    shift:"9:00-17:30",  supervisor:"Neyat Abraha",    Mon:"",  Tue:"X", Wed:"",  Thu:"",  Fri:"",  Sat:""},
-  {name:"Sarah Al-Obaidi",    shift:"11:30-20:00", supervisor:"Neyat Abraha",    Mon:"",  Tue:"X", Wed:"X", Thu:"X", Fri:"B", Sat:""},
-  {name:"Chisa Ordu",         shift:"11:30-20:00", supervisor:"Neyat Abraha",    Mon:"",  Tue:"",  Wed:"",  Thu:"X", Fri:"X", Sat:""},
-  {name:"Jessie Gregory",     shift:"11:30-20:00", supervisor:"Neyat Abraha",    Mon:"B", Tue:"",  Wed:"X", Thu:"X", Fri:"X", Sat:""},
-  {name:"Blanca Berumen",     shift:"11:30-20:00", supervisor:"Shelby Coldiron", Mon:"",  Tue:"",  Wed:"X", Thu:"B", Fri:"X", Sat:""},
-  {name:"Balrupe Purewal",    shift:"11:30-20:00", supervisor:"Neyat Abraha",    Mon:"",  Tue:"",  Wed:"B", Thu:"",  Fri:"",  Sat:""},
-  {name:"Denia Bradley",      shift:"11:30-20:00", supervisor:"Alex Blair",      Mon:"",  Tue:"X", Wed:"X", Thu:"",  Fri:"X", Sat:""},
-  {name:"Jeremy Carillo",     shift:"11:30-20:00", supervisor:"Neyat Abraha",    Mon:"B", Tue:"",  Wed:"",  Thu:"X", Fri:"",  Sat:""},
+  // Early group (chat 8:00–14:30)
+  {name:"Ananya SenthilKumar",shift:"8:00-14:30",  supervisor:"Shelby Coldiron", Mon:"X", Tue:"X", Wed:"X", Thu:"",  Fri:"X", Sat:"X"},
+  {name:"Bianca Vernando",    shift:"8:00-14:30",  supervisor:"Shelby Coldiron", Mon:"X", Tue:"X", Wed:"",  Thu:"X", Fri:"X", Sat:"X"},
+  {name:"Chassidy Williams",  shift:"8:00-14:30",  supervisor:"Shelby Coldiron", Mon:"X", Tue:"X", Wed:"X", Thu:"X", Fri:"X", Sat:""},
+  {name:"Michael Nguyen",     shift:"8:00-14:30",  supervisor:"Shelby Coldiron", Mon:"",  Tue:"X", Wed:"X", Thu:"X", Fri:"X", Sat:"X"},
+  {name:"Michael Chavez",     shift:"8:00-14:30",  supervisor:"Alex Blair",      Mon:"X", Tue:"X", Wed:"X", Thu:"X", Fri:"X", Sat:""},
+  {name:"Morgan Lankford",    shift:"8:00-14:30",  supervisor:"Shelby Coldiron", Mon:"X", Tue:"",  Wed:"X", Thu:"X", Fri:"X", Sat:"X"},
+  {name:"Rosa Nuno",          shift:"8:00-14:30",  supervisor:"Neyat Abraha",    Mon:"X", Tue:"X", Wed:"X", Thu:"X", Fri:"",  Sat:"X"},
+  {name:"Sam De Castro",      shift:"8:00-14:30",  supervisor:"Alex Blair",      Mon:"X", Tue:"X", Wed:"X", Thu:"X", Fri:"X", Sat:""},
+  // Mid group (chat 8:00–16:30)
+  {name:"Cristie Avant",      shift:"8:00-16:30",  supervisor:"Shelby Coldiron", Mon:"X", Tue:"X", Wed:"X", Thu:"X", Fri:"X", Sat:""},
+  {name:"Damian Doubrava",    shift:"8:00-16:30",  supervisor:"Alex Blair",      Mon:"X", Tue:"",  Wed:"X", Thu:"X", Fri:"X", Sat:"X"},
+  {name:"Eri Dotson",         shift:"8:00-16:30",  supervisor:"Alex Blair",      Mon:"X", Tue:"X", Wed:"X", Thu:"",  Fri:"X", Sat:"X"},
+  {name:"Katie LaCour",       shift:"8:00-16:30",  supervisor:"Ainsley Reynolds",Mon:"X", Tue:"X", Wed:"X", Thu:"X", Fri:"X", Sat:""},
+  {name:"Preston Panetti",    shift:"8:00-16:30",  supervisor:"Alex Blair",      Mon:"X", Tue:"X", Wed:"",  Thu:"X", Fri:"X", Sat:"X"},
+  {name:"Ramila Chaulagain",  shift:"8:00-16:30",  supervisor:"Neyat Abraha",    Mon:"",  Tue:"X", Wed:"X", Thu:"X", Fri:"X", Sat:"X"},
+  {name:"Sarah Al-Obaidi",    shift:"8:00-16:30",  supervisor:"Neyat Abraha",    Mon:"X", Tue:"X", Wed:"X", Thu:"X", Fri:"X", Sat:""},
+  {name:"Servando Morales",   shift:"8:00-16:30",  supervisor:"Neyat Abraha",    Mon:"X", Tue:"X", Wed:"X", Thu:"X", Fri:"X", Sat:""},
+  // Mid-late group (chat 9:00–17:30)
+  {name:"Zhane Alexander",    shift:"9:00-17:30",  supervisor:"Neyat Abraha",    Mon:"X", Tue:"X", Wed:"X", Thu:"X", Fri:"X", Sat:""},
+  // Late group (chat 11:30–18:00)
+  {name:"Balrupe Purewal",    shift:"11:30-18:00", supervisor:"Neyat Abraha",    Mon:"X", Tue:"X", Wed:"X", Thu:"X", Fri:"X", Sat:""},
+  {name:"Blanca Berumen",     shift:"11:30-18:00", supervisor:"Shelby Coldiron", Mon:"X", Tue:"X", Wed:"",  Thu:"X", Fri:"X", Sat:"X"},
+  {name:"Chisa Ordu",         shift:"11:30-18:00", supervisor:"Neyat Abraha",    Mon:"X", Tue:"X", Wed:"X", Thu:"X", Fri:"X", Sat:""},
+  {name:"Denia Bradley",      shift:"11:30-18:00", supervisor:"Alex Blair",      Mon:"",  Tue:"X", Wed:"X", Thu:"X", Fri:"X", Sat:"X"},
+  {name:"Jeremy Carillo",     shift:"11:30-18:00", supervisor:"Neyat Abraha",    Mon:"X", Tue:"",  Wed:"X", Thu:"X", Fri:"X", Sat:"X"},
+  {name:"Jessie Gregory",     shift:"11:30-18:00", supervisor:"Neyat Abraha",    Mon:"X", Tue:"X", Wed:"X", Thu:"X", Fri:"X", Sat:""},
 ];
 const CHAT_MIN_STAFFING=6;
-const CHAT_STANDARD_START=480;
-const CHAT_STANDARD_END=1080;
-const CHAT_EXPANDED_START=360;
-const CHAT_EXPANDED_END=1200;
+const CHAT_STANDARD_START=480;  // 8:00 AM
+const CHAT_STANDARD_END=1080;   // 6:00 PM
+const CHAT_EXPANDED_START=480;
+const CHAT_EXPANDED_END=1080;
 const OFFICE_SEAT_LIMIT=22;
 const CHAT_DAY_KEYS=["Mon","Tue","Wed","Thu","Fri","Sat"];
 const CHAT_DAY_FULL={Mon:"Monday",Tue:"Tuesday",Wed:"Wednesday",Thu:"Thursday",Fri:"Friday",Sat:"Saturday"};
@@ -231,7 +238,7 @@ const defaultAgents=[
   {id:20,  name:"Preston Panetti",        shift:"8:00–4:30", supervisor:"Alex Blair",     workDays:["Monday","Tuesday","Thursday","Friday","Saturday"],officeDays:["Monday","Tuesday","Friday"],wfhDays:["Thursday","Saturday"],isNew:false,startDate:"10/27/25",skills:"Email, Outbound, Chat"},
   {id:22,  name:"Michael Chavez",         shift:"6:00–2:30", supervisor:"Alex Blair",     workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Thursday"],wfhDays:["Tuesday","Wednesday","Friday"],isNew:false,startDate:"10/27/25",skills:"Email, Outbound, Chat"},
   {id:6,   name:"Michael Nguyen",         shift:"6:00–2:30", supervisor:"Shelby Coldiron",workDays:["Tuesday","Wednesday","Friday","Saturday","Thursday"],officeDays:["Tuesday","Wednesday","Friday"],wfhDays:["Saturday","Thursday"],isNew:false,startDate:"10/27/25",skills:"Email, Outbound, Chat"},
-  {id:1001,name:"Ananya SenthilKumar",    shift:"6:00–2:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Wednesday","Saturday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Saturday","Friday"],isNew:false,lastDay:"3/13/26",startDate:"11/10/25",skills:"Email, Outbound, Chat, Onboarding"},
+  {id:1001,name:"Ananya SenthilKumar",    shift:"6:00–2:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Wednesday","Saturday","Friday"],officeDays:["Wednesday"],wfhDays:["Monday","Tuesday","Friday","Saturday"],isNew:false,lastDay:"3/13/26",startDate:"11/10/25",skills:"Email, Outbound, Chat, Onboarding",notes:"WFH all days through 3/12; in office 3/13 (last day)"},
   {id:2,   name:"Bianca Vernando",        shift:"6:00–2:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Friday","Saturday","Thursday"],officeDays:["Monday","Tuesday","Friday"],wfhDays:["Saturday","Thursday"],isNew:false,startDate:"11/10/25",skills:"Email, Outbound, Chat"},
   {id:17,  name:"Damian Doubrava",        shift:"8:00–4:30", supervisor:"Alex Blair",     workDays:["Monday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Monday","Thursday","Friday"],wfhDays:["Wednesday","Saturday"],isNew:false,startDate:"11/10/25",skills:"Email, Outbound, Chat, Bad Sat Revert, Site Jabber"},
   {id:19,  name:"Eri Dotson",             shift:"8:00–4:30", supervisor:"Alex Blair",     workDays:["Monday","Tuesday","Wednesday","Friday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Friday","Saturday"],isNew:false,startDate:"11/10/25",skills:"Email, Outbound, Chat"},
@@ -282,6 +289,11 @@ function getAgentForDate(agent,dateS){
   const d=parseDate(dateS);
   if(!d)return agent;
   if(agent.name==="Unaisa Aslam"&&d>=MAR18)agent={...agent,shift:"11:30–8:00"};
+  if(agent.name==="Ananya SenthilKumar"){
+    const mar13=new Date(2026,2,13);
+    if(d<mar13) agent={...agent,officeDays:[],wfhDays:[...agent.workDays]};
+    else agent={...agent,officeDays:[...agent.workDays],wfhDays:[]};
+  }
   if(EARLY_OFFICE_AGENTS.has(agent.name)){
     if(d<MAR9)agent={...agent,shift:"9:00–5:30",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],wfhDays:[]};
     else{const perm=EARLY_PERM[agent.name];if(perm)agent={...agent,...perm};}
