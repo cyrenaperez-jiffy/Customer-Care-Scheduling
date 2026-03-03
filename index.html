@@ -294,6 +294,10 @@ function getAgentForDate(agent,dateS){
     if(d<mar13) agent={...agent,officeDays:[],wfhDays:[...agent.workDays]};
     else agent={...agent,officeDays:[...agent.workDays],wfhDays:[]};
   }
+  if(agent.name==="Preston Panetti"){
+    const dow=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][d.getDay()];
+    if(dow==="Tuesday") agent={...agent,shift:"8:15–4:45"};
+  }
   if(EARLY_OFFICE_AGENTS.has(agent.name)){
     if(d<MAR9)agent={...agent,shift:"9:00–5:30",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],wfhDays:[]};
     else{const perm=EARLY_PERM[agent.name];if(perm)agent={...agent,...perm};}
@@ -536,35 +540,74 @@ function TimeOffEditModal({agentNames,onSave,onClose}){
 }
 
 function TodayTab({agents,timeOffData}){
-  const weekForToday=WEEKS.find(w=>w.dates.includes(TODAY_STR))||WEEKS[4];
-  const weekDates=weekForToday.dates;
+  // Find the week index that contains today
+  const todayWeekIdx=useMemo(()=>{const i=WEEKS.findIndex(w=>w.dates.includes(TODAY_STR));return i>=0?i:4;},[]);
+  const [weekIdx,setWeekIdx]=useState(todayWeekIdx);
+  const [selDay,setSelDay]=useState(TODAY_DAY);
+
+  // When week changes, default to first available day of that week
+  const week=WEEKS[weekIdx];
+  const weekDates=week.dates;
+
+  // Ensure selDay is valid for the selected week; if not, reset to first day
+  const validDay=DAYS.includes(selDay)?selDay:DAYS[0];
+
+  const dateS=weekDates[DAYS.indexOf(validDay)];
+  const dateObj=parseDate(dateS);
+  const isToday=dateS===TODAY_STR;
+
   const active=getActiveAgents(agents);
+
   const working=[],pto=[],halfDay=[],wfh=[],inOffice=[];
   active.forEach(a=>{
-    const s=getCellStatus(a,TODAY_DAY,weekDates,timeOffData);
+    const s=getCellStatus(a,validDay,weekDates,timeOffData);
     if(s.type==="dayoff"||s.type==="departed"||s.type==="notstarted")return;
     if(s.type==="pto"){pto.push({agent:a,to:s.to});return;}
     if(s.type==="half"){halfDay.push({agent:a,to:s.to});return;}
     if(s.type==="office"){inOffice.push(a);working.push(a);}
     if(s.type==="wfh"){wfh.push(a);working.push(a);}
   });
-  const todayKey=CHAT_DAY_KEYS[["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"].indexOf(TODAY_DAY)]||"Mon";
-  const chatCounts=getChatIntervalCounts(todayKey);
-  const chatPrimary=chatAgents.filter(a=>a[todayKey]==="X").length;
-  const chatBackup=chatAgents.filter(a=>a[todayKey]==="B").length;
+
+  const dayKey=CHAT_DAY_KEYS[DAYS.indexOf(validDay)]||"Mon";
+  const chatCounts=getChatIntervalCounts(dayKey);
+  const chatPrimary=chatAgents.filter(a=>a[dayKey]==="X").length;
   const chatRiskIntervals=chatCounts.filter(r=>r.total>0&&r.total<CHAT_MIN_STAFFING);
-  const expected=active.filter(a=>a.workDays.includes(TODAY_DAY)&&!hasNotStarted(a,TODAY_STR)).length;
+  const expected=active.filter(a=>{const ea=getAgentForDate(a,dateS);return ea.workDays.includes(validDay)&&!hasNotStarted(a,dateS);}).length;
   const actual=working.length+halfDay.length;
   const pct=expected>0?Math.round(actual/expected*100):100;
   const risk=pct<70?"HIGH":pct<85?"MEDIUM":"OK";
+
   const starting7=agents.filter(a=>{if(!a.startDate)return false;const sd=parseDate(a.startDate);const diff=(sd-REAL_TODAY)/(1000*60*60*24);return diff>=0&&diff<=7;});
-  const todayLabel=DISPLAY_DATE.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
-  const sortedInOffice=[...inOffice].sort((a,b)=>{const sa=SHIFT_START_MIN[getAgentForDate(a,TODAY_STR).shift]||999,sb=SHIFT_START_MIN[getAgentForDate(b,TODAY_STR).shift]||999;return sa-sb;});
+  const sortedInOffice=[...inOffice].sort((a,b)=>{const sa=SHIFT_START_MIN[getAgentForDate(a,dateS).shift]||999,sb=SHIFT_START_MIN[getAgentForDate(b,dateS).shift]||999;return sa-sb;});
+
+  const dayLabel=dateObj?dateObj.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"}):"";
+
   return(
     <div>
+      {/* Week + Day Picker */}
+      <div style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:12,padding:"14px 16px",marginBottom:20}}>
+        <WeekPicker weekIdx={weekIdx} setWeekIdx={(i)=>{setWeekIdx(i);setSelDay(DAYS[0]);}}/>
+        <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+          {DAYS.map((day,di)=>{
+            const ds=WEEKS[weekIdx].dates[di];
+            const isTd=ds===TODAY_STR;
+            const sel=day===validDay;
+            return(
+              <button key={day} onClick={()=>setSelDay(day)} className="btn" style={{background:sel?"#4f46e5":"#fff",color:sel?"#fff":"#475569",border:`2px solid ${sel?"#4f46e5":isTd?"#a5b4fc":"#e2e8f0"}`,position:"relative",minWidth:90}}>
+                <div style={{fontWeight:700}}>{day.slice(0,3)}</div>
+                <div style={{fontSize:10,opacity:.8}}>{fmtShort(ds)}</div>
+                {isTd&&<span style={{position:"absolute",top:-6,right:-4,background:"#4f46e5",color:"#fff",borderRadius:8,fontSize:9,padding:"1px 5px",fontWeight:800}}>TODAY</span>}
+              </button>
+            );
+          })}
+          {!isToday&&<button onClick={()=>{setWeekIdx(todayWeekIdx);setSelDay(TODAY_DAY);}} className="btn btn-ghost" style={{fontSize:11,marginLeft:"auto"}}>↩ Back to Today</button>}
+        </div>
+      </div>
+
+      {/* Header banner */}
       <div style={{background:"linear-gradient(135deg,#1e293b,#334155)",borderRadius:16,padding:"20px 24px",color:"#fff",marginBottom:24}}>
-        <div style={{fontSize:11,color:"#94a3b8",fontWeight:600,marginBottom:4,textTransform:"uppercase",letterSpacing:1}}>Daily Briefing{IS_SUNDAY?" — Showing Monday":""}</div>
-        <div style={{fontSize:22,fontWeight:800}}>{todayLabel}</div>
+        <div style={{fontSize:11,color:"#94a3b8",fontWeight:600,marginBottom:4,textTransform:"uppercase",letterSpacing:1}}>{isToday?"Daily Briefing — Today":"Daily Briefing"}</div>
+        <div style={{fontSize:22,fontWeight:800}}>{dayLabel}</div>
         <div style={{fontSize:13,color:"#94a3b8",marginTop:4}}>{active.length} active agents on roster</div>
         <div style={{marginTop:14,display:"flex",gap:10,flexWrap:"wrap"}}>
           <span className={`tag tag-${risk==="HIGH"?"risk":risk==="MEDIUM"?"warn":"ok"}`} style={{fontSize:13,padding:"4px 12px"}}>{risk==="HIGH"?"🔴 HIGH RISK":risk==="MEDIUM"?"🟡 MEDIUM RISK":"🟢 STAFFING OK"}</span>
@@ -572,8 +615,10 @@ function TodayTab({agents,timeOffData}){
           {chatRiskIntervals.length>0&&<span className="tag tag-risk" style={{fontSize:13,padding:"4px 12px"}}>💬 Chat risk: {chatRiskIntervals.length} intervals below {CHAT_MIN_STAFFING}</span>}
         </div>
       </div>
+
+      {/* Stat cards */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:12,marginBottom:24}}>
-        {[["👥","Working",working.length,`+${halfDay.length} half`,""],["🏢","In Office",inOffice.length,"","ok-card"],["🏠","WFH",wfh.length,"",""],["🌟","Out / PTO",pto.length,"",pto.length>3?"risk-card":""],["💬","Chat Primary",chatPrimary,`+${chatBackup} backup`,chatRiskIntervals.length>0?"risk-card":""]].map(([icon,label,val,sub,cls])=>(
+        {[["👥","Working",working.length,`+${halfDay.length} half`,""],["🏢","In Office",inOffice.length,"","ok-card"],["🏠","WFH",wfh.length,"",""],["🌟","Out / PTO",pto.length,"",pto.length>3?"risk-card":""],["💬","Chat",chatPrimary,"on schedule",chatRiskIntervals.length>0?"risk-card":""]].map(([icon,label,val,sub,cls])=>(
           <div key={label} className={`card ${cls}`} style={{textAlign:"center",padding:"16px 10px"}}>
             <div style={{fontSize:22}}>{icon}</div>
             <div style={{fontSize:28,fontWeight:800,color:"#1e293b",margin:"4px 0"}}>{val}</div>
@@ -582,9 +627,10 @@ function TodayTab({agents,timeOffData}){
           </div>
         ))}
       </div>
+
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,marginBottom:24}}>
         <div className="card">
-          <div style={{fontWeight:700,fontSize:14,marginBottom:12}}>🌟 Out Today</div>
+          <div style={{fontWeight:700,fontSize:14,marginBottom:12}}>🌟 Out This Day</div>
           {pto.length===0&&halfDay.length===0?<p style={{fontSize:12,color:"#94a3b8"}}>No time off ✓</p>
           :[...pto,...halfDay].map((item,i)=>{const c=SUP_COLORS[item.agent.supervisor]||{bg:"#64748b"};return(
             <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid #f1f5f9"}}>
@@ -597,15 +643,16 @@ function TodayTab({agents,timeOffData}){
           <div style={{marginTop:10,display:"flex",flexDirection:"column",gap:8}}>
             {risk!=="OK"&&<div style={{background:"#fff5f5",border:"1px solid #fca5a5",borderRadius:8,padding:"8px 10px",fontSize:12}}><strong style={{color:"#991b1b"}}>{risk==="HIGH"?"🔴 Staffing Risk":"🟡 Coverage Watch"}</strong><p style={{color:"#475569",marginTop:2}}>Working headcount ({working.length}) is {100-pct}% below expected ({expected} scheduled).</p></div>}
             {chatRiskIntervals.length>0&&<div style={{background:"#fff5f5",border:"1px solid #fca5a5",borderRadius:8,padding:"8px 10px",fontSize:12}}><strong style={{color:"#991b1b"}}>💬 Chat Coverage Risk</strong><p style={{color:"#475569",marginTop:2}}>{chatRiskIntervals.length} interval{chatRiskIntervals.length!==1?"s":""} below {CHAT_MIN_STAFFING}.</p></div>}
-            {starting7.length>0&&<div style={{background:"#f0fdf4",border:"1px solid #86efac",borderRadius:8,padding:"8px 10px",fontSize:12}}><strong style={{color:"#166534"}}>✨ Starting This Week</strong>{starting7.map(a=><div key={a.id} style={{fontSize:11,marginTop:3}}>{a.name} — {fmtFull(a.startDate)}</div>)}</div>}
-            {risk==="OK"&&chatRiskIntervals.length===0&&<div style={{background:"#f0fdf4",border:"1px solid #86efac",borderRadius:8,padding:"8px 10px",fontSize:12,color:"#166534",fontWeight:600}}>✅ All Clear — No major risks today.</div>}
+            {isToday&&starting7.length>0&&<div style={{background:"#f0fdf4",border:"1px solid #86efac",borderRadius:8,padding:"8px 10px",fontSize:12}}><strong style={{color:"#166534"}}>✨ Starting This Week</strong>{starting7.map(a=><div key={a.id} style={{fontSize:11,marginTop:3}}>{a.name} — {fmtFull(a.startDate)}</div>)}</div>}
+            {risk==="OK"&&chatRiskIntervals.length===0&&<div style={{background:"#f0fdf4",border:"1px solid #86efac",borderRadius:8,padding:"8px 10px",fontSize:12,color:"#166534",fontWeight:600}}>✅ All Clear — No major risks.</div>}
           </div>
         </div>
       </div>
+
       <div className="card">
         <div style={{fontWeight:700,fontSize:14,marginBottom:12}}>🏢 In Office ({sortedInOffice.length})</div>
         {sortedInOffice.length===0?<p style={{fontSize:12,color:"#94a3b8"}}>No in-office agents</p>
-        :<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:8}}>{sortedInOffice.map((a,i)=>{const ea=getAgentForDate(a,TODAY_STR);const c=SUP_COLORS[a.supervisor]||{bg:"#64748b"};return(
+        :<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:8}}>{sortedInOffice.map((a,i)=>{const ea=getAgentForDate(a,dateS);const c=SUP_COLORS[a.supervisor]||{bg:"#64748b"};return(
           <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"6px 10px",borderRadius:8,background:"#f8fafc",border:"1px solid #e2e8f0"}}>
             <div style={{fontWeight:600,fontSize:12}}>{a.name}</div>
             <div style={{fontSize:11,color:c.bg}}>{ea.shift}</div>
