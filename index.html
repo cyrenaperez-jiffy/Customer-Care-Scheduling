@@ -298,6 +298,10 @@ function getAgentForDate(agent,dateS){
     const dow=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][d.getDay()];
     if(dow==="Tuesday") agent={...agent,shift:"8:15–4:45"};
   }
+  const ALL_IN_OFFICE_UNTIL_MAR30=new Set(["Rachel Dunlap","Ariashe Lowery","Taylor Amos","Jada Brown","Rylie Walker","Lybah Shah Nawz"]);
+  if(ALL_IN_OFFICE_UNTIL_MAR30.has(agent.name)&&d<MAR30){
+    agent={...agent,officeDays:[...agent.workDays],wfhDays:[]};
+  }
   if(EARLY_OFFICE_AGENTS.has(agent.name)){
     if(d<MAR9)agent={...agent,shift:"9:00–5:30",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],wfhDays:[]};
     else{const perm=EARLY_PERM[agent.name];if(perm)agent={...agent,...perm};}
