@@ -903,6 +903,167 @@ function TimeOffTab({agents,timeOffData,setTimeOffData,isManager,onChangeLogged}
   );
 }
 
+function OfficeCapacityTab({agents,timeOffData}){
+  const[weekIdx,setWeekIdx]=useState(4);
+  const week=WEEKS[weekIdx];
+  const wAgents=getWeekAgents(agents,week);
+
+  // Build peak office count per day and list of who's in
+  const dayData=useMemo(()=>DAYS.map((day,di)=>{
+    const dateS=week.dates[di];
+    const inOffice=[];
+    wAgents.forEach(a=>{
+      const st=getCellStatus(a,day,week.dates,timeOffData);
+      if(st.type==="office"){
+        const ea=getAgentForDate(a,dateS);
+        inOffice.push({name:a.name,supervisor:a.supervisor,shift:ea.shift,workDays:ea.workDays,officeDays:ea.officeDays,wfhDays:ea.wfhDays,id:a.id});
+      }
+    });
+    return{day,dateS,count:inOffice.length,over:Math.max(0,inOffice.length-OFFICE_SEAT_LIMIT),agents:inOffice};
+  }),[wAgents,week,timeOffData]);
+
+  // Build availability: for each agent on an over-capacity day, which days have capacity spare?
+  const dayCounts=dayData.map(d=>d.count);
+  const suggestions=useMemo(()=>{
+    const overDays=dayData.filter(d=>d.over>0);
+    const underDays=dayData.filter(d=>d.count<OFFICE_SEAT_LIMIT);
+    const result=[];
+    overDays.forEach(od=>{
+      // Find agents on this day who also work an under-capacity day and aren't already in office that day
+      od.agents.forEach(agent=>{
+        const swapOptions=underDays.filter(ud=>{
+          if(ud.day===od.day) return false;
+          // Agent must work that day
+          if(!agent.workDays.includes(ud.day)) return false;
+          // Agent must not already be in office that day (would be wfh or off)
+          const already=dayData.find(d=>d.day===ud.day);
+          if(already&&already.agents.find(a=>a.name===agent.name)) return false;
+          // Moving them would help: under day gains one, over day loses one
+          return true;
+        }).map(ud=>({day:ud.day,dateS:ud.dateS,currentCount:ud.count,spare:OFFICE_SEAT_LIMIT-ud.count}))
+          .sort((a,b)=>b.spare-a.spare);
+        if(swapOptions.length>0){
+          result.push({
+            overDay:od.day,
+            overDateS:od.dateS,
+            agent:agent.name,
+            supervisor:agent.supervisor,
+            shift:agent.shift,
+            currentOfficeDays:agent.officeDays,
+            currentWfhDays:agent.wfhDays,
+            options:swapOptions.slice(0,3),
+          });
+        }
+      });
+    });
+    return result;
+  },[dayData]);
+
+  const barColor=(count)=>{
+    if(count>OFFICE_SEAT_LIMIT) return"#ef4444";
+    if(count>OFFICE_SEAT_LIMIT-3) return"#f59e0b";
+    return"#10b981";
+  };
+
+  return(
+    <div>
+      <div style={{background:"linear-gradient(135deg,#1e293b,#334155)",borderRadius:16,padding:"20px 24px",color:"#fff",marginBottom:20}}>
+        <div style={{fontSize:11,color:"#94a3b8",fontWeight:600,marginBottom:4,textTransform:"uppercase",letterSpacing:1}}>Office Capacity Planner</div>
+        <div style={{fontSize:20,fontWeight:800}}>🏢 Reduce to {OFFICE_SEAT_LIMIT}-Seat Limit</div>
+        <div style={{fontSize:12,color:"#94a3b8",marginTop:6}}>See which days are over capacity and who to move to WFH to fix it.</div>
+      </div>
+
+      <WeekPicker weekIdx={weekIdx} setWeekIdx={setWeekIdx}/>
+
+      {/* Day capacity bar chart */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:10,marginBottom:24}}>
+        {dayData.map(d=>{
+          const pct=Math.min(d.count/30,1);
+          const isOver=d.count>OFFICE_SEAT_LIMIT;
+          const isWarn=d.count>OFFICE_SEAT_LIMIT-3&&!isOver;
+          return(
+            <div key={d.day} className="card" style={{padding:"12px 10px",textAlign:"center",borderLeft:`4px solid ${barColor(d.count)}`}}>
+              <div style={{fontWeight:700,fontSize:12,color:"#475569"}}>{d.day.slice(0,3)}</div>
+              <div style={{fontSize:10,color:"#94a3b8",marginBottom:8}}>{fmtShort(d.dateS)}</div>
+              <div style={{fontSize:28,fontWeight:800,color:barColor(d.count)}}>{d.count}</div>
+              <div style={{fontSize:10,color:"#94a3b8",marginBottom:6}}>in office</div>
+              <div style={{height:6,background:"#f1f5f9",borderRadius:3,overflow:"hidden",marginBottom:6}}>
+                <div style={{height:"100%",width:`${pct*100}%`,background:barColor(d.count),borderRadius:3}}/>
+              </div>
+              {isOver&&<span className="tag tag-risk" style={{fontSize:10}}>+{d.over} over</span>}
+              {isWarn&&<span className="tag tag-warn" style={{fontSize:10}}>near limit</span>}
+              {!isOver&&!isWarn&&<span className="tag tag-ok" style={{fontSize:10}}>{OFFICE_SEAT_LIMIT-d.count} spare</span>}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Suggestions */}
+      {suggestions.length===0?(
+        <div className="card ok-card" style={{textAlign:"center",padding:"32px"}}>
+          <div style={{fontSize:32,marginBottom:8}}>✅</div>
+          <div style={{fontWeight:700,fontSize:16,color:"#166534"}}>All days within capacity!</div>
+          <div style={{fontSize:12,color:"#64748b",marginTop:4}}>No office day changes needed this week.</div>
+        </div>
+      ):(
+        <div>
+          <div style={{fontWeight:700,fontSize:15,marginBottom:4}}>💡 Suggested Changes</div>
+          <div style={{fontSize:12,color:"#64748b",marginBottom:16}}>Move these agents from office → WFH on the over-capacity day. Best swap targets shown first by available spare capacity.</div>
+          {/* Group by over-capacity day */}
+          {DAYS.filter(day=>dayData.find(d=>d.day===day&&d.over>0)).map(day=>{
+            const daySuggs=suggestions.filter(s=>s.overDay===day);
+            const dd=dayData.find(d=>d.day===day);
+            return(
+              <div key={day} style={{marginBottom:24}}>
+                <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+                  <span style={{background:"#fee2e2",color:"#991b1b",padding:"4px 12px",borderRadius:20,fontWeight:700,fontSize:13}}>{day} — {dd.count} in office (+{dd.over} over limit)</span>
+                  <span style={{fontSize:12,color:"#64748b"}}>Need to move {dd.over} agent{dd.over!==1?"s":""} to WFH</span>
+                </div>
+                <div style={{display:"grid",gap:8}}>
+                  {daySuggs.map((s,i)=>{
+                    const c=SUP_COLORS[s.supervisor]||{bg:"#64748b",light:"#f8fafc",border:"#e2e8f0"};
+                    return(
+                      <div key={i} style={{background:"#fff",border:`1px solid ${c.border}`,borderRadius:10,padding:"12px 16px",display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+                        <div style={{minWidth:200}}>
+                          <div style={{fontWeight:700,fontSize:13}}>{s.agent}</div>
+                          <div style={{fontSize:11,color:c.bg,marginBottom:4}}>{s.supervisor} · {s.shift}</div>
+                          <div style={{fontSize:11,color:"#64748b"}}>
+                            <span style={{fontWeight:600}}>Current office days: </span>
+                            {s.currentOfficeDays.map(d=>d.slice(0,3)).join(", ")||"—"}
+                          </div>
+                          <div style={{fontSize:11,color:"#64748b"}}>
+                            <span style={{fontWeight:600}}>Current WFH days: </span>
+                            {s.currentWfhDays.map(d=>d.slice(0,3)).join(", ")||"—"}
+                          </div>
+                        </div>
+                        <div style={{flex:1,minWidth:220}}>
+                          <div style={{fontSize:11,fontWeight:700,color:"#475569",marginBottom:6}}>→ Swap {day.slice(0,3)} office to WFH, move office day to:</div>
+                          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                            {s.options.map((opt,j)=>(
+                              <div key={j} style={{background:opt.spare>3?"#f0fdf4":"#fffbeb",border:`1px solid ${opt.spare>3?"#86efac":"#fcd34d"}`,borderRadius:8,padding:"6px 10px",fontSize:11}}>
+                                <div style={{fontWeight:700,color:opt.spare>3?"#166534":"#92400e"}}>{opt.day}</div>
+                                <div style={{color:"#64748b"}}>{fmtShort(opt.dateS)}</div>
+                                <div style={{fontWeight:600,color:opt.spare>3?"#059669":"#d97706"}}>{opt.currentCount}/{OFFICE_SEAT_LIMIT} · {opt.spare} spare</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+          <div style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:10,padding:"12px 16px",fontSize:12,color:"#1d4ed8",marginTop:8}}>
+            <strong>💡 How to apply:</strong> Go to the Roster tab (Manager Login required), edit the agent, and update their office/WFH days. Changes will reflect immediately across all tabs.
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function GitHubGuideTab(){
   const steps=[
     {num:1,icon:"🔑",title:"Log in as Manager & make your changes",body:"Use the Manager Login button (top right). Once logged in, make any edits in the Roster, Schedule, or Time Off tabs.",note:"Every agent/time-off change is automatically tracked in the Export Changes log."},
@@ -945,6 +1106,7 @@ function App(){
     {id:"schedule",label:"📅 Schedule"},
     {id:"chat",label:"💬 Chat"},
     {id:"timeoff",label:"🏖️ Time Off"},
+    {id:"capacity",label:"🏢 Capacity"},
     {id:"roster",label:"👥 Roster",locked:true},
     {id:"guide",label:"📖 GitHub Guide"},
   ];
@@ -972,6 +1134,7 @@ function App(){
         {tab==="schedule"&&<ScheduleTab agents={agents} setAgents={setAgents} isManager={isManager} timeOffData={timeOffData} onChangeLogged={onChangeLogged}/>}
         {tab==="chat"    &&<ChatScheduleTab/>}
         {tab==="timeoff" &&<TimeOffTab agents={agents} timeOffData={timeOffData} setTimeOffData={setTimeOffData} isManager={isManager} onChangeLogged={onChangeLogged}/>}
+        {tab==="capacity"&&<OfficeCapacityTab agents={agents} timeOffData={timeOffData}/>}
         {tab==="guide"   &&<GitHubGuideTab/>}
       </div>
       {showLogin&&<LoginModal onLogin={()=>{setIsManager(true);setRosterUnlocked(true);setShowLogin(false);setTab("overview");}} onClose={()=>setShowLogin(false)}/>}
