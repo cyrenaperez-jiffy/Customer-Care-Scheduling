@@ -86,21 +86,24 @@ const SHIFT_TIMES = {
 const INTERVALS=[];
 for(let m=360;m<1200;m+=30){const h=Math.floor(m/60),mn=m%60;INTERVALS.push({label:`${String(h).padStart(2,"0")}:${String(mn).padStart(2,"0")}`,minutes:m});}
 
+// ── FIXED WEEKS ARRAY — complete through end of April ──────────────────────
 const WEEKS=[
-  {month:"February",label:"W1",display:"Feb 2–8",   dates:["2/2/26","2/3/26","2/4/26","2/5/26","2/6/26","2/7/26"]},
-  {month:"February",label:"W2",display:"Feb 9–15",  dates:["2/9/26","2/10/26","2/11/26","2/12/26","2/13/26","2/14/26"]},
-  {month:"February",label:"W3",display:"Feb 16–22", dates:["2/16/26","2/17/26","2/18/26","2/19/26","2/20/26","2/21/26"]},
-  {month:"February",label:"W4",display:"Feb 23–28", dates:["2/23/26","2/24/26","2/25/26","2/26/26","2/27/26","2/28/26"]},
-  {month:"March",   label:"W1",display:"Mar 2–7",   dates:["3/2/26","3/3/26","3/4/26","3/5/26","3/6/26","3/7/26"]},
-  {month:"March",   label:"W2",display:"Mar 9–14",  dates:["3/9/26","3/10/26","3/11/26","3/12/26","3/13/26","3/14/26"]},
-  {month:"March",   label:"W3",display:"Mar 16–21", dates:["3/16/26","3/17/26","3/18/26","3/19/26","3/20/26","3/21/26"]},
-  {month:"March",   label:"W4",display:"Mar 23–28", dates:["3/23/26","3/24/26","3/25/26","3/26/26","3/27/26","3/28/26"]},
+  {month:"February",label:"W1",display:"Feb 2–8",    dates:["2/2/26","2/3/26","2/4/26","2/5/26","2/6/26","2/7/26"]},
+  {month:"February",label:"W2",display:"Feb 9–15",   dates:["2/9/26","2/10/26","2/11/26","2/12/26","2/13/26","2/14/26"]},
+  {month:"February",label:"W3",display:"Feb 16–22",  dates:["2/16/26","2/17/26","2/18/26","2/19/26","2/20/26","2/21/26"]},
+  {month:"February",label:"W4",display:"Feb 23–28",  dates:["2/23/26","2/24/26","2/25/26","2/26/26","2/27/26","2/28/26"]},
+  {month:"March",   label:"W1",display:"Mar 2–7",    dates:["3/2/26","3/3/26","3/4/26","3/5/26","3/6/26","3/7/26"]},
+  {month:"March",   label:"W2",display:"Mar 9–14",   dates:["3/9/26","3/10/26","3/11/26","3/12/26","3/13/26","3/14/26"]},
+  {month:"March",   label:"W3",display:"Mar 16–21",  dates:["3/16/26","3/17/26","3/18/26","3/19/26","3/20/26","3/21/26"]},
+  {month:"March",   label:"W4",display:"Mar 23–28",  dates:["3/23/26","3/24/26","3/25/26","3/26/26","3/27/26","3/28/26"]},
   {month:"March",   label:"W5",display:"Mar 30–Apr 4",dates:["3/30/26","3/31/26","4/1/26","4/2/26","4/3/26","4/4/26"]},
-  {month:"April",   label:"W1",display:"Apr 6–11",  dates:["4/6/26","4/7/26","4/8/26","4/9/26","4/10/26","4/11/26"]},
-  {month:"April",   label:"W2",display:"Apr 13–18", dates:["4/13/26","4/14/26","4/15/26","4/16/26","4/17/26","4/18/26"]},
-  {month:"April",   label:"W3",display:"Apr 20–25", dates:["4/20/26","4/21/26","4/22/26","4/23/26","4/24/26","4/25/26"]},
-  {month:"April",   label:"W4",display:"Apr 27–30", dates:["4/27/26","4/28/26","4/29/26","4/30/26","4/30/26","4/30/26"]},
+  {month:"April",   label:"W1",display:"Apr 6–11",   dates:["4/6/26","4/7/26","4/8/26","4/9/26","4/10/26","4/11/26"]},
+  {month:"April",   label:"W2",display:"Apr 13–18",  dates:["4/13/26","4/14/26","4/15/26","4/16/26","4/17/26","4/18/26"]},
+  {month:"April",   label:"W3",display:"Apr 20–25",  dates:["4/20/26","4/21/26","4/22/26","4/23/26","4/24/26","4/25/26"]},
+  {month:"April",   label:"W4",display:"Apr 27–30",  dates:["4/27/26","4/28/26","4/29/26","4/30/26","4/30/26","4/30/26"]},
 ];
+
+const MONTH_GROUPS = ["February","March","April"];
 
 const REAL_TODAY=(()=>{const d=new Date();d.setHours(0,0,0,0);return d;})();
 const REAL_DOW=REAL_TODAY.getDay();
@@ -343,11 +346,9 @@ function getFlexForDate(name,dateS,flexData){
   return flexData.filter(f=>{
     if(f.status!=="Approved")return false;
     if(f.name!==name)return false;
-    const fDate=parseDate(f.date);
-    if(!fDate)return false;
+    const fDate=parseDate(f.date);if(!fDate)return false;
     const endDate=f.endDate?parseDate(f.endDate):fDate;
-    const target=parseDate(dateS);
-    if(!target)return false;
+    const target=parseDate(dateS);if(!target)return false;
     return target>=fDate&&target<=endDate;
   });
 }
@@ -452,6 +453,30 @@ function CellTag({status}){
     return<span className="tag tag-jiffy">🌟</span>;
   }
   return<span className="tag tag-dayoff">—</span>;
+}
+
+// ── WEEK PICKER (shared component) ──────────────────────────────────────────
+function WeekPicker({weekIdx,setWeekIdx}){
+  return(
+    <div style={{marginBottom:16}}>
+      {MONTH_GROUPS.map(month=>{
+        const mw=WEEKS.filter(w=>w.month===month);
+        if(mw.length===0)return null;
+        return(
+          <div key={month} style={{marginBottom:8}}>
+            <div style={{fontSize:11,fontWeight:700,color:"#94a3b8",marginBottom:5,textTransform:"uppercase",letterSpacing:1}}>{month}</div>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+              {mw.map(w=>{const gi=WEEKS.indexOf(w);return(
+                <button key={gi} onClick={()=>setWeekIdx(gi)} className="btn" style={{background:weekIdx===gi?"#4f46e5":"#fff",color:weekIdx===gi?"#fff":"#475569",border:`1px solid ${weekIdx===gi?"#4f46e5":"#e2e8f0"}`}}>
+                  {w.label} <span style={{opacity:.7,fontSize:11}}>({w.display})</span>
+                </button>
+              );})}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 function ExportModal({log,onClose,onClear}){
@@ -709,7 +734,6 @@ function ShiftFlexTab({agents,flexData,setFlexData,isManager}){
   const weekFlexes=weekDates.map((dateS,di)=>{const dayFlexes=flexData.filter(f=>{if(f.status!=="Approved")return false;const fd=parseDate(f.date);const ed=f.endDate?parseDate(f.endDate):fd;const td=parseDate(dateS);return td&&fd&&ed&&td>=fd&&td<=ed;});return{day:DAYS[di],date:dateS,flexes:dayFlexes};});
   const FLEX_TYPE_COLORS={"WFH":"#dbeafe","Early Leave":"#fce7f3","Late Start":"#ede9fe","Extended Lunch":"#fef3c7","Shift Swap":"#dcfce7","Full-Day Adjustment":"#ffedd5","Other":"#f1f5f9"};
   const FLEX_TYPE_TC={"WFH":"#1e40af","Early Leave":"#9d174d","Late Start":"#5b21b6","Extended Lunch":"#92400e","Shift Swap":"#166534","Full-Day Adjustment":"#9a3412","Other":"#475569"};
-  const MONTH_GROUPS=["February","March","April"];
   return(
     <div>
       {saved&&<div style={{background:"#dcfce7",color:"#166534",padding:"8px 14px",borderRadius:8,marginBottom:12,fontSize:12,fontWeight:600}}>✓ Saved</div>}
@@ -718,7 +742,6 @@ function ShiftFlexTab({agents,flexData,setFlexData,isManager}){
           <div key={label} className="card" style={{textAlign:"center",padding:"14px 10px"}}><div style={{fontSize:20}}>{icon}</div><div style={{fontSize:26,fontWeight:800,color,margin:"4px 0"}}>{val}</div><div style={{fontSize:11,fontWeight:700,color:"#475569"}}>{label}</div></div>
         ))}
       </div>
-      <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:14}}>{FLEX_TYPES.map(t=><span key={t} style={{background:FLEX_TYPE_COLORS[t],color:FLEX_TYPE_TC[t],padding:"2px 8px",borderRadius:12,fontSize:11,fontWeight:600}}>{t}</span>)}</div>
       <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap",alignItems:"center"}}>
         <button onClick={()=>setWeekView(false)} className="btn" style={{background:!weekView?"#4f46e5":"#fff",color:!weekView?"#fff":"#475569",border:`1px solid ${!weekView?"#4f46e5":"#e2e8f0"}`}}>📋 Log</button>
         <button onClick={()=>setWeekView(true)} className="btn" style={{background:weekView?"#4f46e5":"#fff",color:weekView?"#fff":"#475569",border:`1px solid ${weekView?"#4f46e5":"#e2e8f0"}`}}>📅 Weekly</button>
@@ -727,7 +750,7 @@ function ShiftFlexTab({agents,flexData,setFlexData,isManager}){
       </div>
       {weekView&&(
         <div>
-          <div style={{marginBottom:14}}>{MONTH_GROUPS.map(month=>{const mw=WEEKS.filter(w=>w.month===month);if(mw.length===0)return null;return(<div key={month} style={{marginBottom:8}}><div style={{fontSize:11,fontWeight:700,color:"#94a3b8",marginBottom:5,textTransform:"uppercase",letterSpacing:1}}>{month}</div><div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{mw.map(w=>{const gi=WEEKS.indexOf(w);return(<button key={gi} onClick={()=>setWeekIdx(gi)} className="btn" style={{background:weekIdx===gi?"#4f46e5":"#fff",color:weekIdx===gi?"#fff":"#475569",border:`1px solid ${weekIdx===gi?"#4f46e5":"#e2e8f0"}`}}>{w.label} <span style={{opacity:.7,fontSize:11}}>({w.display})</span></button>);})}</div></div>);})}</div>
+          <WeekPicker weekIdx={weekIdx} setWeekIdx={setWeekIdx}/>
           <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:10}}>
             {weekFlexes.map(({day,date,flexes})=>(
               <div key={day} style={{background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:"12px 10px",minHeight:120}}>
@@ -811,14 +834,15 @@ function OverviewTab({agents,timeOffData,flexData}){
   const oTc=(n)=>{if(!n)return"#1e293b";if(n>OFFICE_SEAT_LIMIT)return"#991b1b";if(n>OFFICE_SEAT_LIMIT-3)return"#92400e";return n/OFFICE_SEAT_LIMIT>0.7?"#fff":"#1e293b";};
   const tc=bg=>["#3b82f6","#1d4ed8","#22c55e","#15803d"].includes(bg)?"#fff":"#1e293b";
   const officeRiskDays=DAYS.map(day=>{const peak=Math.max(...data.map(r=>r[day].office));return{day,peak};}).filter(x=>x.peak>OFFICE_SEAT_LIMIT);
-  const MONTH_GROUPS=["February","March","April"];
   return(
     <div>
-      <div style={{marginBottom:16}}>{MONTH_GROUPS.map(month=>{const mw=WEEKS.filter(w=>w.month===month);if(mw.length===0)return null;return(<div key={month} style={{marginBottom:8}}><div style={{fontSize:11,fontWeight:700,color:"#94a3b8",marginBottom:5,textTransform:"uppercase",letterSpacing:1}}>{month}</div><div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{mw.map(w=>{const gi=WEEKS.indexOf(w);return(<button key={gi} onClick={()=>setWeekIdx(gi)} className="btn" style={{background:weekIdx===gi?"#4f46e5":"#fff",color:weekIdx===gi?"#fff":"#475569",border:`1px solid ${weekIdx===gi?"#4f46e5":"#e2e8f0"}`}}>{w.label} <span style={{opacity:.7,fontSize:11}}>({w.display})</span></button>);})}</div></div>);})}</div>
+      <WeekPicker weekIdx={weekIdx} setWeekIdx={setWeekIdx}/>
       {officeRiskDays.length>0&&<div className="card risk-card" style={{marginBottom:16}}><div style={{fontWeight:700,fontSize:13,marginBottom:6}}>🏢 Office Capacity Risk — Limit: {OFFICE_SEAT_LIMIT} seats</div><p style={{fontSize:12,color:"#475569",marginBottom:8}}>Peak in-office exceeding {OFFICE_SEAT_LIMIT} on:</p><div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{officeRiskDays.map(x=><span key={x.day} style={{background:"#fee2e2",color:"#991b1b",padding:"3px 10px",borderRadius:12,fontSize:12,fontWeight:700}}>{x.day}: {x.peak} in office</span>)}</div></div>}
       <div style={{display:"flex",gap:8,marginBottom:16,alignItems:"center",flexWrap:"wrap"}}>{[["all","📊 All Days"],["single","📅 Single Day"]].map(([v,l])=><button key={v} onClick={()=>setView(v)} className="btn" style={{background:view===v?"#4f46e5":"#fff",color:view===v?"#fff":"#475569",border:`1px solid ${view===v?"#4f46e5":"#e2e8f0"}`}}>{l}</button>)}{view==="single"&&<select value={dayFilter} onChange={e=>setDayFilter(e.target.value)} style={{width:"auto",minWidth:120}}>{DAYS.map(d=><option key={d}>{d}</option>)}</select>}</div>
-      {view==="all"&&(<><div style={{marginBottom:20}}><div style={{fontWeight:700,fontSize:14,marginBottom:8}}>👥 Total Staffed</div><div style={{overflowX:"auto",borderRadius:12,border:"1px solid #e2e8f0"}}><table style={{minWidth:600}}><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th style={{minWidth:70,position:"sticky",left:0,background:"#f8fafc",zIndex:2}}>Time</th>{DAYS.map((d,i)=><th key={d} style={{textAlign:"center",minWidth:80}}><div>{d.slice(0,3)}</div><div style={{fontWeight:400,fontSize:10,color:"#94a3b8"}}>{fmtShort(week.dates[i])}</div></th>)}</tr></thead><tbody>{data.map((row,ri)=><tr key={ri} style={{borderBottom:"1px solid #f1f5f9"}}><td style={{fontWeight:600,fontSize:11,color:"#475569",position:"sticky",left:0,background:"#fff",zIndex:1}}>{row.label}</td>{DAYS.map(day=>{const n=row[day].total,bg=tBg(n,maxT);return<td key={day} style={{textAlign:"center",background:bg,color:tc(bg),fontWeight:700,fontSize:13,padding:"5px 4px"}}>{n>0?n:"–"}</td>;})}</tr>)}</tbody></table></div></div>
-      <div><div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}><div style={{fontWeight:700,fontSize:14}}>🏢 In Office</div><span style={{fontSize:11,background:"#fee2e2",color:"#991b1b",padding:"2px 8px",borderRadius:8,fontWeight:600}}>🔴 over {OFFICE_SEAT_LIMIT}</span><span style={{fontSize:11,background:"#fef3c7",color:"#92400e",padding:"2px 8px",borderRadius:8,fontWeight:600}}>🟡 within 3</span></div><div style={{overflowX:"auto",borderRadius:12,border:"1px solid #e2e8f0"}}><table style={{minWidth:600}}><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th style={{minWidth:70,position:"sticky",left:0,background:"#f8fafc",zIndex:2}}>Time</th>{DAYS.map((d,i)=><th key={d} style={{textAlign:"center",minWidth:80}}><div>{d.slice(0,3)}</div><div style={{fontWeight:400,fontSize:10,color:"#94a3b8"}}>{fmtShort(week.dates[i])}</div></th>)}</tr></thead><tbody>{data.map((row,ri)=><tr key={ri} style={{borderBottom:"1px solid #f1f5f9"}}><td style={{fontWeight:600,fontSize:11,color:"#475569",position:"sticky",left:0,background:"#fff",zIndex:1}}>{row.label}</td>{DAYS.map(day=>{const n=row[day].office,bg=oBg(n),color=oTc(n);return<td key={day} style={{textAlign:"center",background:bg,color,fontWeight:700,fontSize:13,padding:"5px 4px"}}>{n>0?n:"–"}{n>OFFICE_SEAT_LIMIT?" ⚠️":""}</td>;})}</tr>)}</tbody></table></div></div></>)}
+      {view==="all"&&(<>
+        <div style={{marginBottom:20}}><div style={{fontWeight:700,fontSize:14,marginBottom:8}}>👥 Total Staffed</div><div style={{overflowX:"auto",borderRadius:12,border:"1px solid #e2e8f0"}}><table style={{minWidth:600}}><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th style={{minWidth:70,position:"sticky",left:0,background:"#f8fafc",zIndex:2}}>Time</th>{DAYS.map((d,i)=><th key={d} style={{textAlign:"center",minWidth:80}}><div>{d.slice(0,3)}</div><div style={{fontWeight:400,fontSize:10,color:"#94a3b8"}}>{fmtShort(week.dates[i])}</div></th>)}</tr></thead><tbody>{data.map((row,ri)=><tr key={ri} style={{borderBottom:"1px solid #f1f5f9"}}><td style={{fontWeight:600,fontSize:11,color:"#475569",position:"sticky",left:0,background:"#fff",zIndex:1}}>{row.label}</td>{DAYS.map(day=>{const n=row[day].total,bg=tBg(n,maxT);return<td key={day} style={{textAlign:"center",background:bg,color:tc(bg),fontWeight:700,fontSize:13,padding:"5px 4px"}}>{n>0?n:"–"}</td>;})}</tr>)}</tbody></table></div></div>
+        <div><div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}><div style={{fontWeight:700,fontSize:14}}>🏢 In Office</div><span style={{fontSize:11,background:"#fee2e2",color:"#991b1b",padding:"2px 8px",borderRadius:8,fontWeight:600}}>🔴 over {OFFICE_SEAT_LIMIT}</span><span style={{fontSize:11,background:"#fef3c7",color:"#92400e",padding:"2px 8px",borderRadius:8,fontWeight:600}}>🟡 within 3</span></div><div style={{overflowX:"auto",borderRadius:12,border:"1px solid #e2e8f0"}}><table style={{minWidth:600}}><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th style={{minWidth:70,position:"sticky",left:0,background:"#f8fafc",zIndex:2}}>Time</th>{DAYS.map((d,i)=><th key={d} style={{textAlign:"center",minWidth:80}}><div>{d.slice(0,3)}</div><div style={{fontWeight:400,fontSize:10,color:"#94a3b8"}}>{fmtShort(week.dates[i])}</div></th>)}</tr></thead><tbody>{data.map((row,ri)=><tr key={ri} style={{borderBottom:"1px solid #f1f5f9"}}><td style={{fontWeight:600,fontSize:11,color:"#475569",position:"sticky",left:0,background:"#fff",zIndex:1}}>{row.label}</td>{DAYS.map(day=>{const n=row[day].office,bg=oBg(n),color=oTc(n);return<td key={day} style={{textAlign:"center",background:bg,color,fontWeight:700,fontSize:13,padding:"5px 4px"}}>{n>0?n:"–"}{n>OFFICE_SEAT_LIMIT?" ⚠️":""}</td>;})}</tr>)}</tbody></table></div></div>
+      </>)}
       {view==="single"&&(()=>{const sd=data.map(r=>({label:r.label,total:r[dayFilter].total,office:r[dayFilter].office}));const ms=Math.max(...sd.map(r=>r.total));return(<div style={{borderRadius:12,border:"1px solid #e2e8f0",overflow:"hidden",background:"#fff"}}><table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th>Time</th><th>Staffed</th><th style={{width:80,textAlign:"center"}}>Total</th><th style={{width:80,textAlign:"center"}}>Office</th></tr></thead><tbody>{sd.map((row,i)=>{const pT=ms>0?row.total/ms:0,pO=row.total>0?row.office/row.total:0;const overLimit=row.office>OFFICE_SEAT_LIMIT;return(<tr key={i} style={{borderBottom:"1px solid #f8fafc",background:overLimit?"#fff5f5":""}}><td style={{fontWeight:600,fontSize:11,color:"#475569"}}>{row.label}</td><td style={{padding:"4px 8px"}}><div style={{position:"relative",height:18,background:"#f1f5f9",borderRadius:3,overflow:"hidden"}}><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pT*100}%`,background:"#93c5fd",borderRadius:3}}/><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pT*pO*100}%`,background:overLimit?"#ef4444":"#22c55e",borderRadius:3}}/></div></td><td style={{textAlign:"center",fontWeight:700,color:row.total>0?"#1d4ed8":"#cbd5e1"}}>{row.total||"–"}</td><td style={{textAlign:"center",fontWeight:700,color:overLimit?"#991b1b":row.office>0?"#15803d":"#cbd5e1"}}>{row.office||"–"}{overLimit?" ⚠️":""}</td></tr>);})}</tbody></table></div>);})()}
     </div>
   );
@@ -838,11 +862,10 @@ function ScheduleTab({agents,setAgents,isManager,timeOffData,flexData,onChangeLo
   const dayFlexCounts=DAYS.map((day,di)=>{const dateS=week.dates[di];return flexData.filter(f=>{if(f.status!=="Approved")return false;const fd=parseDate(f.date),ed=f.endDate?parseDate(f.endDate):fd,td=parseDate(dateS);return td&&fd&&ed&&td>=fd&&td<=ed;}).length;});
   const mar30Changes=Object.entries(SCHEDULE_CHANGES).filter(([,chg])=>{const eff=parseDate(chg.effectiveDate);return eff&&eff>=weekStart&&eff<=weekEnd;});
   const mar9Changes=Array.from(EARLY_OFFICE_AGENTS).filter(()=>{const mar9=new Date(2026,2,9);return mar9>=weekStart&&mar9<=weekEnd;});
-  const MONTH_GROUPS=["February","March","April"];
   return(
     <div>
       {saved&&<div style={{background:"#dcfce7",color:"#166534",padding:"8px 14px",borderRadius:8,marginBottom:12,fontSize:12,fontWeight:600}}>✓ Saved</div>}
-      <div style={{marginBottom:16}}>{MONTH_GROUPS.map(month=>{const mw=WEEKS.filter(w=>w.month===month);if(mw.length===0)return null;return(<div key={month} style={{marginBottom:8}}><div style={{fontSize:11,fontWeight:700,color:"#94a3b8",marginBottom:5,textTransform:"uppercase",letterSpacing:1}}>{month}</div><div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{mw.map(w=>{const gi=WEEKS.indexOf(w);return(<button key={gi} onClick={()=>setWeekIdx(gi)} className="btn" style={{background:weekIdx===gi?"#4f46e5":"#fff",color:weekIdx===gi?"#fff":"#475569",border:`1px solid ${weekIdx===gi?"#4f46e5":"#e2e8f0"}`}}>{w.label} <span style={{opacity:.7,fontSize:11}}>({w.display})</span></button>);})}</div></div>);})}</div>
+      <WeekPicker weekIdx={weekIdx} setWeekIdx={setWeekIdx}/>
       {mar9Changes.length>0&&<div style={{background:"#fffbeb",border:"1px solid #fcd34d",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#92400e",marginBottom:10}}>📅 <strong>Schedule changes effective this week (Mar 9):</strong> {mar9Changes.join(", ")}</div>}
       {mar30Changes.length>0&&<div style={{background:"#fffbeb",border:"1px solid #fcd34d",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#92400e",marginBottom:10}}>📅 <strong>Schedule changes effective this week (Mar 30):</strong> {mar30Changes.map(([n])=>n).join(", ")}</div>}
       <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:8,marginBottom:20}}>{daySummary.map((d,di)=>(<div key={d.day} style={{background:"#fff",borderRadius:10,border:"1px solid #e2e8f0",padding:"10px 8px",textAlign:"center"}}><div style={{fontWeight:700,fontSize:12,color:"#475569"}}>{d.day.slice(0,3)}</div><div style={{fontSize:10,color:"#94a3b8",marginBottom:4}}>{fmtShort(d.date)}</div><div style={{fontSize:22,fontWeight:800}}>{d.working+d.half}</div>{d.pto>0&&<div style={{marginTop:2}}><span className="tag tag-vacation" style={{fontSize:10}}>{d.pto} out</span></div>}{dayFlexCounts[di]>0&&<div style={{marginTop:2}}><span className="tag tag-flex" style={{fontSize:10}}>⚡ {dayFlexCounts[di]} flex</span></div>}</div>))}</div>
@@ -898,19 +921,256 @@ function ChatScheduleTab(){
   const winLabel=expanded?"6:00 am – 8:00 pm":"8:00 am – 6:00 pm";
   return(
     <div>
-      <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16,flexWrap:"wrap"}}><div style={{flex:1}}><div style={{fontWeight:700,fontSize:15}}>💬 Chat Coverage</div><div style={{fontSize:11,color:"#64748b",marginTop:2}}>{expanded?<span style={{color:"#7c3aed",fontWeight:600}}>🔭 Expanded: 6:00 am – 8:00 pm</span>:<span style={{color:"#059669",fontWeight:600}}>✅ Standard: 8:00 am – 6:00 pm</span>}</div></div><button onClick={()=>setExpanded(e=>!e)} className="btn" style={{background:expanded?"#7c3aed":"#f5f3ff",color:expanded?"#fff":"#7c3aed",border:`2px solid ${expanded?"#7c3aed":"#c4b5fd"}`,fontWeight:700}}>{expanded?"📊 Standard":"🔭 Expanded"}</button></div>
+      <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16,flexWrap:"wrap"}}>
+        <div style={{flex:1}}><div style={{fontWeight:700,fontSize:15}}>💬 Chat Coverage</div><div style={{fontSize:11,color:"#64748b",marginTop:2}}>{expanded?<span style={{color:"#7c3aed",fontWeight:600}}>🔭 Expanded: 6:00 am – 8:00 pm</span>:<span style={{color:"#059669",fontWeight:600}}>✅ Standard: 8:00 am – 6:00 pm</span>}</div></div>
+        <button onClick={()=>setExpanded(e=>!e)} className="btn" style={{background:expanded?"#7c3aed":"#f5f3ff",color:expanded?"#fff":"#7c3aed",border:`2px solid ${expanded?"#7c3aed":"#c4b5fd"}`,fontWeight:700}}>{expanded?"📊 Standard":"🔭 Expanded"}</button>
+      </div>
       <div style={{background:"#fff5f5",border:"1px solid #fca5a5",borderRadius:8,padding:"8px 14px",fontSize:12,color:"#991b1b",marginBottom:12,fontWeight:600}}>🔴 Risk threshold: fewer than {CHAT_MIN_STAFFING} agents in any interval.</div>
-      <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap",alignItems:"center"}}>{CHAT_DAY_KEYS.map(d=>{const dc=getChatIntervalCounts(d,expanded);const hasRisk=dc.some(r=>r.total>0&&r.total<CHAT_MIN_STAFFING);return<button key={d} onClick={()=>setDayKey(d)} className="btn" style={{background:dayKey===d?"#4f46e5":"#fff",color:dayKey===d?"#fff":"#475569",border:`2px solid ${dayKey===d?"#4f46e5":hasRisk?"#ef4444":"#e2e8f0"}`}}>{CHAT_DAY_FULL[d]}{hasRisk&&<span style={{marginLeft:4}}>🔴</span>}</button>;})}
-        <button onClick={()=>setShowBackups(b=>!b)} className="btn" style={{marginLeft:"auto",background:showBackups?"#e0e7ff":"#fff",color:showBackups?"#4f46e5":"#475569",border:`1px solid ${showBackups?"#a5b4fc":"#e2e8f0"}`}}>{showBackups?"✓ Backups":"Backups"}</button></div>
+      <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap",alignItems:"center"}}>
+        {CHAT_DAY_KEYS.map(d=>{const dc=getChatIntervalCounts(d,expanded);const hasRisk=dc.some(r=>r.total>0&&r.total<CHAT_MIN_STAFFING);return<button key={d} onClick={()=>setDayKey(d)} className="btn" style={{background:dayKey===d?"#4f46e5":"#fff",color:dayKey===d?"#fff":"#475569",border:`2px solid ${dayKey===d?"#4f46e5":hasRisk?"#ef4444":"#e2e8f0"}`}}>{CHAT_DAY_FULL[d]}{hasRisk&&<span style={{marginLeft:4}}>🔴</span>}</button>;})}
+        <button onClick={()=>setShowBackups(b=>!b)} className="btn" style={{marginLeft:"auto",background:showBackups?"#e0e7ff":"#fff",color:showBackups?"#4f46e5":"#475569",border:`1px solid ${showBackups?"#a5b4fc":"#e2e8f0"}`}}>{showBackups?"✓ Backups":"Backups"}</button>
+      </div>
       <div style={{marginBottom:16}}><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search agent…" style={{maxWidth:220}}/></div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,marginBottom:24}}>
-        <div><div style={{fontWeight:700,fontSize:14,marginBottom:8}}>👥 {CHAT_DAY_FULL[dayKey]} — {winLabel}</div>
+        <div>
+          <div style={{fontWeight:700,fontSize:14,marginBottom:8}}>👥 {CHAT_DAY_FULL[dayKey]} — {winLabel}</div>
           <div style={{borderRadius:12,border:"1px solid #e2e8f0",overflow:"hidden",background:"#fff"}}>
             <table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><SortTh colKey="name">Agent</SortTh><SortTh colKey="shift" style={{textAlign:"center"}}>Shift</SortTh><SortTh colKey="role" style={{textAlign:"center"}}>Role</SortTh><SortTh colKey="lunch" style={{textAlign:"center"}}>Lunch</SortTh></tr></thead>
             <tbody>{sortedRows.length===0&&<tr><td colSpan={4} style={{textAlign:"center",color:"#94a3b8",padding:20}}>No agents</td></tr>}{sortedRows.map((a,i)=>{const{startMin,endMin}=pShift(chatAgents.find(c=>c.name===a.name)?.shift||"8:00-16:30");const outsideStd=(startMin<CHAT_STANDARD_START||endMin>CHAT_STANDARD_END)&&expanded;return(<tr key={i} style={{borderBottom:"1px solid #f1f5f9",background:outsideStd?"#faf5ff":a.role==="B"?"#fafafa":"#fff"}}><td style={{fontWeight:600,fontSize:12}}>{a.name}{outsideStd&&<span style={{marginLeft:4,fontSize:10,color:"#7c3aed"}}>↔</span>}</td><td style={{textAlign:"center",fontSize:11,color:"#64748b"}}>{a.shift}</td><td style={{textAlign:"center"}}>{a.role==="X"?<span className="tag tag-primary">Primary</span>:<span className="tag tag-backup">Backup</span>}</td><td style={{textAlign:"center"}}><span className="tag tag-lunch">🍽 {a.lunch}</span></td></tr>);})}</tbody></table>
             {sortedRows.length>0&&<div style={{padding:"6px 12px",background:"#f8fafc",fontSize:11,color:"#94a3b8"}}>{sortedRows.filter(a=>a.role==="X").length} primary · {sortedRows.filter(a=>a.role==="B").length} backup</div>}
-          </div></div>
-        <div><div style={{fontWeight:700,fontSize:14,marginBottom:8}}>📊 Headcount by Interval</div>
+          </div>
+        </div>
+        <div>
+          <div style={{fontWeight:700,fontSize:14,marginBottom:8}}>📊 Headcount by Interval</div>
           <div style={{borderRadius:12,border:"1px solid #e2e8f0",overflow:"hidden",background:"#fff"}}>
             <table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th style={{width:65,fontWeight:600,color:"#64748b"}}>Time</th><th style={{fontWeight:600,color:"#64748b"}}>Coverage</th><th style={{width:45,textAlign:"center",fontWeight:600,color:"#1d4ed8"}}>Pri</th>{showBackups&&<th style={{width:45,textAlign:"center",fontWeight:600,color:"#6b7280"}}>Bkp</th>}<th style={{width:45,textAlign:"center",fontWeight:600}}>Tot</th></tr></thead>
-            <tbody>{iCounts.map((row,i)=>{const isRisk=row.total>0&&row.total<CHAT_MIN_STAFFING;const outsideStd=expanded&&(row.minutes<CHAT_STANDARD_START||row.minutes>=CHAT_STANDARD_END);const pct=row.total/maxT,pP=row.total>0?row.pri/row.total:0;return(<tr key={i} style={{borderBottom:"1px solid #f8fafc",background:outsideStd?"#faf5ff":isRisk?"#fff5f5":""}}><td style={{fontWeight:600,fontSize:11,color:isRisk?"#991b1b":outsideStd?"#7c3aed":"#475569"}}>{row.label}{isRisk?" 🔴":outsideStd?" ↔":""}</td><td style={{padding:"3px 8px"}}><div style={{position:"relative",height:14,background:"#f1f5f9",borderRadius:3,overflow:"hidden"}}><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pct*100}%`,background:isRisk?"#fca5a5":outsideStd?"#c4b5fd":"#93c5fd",borderRadius:3}}/><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pct*pP*100}%`,background:isRisk?"#ef4444":outsideStd?"#7c3aed":"#4f46e5",borderRadius:3}}/></div></td><td style={{textAlign:"center",fontWeight:700,fontSize:12,color:row.pri>0?"#4f46e5":"#e2e8f0"}}>{row
+            <tbody>{iCounts.map((row,i)=>{const isRisk=row.total>0&&row.total<CHAT_MIN_STAFFING;const outsideStd=expanded&&(row.minutes<CHAT_STANDARD_START||row.minutes>=CHAT_STANDARD_END);const pct=row.total/maxT,pP=row.total>0?row.pri/row.total:0;return(<tr key={i} style={{borderBottom:"1px solid #f8fafc",background:outsideStd?"#faf5ff":isRisk?"#fff5f5":""}}><td style={{fontWeight:600,fontSize:11,color:isRisk?"#991b1b":outsideStd?"#7c3aed":"#475569"}}>{row.label}{isRisk?" 🔴":outsideStd?" ↔":""}</td><td style={{padding:"3px 8px"}}><div style={{position:"relative",height:14,background:"#f1f5f9",borderRadius:3,overflow:"hidden"}}><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pct*100}%`,background:isRisk?"#fca5a5":outsideStd?"#c4b5fd":"#93c5fd",borderRadius:3}}/><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pct*pP*100}%`,background:isRisk?"#ef4444":outsideStd?"#7c3aed":"#4f46e5",borderRadius:3}}/></div></td><td style={{textAlign:"center",fontWeight:700,fontSize:12,color:row.pri>0?"#4f46e5":"#e2e8f0"}}>{row.pri||"–"}</td>{showBackups&&<td style={{textAlign:"center",fontWeight:600,fontSize:12,color:row.bkp>0?"#6b7280":"#e2e8f0"}}>{row.bkp||"–"}</td>}<td style={{textAlign:"center",fontWeight:700,fontSize:12,color:isRisk?"#991b1b":row.total>0?"#1e293b":"#e2e8f0"}}>{row.total||"–"}</td></tr>);})}
+            </tbody></table>
+          </div>
+        </div>
+      </div>
+      <div style={{fontWeight:700,fontSize:14,marginBottom:8}}>📅 All Days Heatmap — {winLabel}</div>
+      <div style={{overflowX:"auto",borderRadius:12,border:"1px solid #e2e8f0"}}>
+        <table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th style={{minWidth:65,position:"sticky",left:0,background:"#f8fafc"}}>Time</th>{CHAT_DAY_KEYS.map(d=><th key={d} style={{textAlign:"center",minWidth:90}}>{CHAT_DAY_FULL[d]}</th>)}</tr></thead>
+        <tbody>{CHAT_INTERVALS_ALL.filter(r=>r.minutes>=winStart&&r.minutes<winEnd).map(({label,minutes},ri)=>{
+          const dc=allDC.map(d=>d.find(r=>r.minutes===minutes)||{pri:0,bkp:0,total:0});
+          if(dc.every(c=>c.total===0))return null;
+          const outsideStd=expanded&&(minutes<CHAT_STANDARD_START||minutes>=CHAT_STANDARD_END);
+          return(<tr key={ri} style={{borderBottom:"1px solid #f1f5f9",background:outsideStd?"#faf5ff":""}}>
+            <td style={{fontWeight:600,fontSize:11,color:outsideStd?"#7c3aed":"#475569",position:"sticky",left:0,background:outsideStd?"#faf5ff":"#fff"}}>{label}{outsideStd&&" ↔"}</td>
+            {dc.map((c,ci)=>{const isRisk=c.total>0&&c.total<CHAT_MIN_STAFFING;const bg=isRisk?"#fee2e2":outsideStd?(c.total===0?"#f5f3ff":c.total<4?"#ede9fe":c.total<8?"#c4b5fd":c.total<12?"#7c3aed":"#4c1d95"):c.total===0?"#f8fafc":c.total<4?"#dbeafe":c.total<8?"#93c5fd":c.total<12?"#3b82f6":"#1d4ed8";const tc2=isRisk?"#991b1b":["#7c3aed","#4c1d95","#3b82f6","#1d4ed8"].includes(bg)?"#fff":"#1e293b";return<td key={ci} style={{textAlign:"center",background:bg,color:tc2,fontWeight:700,fontSize:12,padding:"5px 4px"}} title={`${c.pri} pri, ${c.bkp} bkp`}>{c.total>0?c.total:"–"}</td>;})}
+          </tr>);})}
+        </tbody></table>
+      </div>
+    </div>
+  );
+}
+
+function ChatStaffingScenarioTab(){
+  const[dayKey,setDayKey]=useState("Mon");
+  function pShift(s){const p=s.split("-");return{startMin:timeToMin(p[0]),endMin:timeToMin(p[1])};}
+  const scenarioByDay=useMemo(()=>{
+    const result={};
+    CHAT_DAY_KEYS.forEach(dk=>{
+      const allChatThisDay=chatAgents.filter(a=>a[dk]==="X"||a[dk]==="B");
+      const total=allChatThisDay.length;const target80=Math.ceil(total*0.8);
+      const sortedA=[...allChatThisDay].sort((a,b)=>{if(a[dk]!==b[dk]){return a[dk]==="X"?-1:1;}return pShift(a.shift).startMin-pShift(b.shift).startMin;});
+      const staffed=sortedA.slice(0,target80);
+      const LUNCH_SLOTS=[];for(let m=600;m<=870;m+=30)LUNCH_SLOTS.push(m);
+      const lunchUsage={};LUNCH_SLOTS.forEach(s=>{lunchUsage[s]=0;});
+      const assigned=staffed.map(a=>{
+        const{startMin,endMin}=pShift(a.shift);const shiftMid=Math.round((startMin+endMin)/2/30)*30;
+        const prefSlots=LUNCH_SLOTS.filter(s=>s>=startMin+60&&s<=endMin-60);
+        if(prefSlots.length===0){const fallback=LUNCH_SLOTS[0];return{...a,lunchMin:fallback,lunchLabel:`${minToTime(fallback)}–${minToTime(fallback+30)}`};}
+        const bestSlot=prefSlots.sort((x,y)=>{const useDiff=(lunchUsage[x]||0)-(lunchUsage[y]||0);if(useDiff!==0)return useDiff;return Math.abs(x-shiftMid)-Math.abs(y-shiftMid);}).find(s=>(lunchUsage[s]||0)<2)||prefSlots[0];
+        lunchUsage[bestSlot]=(lunchUsage[bestSlot]||0)+1;
+        return{...a,lunchMin:bestSlot,lunchLabel:`${minToTime(bestSlot)}–${minToTime(bestSlot+30)}`};
+      });
+      const coverage=[];
+      for(let m=360;m<1200;m+=30){const h=Math.floor(m/60),mn=m%60;const label=`${String(h).padStart(2,"0")}:${String(mn).padStart(2,"0")}`;let onChat=0,onLunch=0;assigned.forEach(a=>{const{startMin,endMin}=pShift(a.shift);if(m>=startMin&&m<endMin){if(a.lunchMin===m)onLunch++;else onChat++;}});coverage.push({label,minutes:m,onChat,onLunch,total:onChat+onLunch});}
+      result[dk]={total,target80,staffed:assigned,coverage,lunchUsage};
+    });
+    return result;
+  },[]);
+  const day=scenarioByDay[dayKey];const maxChat=Math.max(...day.coverage.map(c=>c.onChat),1);
+  const lunchViolations=Object.entries(day.lunchUsage).filter(([,v])=>v>2);
+  const supColor=name=>{const a=chatAgents.find(c=>c.name===name);return(SUP_COLORS[a?.supervisor]||{bg:"#64748b"}).bg;};
+  return(
+    <div>
+      <div style={{background:"linear-gradient(135deg,#0f172a,#1e3a5f)",borderRadius:16,padding:"20px 24px",color:"#fff",marginBottom:20}}>
+        <div style={{fontSize:11,color:"#94a3b8",fontWeight:600,marginBottom:4,textTransform:"uppercase",letterSpacing:1}}>Staffing Scenario</div>
+        <div style={{fontSize:20,fontWeight:800}}>📋 80% Chat Staffing — 6:00 AM – 8:00 PM</div>
+        <div style={{fontSize:12,color:"#94a3b8",marginTop:6}}>Mon–Sat · Chat-skilled agents only · Max 2 on lunch at any interval</div>
+      </div>
+      <div style={{display:"flex",gap:8,marginBottom:20,flexWrap:"wrap"}}>
+        {CHAT_DAY_KEYS.map(dk=>{const d=scenarioByDay[dk];return(<button key={dk} onClick={()=>setDayKey(dk)} className="btn" style={{background:dayKey===dk?"#0f172a":"#fff",color:dayKey===dk?"#fff":"#475569",border:`2px solid ${dayKey===dk?"#0f172a":"#e2e8f0"}`,padding:"8px 16px"}}><div style={{fontWeight:700}}>{CHAT_DAY_FULL[dk]}</div><div style={{fontSize:10,opacity:.8,marginTop:1}}>{d.target80}/{d.total} staffed</div></button>);})}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
+        {[["👥","Chat Agents",day.total,"Total with skill"],["✅","80% Target",day.target80,"Agents to staff"],["🍽️","Lunch Slots",Object.values(day.lunchUsage).reduce((a,b)=>a+b,0),"Assigned lunches"],["⚠️","Violations",lunchViolations.length,lunchViolations.length===0?"No conflicts":"Slots >2 concurrent"]].map(([icon,label,val,sub])=>(
+          <div key={label} className="card" style={{textAlign:"center",padding:"14px 10px"}}><div style={{fontSize:20}}>{icon}</div><div style={{fontSize:26,fontWeight:800,color:label==="Violations"&&val>0?"#ef4444":"#1e293b",margin:"4px 0"}}>{val}</div><div style={{fontSize:11,fontWeight:700,color:"#475569"}}>{label}</div><div style={{fontSize:10,color:"#94a3b8",marginTop:2}}>{sub}</div></div>
+        ))}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,marginBottom:24}}>
+        <div>
+          <div style={{fontWeight:700,fontSize:14,marginBottom:10}}>👥 {CHAT_DAY_FULL[dayKey]} — Staffed Agents ({day.target80})</div>
+          <div style={{borderRadius:12,border:"1px solid #e2e8f0",overflow:"hidden",background:"#fff"}}>
+            <table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th style={{fontSize:11,fontWeight:700,color:"#64748b"}}>Agent</th><th style={{fontSize:11,fontWeight:700,color:"#64748b",textAlign:"center"}}>Role</th><th style={{fontSize:11,fontWeight:700,color:"#64748b",textAlign:"center"}}>Shift</th><th style={{fontSize:11,fontWeight:700,color:"#92400e",textAlign:"center"}}>🍽 Lunch</th></tr></thead>
+            <tbody>{day.staffed.map((a,i)=>(<tr key={i} style={{borderBottom:"1px solid #f1f5f9",background:a[dayKey]==="B"?"#fafafa":"#fff"}}><td style={{fontWeight:600,fontSize:12}}><span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:supColor(a.name),marginRight:6,verticalAlign:"middle"}}/>{a.name}</td><td style={{textAlign:"center"}}>{a[dayKey]==="X"?<span className="tag tag-primary">Primary</span>:<span className="tag tag-backup">Backup</span>}</td><td style={{textAlign:"center",fontSize:11,color:"#64748b"}}>{a.shift.replace("-","–")}</td><td style={{textAlign:"center"}}><span className="tag tag-lunch">🍽 {a.lunchLabel}</span></td></tr>))}</tbody></table>
+          </div>
+        </div>
+        <div>
+          <div style={{fontWeight:700,fontSize:14,marginBottom:10}}>📊 Coverage by Interval (6am–8pm)</div>
+          <div style={{borderRadius:12,border:"1px solid #e2e8f0",overflow:"hidden",background:"#fff",maxHeight:480,overflowY:"auto"}}>
+            <table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0",position:"sticky",top:0,zIndex:1}}><th style={{fontSize:11,fontWeight:700,color:"#64748b",width:60}}>Time</th><th style={{fontSize:11,fontWeight:700,color:"#64748b"}}>Chat Coverage</th><th style={{fontSize:11,fontWeight:700,color:"#92400e",textAlign:"center",width:50}}>🍽</th><th style={{fontSize:11,fontWeight:700,color:"#4f46e5",textAlign:"center",width:45}}>On</th></tr></thead>
+            <tbody>{day.coverage.filter(r=>r.total>0).map((r,i)=>{const pct=r.onChat/maxChat;const isRisk=r.onChat<Math.ceil(day.target80*0.5);return(<tr key={i} style={{borderBottom:"1px solid #f8fafc",background:isRisk?"#fff5f5":"#fff"}}><td style={{fontSize:11,fontWeight:600,color:isRisk?"#991b1b":"#475569"}}>{r.label}</td><td style={{padding:"3px 8px"}}><div style={{position:"relative",height:14,background:"#f1f5f9",borderRadius:3,overflow:"hidden"}}><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pct*100}%`,background:isRisk?"#fca5a5":"#4f46e5",borderRadius:3}}/></div></td><td style={{textAlign:"center",fontSize:11,color:r.onLunch>0?"#92400e":"#e2e8f0",fontWeight:700}}>{r.onLunch>0?r.onLunch:"–"}</td><td style={{textAlign:"center",fontWeight:700,fontSize:12,color:isRisk?"#991b1b":"#4f46e5"}}>{r.onChat}</td></tr>);})}</tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TimeOffTab({agents,timeOffData,setTimeOffData,isManager,onChangeLogged}){
+  const[mf,setMf]=useState("All");const[nf,setNf]=useState("All");const[supf,setSupf]=useState("All");const[search,setSearch]=useState("");const[addModal,setAddModal]=useState(false);const[delConfirm,setDelConfirm]=useState(null);const[saved,setSaved]=useState(false);
+  const persist=(newData,logEntry)=>{setTimeOffData(newData);if(logEntry)onChangeLogged(logEntry);setSaved(true);setTimeout(()=>setSaved(false),2000);};
+  const names=["All",...[...new Set(timeOffData.map(r=>r.name))].sort()];
+  function getMonth(r){const d=parseDate(r.start);if(!d)return"Other";const mo=d.getMonth();if(mo===0)return"January";if(mo===1)return"February";if(mo===2)return"March";if(mo===3)return"April";if(mo===4)return"May";if(mo===5)return"June";if(mo===6)return"July";return"Other";}
+  const enriched=timeOffData.map(r=>{const agent=agents.find(a=>a.name===r.name);return{...r,_sup:agent?.supervisor||"—",_month:getMonth(r),_startDate:parseDate(r.start)||new Date(0)};});
+  const filtered=enriched.filter(r=>(mf==="All"||r._month===mf)&&(nf==="All"||r.name===nf)&&(supf==="All"||r._sup===supf)&&(!search||r.name.toLowerCase().includes(search.toLowerCase())||r.type.toLowerCase().includes(search.toLowerCase())));
+  const{sorted,SortTh}=useSortableData(filtered,"_startDate");
+  const months=["February","March","April","May","June"];
+  const monthCounts={};months.forEach(m=>{monthCounts[m]=[...new Set(timeOffData.filter(r=>getMonth(r)===m).map(r=>r.name))].length;});
+  const activeNames=[...new Set(getActiveAgents(agents).map(a=>a.name))].sort();
+  return(
+    <div>
+      {saved&&<div style={{background:"#dcfce7",color:"#166534",padding:"8px 14px",borderRadius:8,marginBottom:12,fontSize:12,fontWeight:600}}>✓ Saved</div>}
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
+        <button onClick={()=>setMf("All")} className="btn" style={{background:mf==="All"?"#4f46e5":"#fff",color:mf==="All"?"#fff":"#475569",border:`2px solid ${mf==="All"?"#4f46e5":"#e2e8f0"}`}}>All Months</button>
+        {months.filter(m=>monthCounts[m]>0).map(m=>(<button key={m} onClick={()=>setMf(mf===m?"All":m)} className="btn" style={{background:mf===m?"#4f46e5":"#fff",color:mf===m?"#fff":"#475569",border:`2px solid ${mf===m?"#4f46e5":"#e2e8f0"}`}}>{m} <span style={{marginLeft:4,fontSize:10,opacity:.8}}>({monthCounts[m]})</span></button>))}
+      </div>
+      <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap",alignItems:"center"}}>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search…" style={{maxWidth:180}}/>
+        <select value={supf} onChange={e=>setSupf(e.target.value)} style={{width:"auto",minWidth:160}}><option value="All">All Supervisors</option>{SUPERVISORS.map(s=><option key={s} value={s}>{s}</option>)}</select>
+        <select value={nf} onChange={e=>setNf(e.target.value)} style={{width:"auto",minWidth:160}}>{names.map(n=><option key={n}>{n}</option>)}</select>
+        <button className="btn btn-ghost" onClick={()=>{setMf("All");setNf("All");setSupf("All");setSearch("");}}>Clear</button>
+        {isManager&&<button className="btn btn-success" style={{marginLeft:"auto"}} onClick={()=>setAddModal(true)}>+ Add Time Off</button>}
+      </div>
+      <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:14}}>
+        <span onClick={()=>setSupf("All")} style={{cursor:"pointer",background:supf==="All"?"#1e293b":"#f1f5f9",color:supf==="All"?"#fff":"#475569",padding:"3px 10px",borderRadius:20,fontSize:11,fontWeight:600,border:`1px solid ${supf==="All"?"#1e293b":"#e2e8f0"}`}}>All</span>
+        {SUPERVISORS.map(s=>{const c=SUP_COLORS[s]||{bg:"#64748b",light:"#f8fafc"};const sel=supf===s;const cnt=enriched.filter(r=>r._sup===s).length;if(cnt===0)return null;return<span key={s} onClick={()=>setSupf(sel?"All":s)} style={{cursor:"pointer",background:sel?c.bg:c.light,color:sel?"#fff":c.bg,padding:"3px 10px",borderRadius:20,fontSize:11,fontWeight:600,border:`1px solid ${sel?c.bg:"#e2e8f0"}`}}>{s} ({cnt})</span>;})}
+      </div>
+      <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}><span className="tag tag-vacation">✈️ Vacation</span><span className="tag tag-jiffy">🌟 Jiffy Day</span><span className="tag tag-half">½ Half Day</span><span className="tag tag-parental">👶 Parental Leave</span><span className="tag" style={{background:"#f1f5f9",color:"#475569"}}>🔸 Unpaid Leave</span></div>
+      <div style={{borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0"}}>
+        <table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}>
+          <SortTh colKey="name" style={{minWidth:160}}>Agent</SortTh><SortTh colKey="type">Type</SortTh><SortTh colKey="_startDate">Dates</SortTh><SortTh colKey="duration" style={{textAlign:"center"}}>Days</SortTh><th>Status</th><SortTh colKey="_sup">Supervisor</SortTh>{isManager&&<th style={{textAlign:"center",minWidth:60}}>Del</th>}
+        </tr></thead>
+        <tbody>
+          {sorted.length===0&&<tr><td colSpan={7} style={{textAlign:"center",color:"#94a3b8",padding:24}}>No records</td></tr>}
+          {sorted.map((r,i)=>{const c=SUP_COLORS[r._sup]||{bg:"#64748b"};return(<tr key={i} style={{borderBottom:"1px solid #f1f5f9",background:r.note?"#fffbeb":"#fff"}}>
+            <td style={{fontWeight:600}}>{r.name}</td>
+            <td>{r.half?<span className="tag tag-half">½ {r.type}</span>:r.type==="Vacation"?<span className="tag tag-vacation">✈️ Vacation</span>:r.type==="Parental Leave"?<span className="tag tag-parental">👶 Parental</span>:r.type==="Unpaid Leave"?<span className="tag" style={{background:"#f1f5f9",color:"#475569"}}>🔸 Unpaid</span>:<span className="tag tag-jiffy">🌟 Jiffy</span>}</td>
+            <td style={{color:"#475569",whiteSpace:"nowrap"}}>{r.start===r.end?fmtShort(r.start):`${fmtShort(r.start)}–${fmtShort(r.end)}`}</td>
+            <td style={{textAlign:"center",color:"#64748b"}}>{r.duration}</td>
+            <td><span style={{fontSize:11,color:r.note?"#854d0e":"#059669",fontWeight:600}}>{r.note||"Approved"}</span></td>
+            <td><span style={{fontSize:11,fontWeight:600,color:c.bg}}>{r._sup}</span></td>
+            {isManager&&<td style={{textAlign:"center"}}><button className="btn btn-danger" style={{fontSize:11,padding:"2px 7px"}} onClick={()=>setDelConfirm(i)}>🗑</button></td>}
+          </tr>);})}
+        </tbody></table>
+      </div>
+      <p style={{fontSize:11,color:"#94a3b8",marginTop:6}}>{sorted.length} of {timeOffData.length} records shown.</p>
+      {addModal&&<TimeOffEditModal agentNames={activeNames} onSave={entry=>{persist([...timeOffData,entry],buildTimeOffChangelog("timeoff_add",entry));setAddModal(false);}} onClose={()=>setAddModal(false)}/>}
+      {delConfirm!==null&&<div className="modal-overlay" onClick={()=>setDelConfirm(null)}><div className="modal" style={{width:340}} onClick={e=>e.stopPropagation()}><h2 style={{fontWeight:700,fontSize:16,marginBottom:8}}>Remove Time Off?</h2><p style={{fontSize:13,color:"#64748b",marginBottom:20}}>Remove <strong>{sorted[delConfirm]?.name}</strong> — {sorted[delConfirm]?.type} ({sorted[delConfirm]?.start})?</p><div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button className="btn btn-ghost" onClick={()=>setDelConfirm(null)}>Cancel</button><button className="btn btn-danger" onClick={()=>{const removed=sorted[delConfirm];const newData=timeOffData.filter(r=>!(r.name===removed.name&&r.start===removed.start&&r.end===removed.end&&r.type===removed.type));persist(newData,buildTimeOffChangelog("timeoff_remove",removed));setDelConfirm(null);}}>Remove</button></div></div></div>}
+    </div>
+  );
+}
+
+function GitHubGuideTab(){
+  const steps=[
+    {num:1,icon:"🔑",title:"Log in as Manager & make your changes",body:"Use the Manager Login button (top right). Once logged in, make any edits in the Roster, Schedule, Shift Flex, or Time Off tabs.",note:"Every agent/time-off change is automatically tracked in the Export Changes log."},
+    {num:2,icon:"📋",title:"Open Export Changes and copy the code",body:`Click the orange "📋 Export Changes" button. Expand each change to see instructions and code. Click "Copy Code" or "Copy All".`,note:"Each entry tells you exactly what to do: add, replace, or delete a line."},
+    {num:3,icon:"🐙",title:"Open your file on GitHub",body:"Go to your GitHub repository. Click the HTML file. Click the ✏️ pencil icon to open the editor.",code:"https://github.com/YOUR-USERNAME/YOUR-REPO/blob/main/index.html",codeLabel:"Your file URL:"},
+    {num:4,icon:"🔍",title:"Find the right array",body:"Use Ctrl+F to search for the array name:",bullets:["defaultAgents — for agent edits","defaultTimeOff — for time off changes","defaultShiftFlexes — for flex request changes"]},
+    {num:5,icon:"✂️",title:"Paste your change",body:"Follow the export instructions:",bullets:["ADD: Paste before closing ];","EDIT: Find entry by id, replace entire block","DELETE: Remove the matching {...} line"]},
+    {num:6,icon:"💾",title:"Commit the change",body:`Scroll to "Commit changes", add a short description, click the green button.`,note:"Changes go live within seconds."},
+    {num:7,icon:"✅",title:"Verify",body:"Refresh the Team Hub and confirm your change appears correctly."},
+  ];
+  return(
+    <div style={{maxWidth:780}}>
+      <div style={{background:"linear-gradient(135deg,#1e293b,#334155)",borderRadius:16,padding:"20px 24px",color:"#fff",marginBottom:28}}>
+        <div style={{fontSize:11,color:"#94a3b8",fontWeight:600,marginBottom:4,textTransform:"uppercase",letterSpacing:1}}>Reference Guide</div>
+        <div style={{fontSize:22,fontWeight:800}}>🐙 How to Update the Team Hub on GitHub</div>
+        <div style={{fontSize:13,color:"#94a3b8",marginTop:6}}>Steps to make manager changes permanent.</div>
+      </div>
+      <div style={{background:"#f0fdf4",border:"1px solid #86efac",borderRadius:12,padding:"12px 18px",marginBottom:24,fontSize:13,color:"#166534"}}><strong>How it works:</strong> Data lives in the HTML file on GitHub. Manager changes generate exact code to paste in. Once committed, the update is live for everyone.</div>
+      {steps.map(s=>(<div key={s.num} className="guide-step"><div style={{display:"flex",alignItems:"center",gap:12,marginBottom:8}}><div style={{background:"#4f46e5",color:"#fff",borderRadius:"50%",width:28,height:28,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:13,flexShrink:0}}>{s.num}</div><div style={{fontWeight:700,fontSize:15}}>{s.icon} {s.title}</div></div><p style={{fontSize:13,color:"#475569",lineHeight:1.6,marginBottom:s.bullets||s.code||s.note?10:0}}>{s.body}</p>{s.bullets&&<ul style={{paddingLeft:20,marginBottom:s.note?10:0}}>{s.bullets.map((b,i)=><li key={i} style={{fontSize:13,color:"#475569",marginBottom:4,lineHeight:1.5}}>{b}</li>)}</ul>}{s.code&&<div><div style={{fontSize:11,color:"#94a3b8",marginBottom:4,fontWeight:600}}>{s.codeLabel}</div><div style={{background:"#1e293b",color:"#86efac",borderRadius:8,padding:"12px 16px",fontFamily:"monospace",fontSize:12,margin:"10px 0"}}>{s.code}</div></div>}{s.note&&<div style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#1d4ed8",marginTop:8}}><strong>💡 Note:</strong> {s.note}</div>}</div>))}
+      <div style={{background:"#fff5f5",border:"1px solid #fca5a5",borderRadius:12,padding:"14px 18px",marginTop:12,fontSize:12,color:"#991b1b"}}><strong>⚠️ Important:</strong> Changes via Manager Login are temporary (reset on refresh). Always export and commit to GitHub to make them permanent.</div>
+    </div>
+  );
+}
+
+function App(){
+  const[agents,setAgents]=useState(defaultAgents);
+  const[timeOffData,setTimeOffData]=useState(defaultTimeOff);
+  const[flexData,setFlexData]=useState(defaultShiftFlexes);
+  const[isManager,setIsManager]=useState(false);
+  const[showLogin,setShowLogin]=useState(false);
+  const[tab,setTab]=useState("overview");
+  const[rosterUnlocked,setRosterUnlocked]=useState(false);
+  const[showRosterLogin,setShowRosterLogin]=useState(false);
+  const[changeLog,setChangeLog]=useState([]);
+  const[showExport,setShowExport]=useState(false);
+  const onChangeLogged=useCallback(entry=>{setChangeLog(prev=>[...prev,entry]);},[]);
+  const activeCount=useMemo(()=>getActiveAgents(agents).length,[agents]);
+  const pendingFlexCount=useMemo(()=>flexData.filter(f=>f.status==="Pending").length,[flexData]);
+  const TABS=[
+    {id:"overview",label:"📊 Overview"},
+    {id:"today",label:"🌅 Today"},
+    {id:"schedule",label:"📅 Schedule"},
+    {id:"chat",label:"💬 Chat"},
+    {id:"scenario",label:"🎯 Chat Scenario"},
+    {id:"flex",label:"⚡ Shift Flex"},
+    {id:"timeoff",label:"🏖️ Time Off"},
+    {id:"roster",label:"👥 Roster",locked:true},
+    {id:"guide",label:"📖 GitHub Guide"},
+  ];
+  function handleTabClick(t){if(t==="roster"&&!rosterUnlocked){setShowRosterLogin(true);return;}setTab(t);}
+  return(
+    <div style={{minHeight:"100vh",background:"#f8fafc"}}>
+      <div style={{background:"#1e293b",color:"#fff",padding:"14px 24px",display:"flex",alignItems:"center",justifyContent:"space-between",boxShadow:"0 2px 8px #0003"}}>
+        <div>
+          <div style={{fontWeight:700,fontSize:18}}>📋 Customer Solutions — Team Hub</div>
+          <div style={{fontSize:11,color:"#94a3b8",marginTop:2}}>Feb – Apr 2026 · {activeCount} active agents</div>
+        </div>
+        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          {isManager&&<button className="btn btn-export" style={{position:"relative"}} onClick={()=>setShowExport(true)}>📋 Export Changes{changeLog.length>0&&<span style={{position:"absolute",top:-6,right:-6,background:"#ef4444",color:"#fff",borderRadius:10,fontSize:10,padding:"1px 5px",fontWeight:800}}>{changeLog.length}</span>}</button>}
+          {isManager?<button className="btn btn-ghost" style={{fontSize:11}} onClick={()=>{setIsManager(false);setRosterUnlocked(false);}}>🔒 Lock</button>:<button className="btn btn-ghost" style={{fontSize:11}} onClick={()=>setShowLogin(true)}>🔑 Manager Login</button>}
+        </div>
+      </div>
+      <div style={{background:"#fff",borderBottom:"1px solid #e2e8f0",padding:"0 24px",display:"flex",gap:4,overflowX:"auto"}}>
+        {TABS.map(t=><button key={t.id} className={`nav-tab${tab===t.id?" active":""}`} onClick={()=>handleTabClick(t.id)} style={{position:"relative"}}>
+          {t.label}{t.locked&&!rosterUnlocked&&<span style={{fontSize:10,marginLeft:4,opacity:.6}}>🔒</span>}
+          {t.id==="flex"&&pendingFlexCount>0&&<span style={{position:"absolute",top:4,right:2,background:"#f59e0b",color:"#fff",borderRadius:10,fontSize:9,padding:"1px 4px",fontWeight:800}}>{pendingFlexCount}</span>}
+        </button>)}
+      </div>
+      {isManager&&changeLog.length>0&&(<div className="export-banner" style={{margin:"12px 24px 0"}}><div><span style={{fontWeight:700,fontSize:13}}>📋 {changeLog.length} unsaved change{changeLog.length!==1?"s":""} this session</span><span style={{fontSize:12,color:"#92400e",marginLeft:8}}>Export and commit to GitHub to make permanent.</span></div><button className="btn btn-export" onClick={()=>setShowExport(true)}>View Export Code →</button></div>)}
+      <div style={{padding:"20px 24px",maxWidth:1300,margin:"0 auto"}}>
+        {tab==="today"   &&<TodayTab agents={agents} timeOffData={timeOffData} flexData={flexData}/>}
+        {tab==="roster"  &&rosterUnlocked&&<RosterTab agents={agents} setAgents={setAgents} onChangeLogged={onChangeLogged}/>}
+        {tab==="overview"&&<OverviewTab agents={agents} timeOffData={timeOffData} flexData={flexData}/>}
+        {tab==="schedule"&&<ScheduleTab agents={agents} setAgents={setAgents} isManager={isManager} timeOffData={timeOffData} flexData={flexData} onChangeLogged={onChangeLogged}/>}
+        {tab==="chat"    &&<ChatScheduleTab/>}
+        {tab==="scenario"&&<ChatStaffingScenarioTab/>}
+        {tab==="flex"    &&<ShiftFlexTab agents={agents} flexData={flexData} setFlexData={setFlexData} isManager={isManager}/>}
+        {tab==="timeoff" &&<TimeOffTab agents={agents} timeOffData={timeOffData} setTimeOffData={setTimeOffData} isManager={isManager} onChangeLogged={onChangeLogged}/>}
+        {tab==="guide"   &&<GitHubGuideTab/>}
+      </div>
+      {showLogin&&<LoginModal onLogin={()=>{setIsManager(true);setRosterUnlocked(true);setShowLogin(false);setTab("overview");}} onClose={()=>setShowLogin(false)}/>}
+      {showRosterLogin&&<LoginModal onLogin={()=>{setRosterUnlocked(true);setIsManager(true);setShowRosterLogin(false);setTab("roster");}} onClose={()=>setShowRosterLogin(false)}/>}
+      {showExport&&<ExportModal log={changeLog} onClose={()=>setShowExport(false)} onClear={()=>setChangeLog([])}/>}
+    </div>
+  );
+}
+ReactDOM.render(<App/>,document.getElementById("root"));
+</script>
+</body>
+</html>
