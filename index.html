@@ -935,6 +935,8 @@ function OfficeCapacityTab({agents,timeOffData}){
           if(ud.day===od.day) return false;
           // Agent must work that day
           if(!agent.workDays.includes(ud.day)) return false;
+          // No Saturday office days
+          if(ud.day==="Saturday") return false;
           // Agent must not already be in office that day (would be wfh or off)
           const already=dayData.find(d=>d.day===ud.day);
           if(already&&already.agents.find(a=>a.name===agent.name)) return false;
