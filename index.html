@@ -3,386 +3,625 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Schedule View</title>
+<title>Customer Solutions — Team Schedules</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap');
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'DM Sans',sans-serif;background:#0f1117;color:#e2e8f0;font-size:13px;min-height:100vh}
-
-  .header{background:#161b27;border-bottom:1px solid #2d3348;padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
-  .header-title{font-size:16px;font-weight:700;color:#f1f5f9;letter-spacing:-0.3px}
-  .header-sub{font-size:11px;color:#64748b;font-family:'DM Mono',monospace;margin-top:2px}
-
-  .tabs{display:flex;border-bottom:1px solid #2d3348;background:#161b27;padding:0 24px}
-  .tab{padding:12px 20px;font-size:11px;font-weight:700;cursor:pointer;color:#64748b;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;letter-spacing:0.5px;text-transform:uppercase;transition:all .15s}
-  .tab.active{color:#60a5fa;border-bottom-color:#60a5fa}
-  .tab:hover:not(.active){color:#94a3b8}
-
-  .content{padding:20px 24px}
-
-  /* Controls */
-  .controls{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
-  .search-input{background:#161b27;border:1px solid #2d3348;border-radius:6px;padding:7px 10px;color:#e2e8f0;font-size:12px;font-family:'DM Sans',sans-serif;width:200px;outline:none}
-  .search-input:focus{border-color:#60a5fa}
-  .search-input::placeholder{color:#475569}
-  .filter-select{background:#161b27;border:1px solid #2d3348;border-radius:6px;padding:7px 10px;color:#e2e8f0;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer}
-  .filter-select:focus{border-color:#60a5fa}
-  .count-badge{font-family:'DM Mono',monospace;font-size:11px;color:#475569;margin-left:auto}
-
-  /* Table */
-  .table-wrap{border:1px solid #2d3348;border-radius:10px;overflow:auto}
-  table{width:100%;border-collapse:collapse;min-width:900px}
-  thead{position:sticky;top:0;z-index:10}
-  th{background:#1a1f2e;padding:9px 12px;text-align:left;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.6px;border-bottom:1px solid #2d3348;white-space:nowrap;user-select:none;cursor:pointer;transition:background .1s}
-  th:hover{background:#1e2644;color:#94a3b8}
-  th.sort-asc,th.sort-desc{color:#60a5fa;background:#1a2640}
-  .sort-icon{margin-left:4px;font-size:9px}
-  th.sort-asc  .sort-icon::after{content:"▲"}
-  th.sort-desc .sort-icon::after{content:"▼"}
-  th:not(.sort-asc):not(.sort-desc) .sort-icon::after{content:"⇅";opacity:.4}
-
-  td{padding:7px 12px;border-bottom:1px solid #1a1f2e;vertical-align:middle}
-  tr:last-child td{border-bottom:none}
-  tr:hover td{background:#161b27}
-
-  .agent-name{font-weight:600;color:#f1f5f9;font-size:12px;white-space:nowrap}
-  .shift-mono{font-family:'DM Mono',monospace;font-size:10px;color:#475569;white-space:nowrap}
-  .sup-name{font-size:11px;font-weight:600;white-space:nowrap}
-
-  /* Day badges */
-  .day-cell{text-align:center}
-  .badge{display:inline-flex;align-items:center;justify-content:center;padding:3px 9px;border-radius:4px;font-size:10px;font-weight:700;white-space:nowrap;min-width:58px;letter-spacing:0.2px}
-  .b-office{background:#0f2d4a;color:#60a5fa;border:1px solid #1e4d7a}
-  .b-wfh   {background:#0f2d1e;color:#4ade80;border:1px solid #1a4d30}
-  .b-off   {background:transparent;color:#2d3348;border:1px solid #1e2333}
-  .b-train {background:#0f2730;color:#38bdf8;border:1px solid #1e4d5a}
-
-  /* Capacity tab */
-  .section-label{font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.7px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #2d3348}
-  .cap-wrap{border:1px solid #2d3348;border-radius:10px;overflow:hidden;margin-bottom:24px}
-  .cap-head{background:#1a1f2e;padding:10px 14px;border-bottom:1px solid #2d3348;display:flex;justify-content:space-between;align-items:center}
-  .cap-head-title{font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px}
-  .limit-note{font-family:'DM Mono',monospace;font-size:11px;color:#475569}
-  .limit-chip{background:#2d3348;padding:1px 6px;border-radius:3px;color:#94a3b8}
-
-  .cap-table{width:100%;border-collapse:collapse}
-  .cap-table th{background:#1a1f2e;padding:8px 12px;text-align:left;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #2d3348;white-space:nowrap}
-  .cap-table th.c{text-align:center}
-  .cap-table td{padding:6px 12px;border-bottom:1px solid #1a1f2e;font-size:12px}
-  .cap-table tr:last-child td{border-bottom:none}
-  .cap-table tr:hover td{background:#161b27}
-
-  .mono{font-family:'DM Mono',monospace}
-  .c{text-align:center}
-  .num-ok  {color:#4ade80;font-weight:600}
-  .num-warn{color:#fbbf24;font-weight:600}
-  .num-over{color:#f87171;font-weight:600}
-  .num-dim {color:#334155}
-
-  .peak-chip{display:inline-block;padding:2px 8px;border-radius:4px;font-family:'DM Mono',monospace;font-size:11px;font-weight:700}
-  .chip-ok  {background:#0f2d1e;color:#4ade80;border:1px solid #1a4d30}
-  .chip-warn{background:#2d2500;color:#fbbf24;border:1px solid #4d3d00}
-  .chip-over{background:#2d0f0f;color:#f87171;border:1px solid #4d1a1a}
-
-  .bar-wrap{height:12px;background:#1e2333;border-radius:2px;overflow:hidden;min-width:60px}
-  .bar-fill{height:100%;border-radius:2px}
-  .fill-ok  {background:#1e4d3a}
-  .fill-warn{background:#4d3d1e}
-  .fill-over{background:#4d1e1e}
-
-  .hidden{display:none}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;color:#1e293b;font-size:14px}
+.btn{cursor:pointer;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;transition:all .15s}
+.btn-primary{background:#4f46e5;color:#fff}.btn-primary:hover{background:#4338ca}
+.btn-danger{background:#ef4444;color:#fff}.btn-danger:hover{background:#dc2626}
+.btn-ghost{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}.btn-ghost:hover{background:#e2e8f0}
+.btn-success{background:#10b981;color:#fff}.btn-success:hover{background:#059669}
+.btn-sheets{background:#34a853;color:#fff}.btn-sheets:hover{background:#2d9249}
+input,select,textarea{border:1px solid #e2e8f0;border-radius:6px;padding:5px 8px;font-size:12px;outline:none;width:100%}
+input:focus,select:focus{border-color:#4f46e5;box-shadow:0 0 0 2px #4f46e520}
+.modal-overlay{position:fixed;inset:0;background:#00000055;z-index:100;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:#fff;border-radius:16px;padding:24px;width:560px;max-width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px #0003}
+table{border-collapse:collapse;width:100%}
+th,td{padding:7px 10px;text-align:left;font-size:12px}
+th.sortable{cursor:pointer;user-select:none;white-space:nowrap}
+th.sortable:hover{background:#f1f5f9}
+th.sortable .sort-icon{margin-left:4px;opacity:.4;font-size:10px}
+th.sortable.asc .sort-icon::after{content:"▲"}
+th.sortable.desc .sort-icon::after{content:"▼"}
+th.sortable:not(.asc):not(.desc) .sort-icon::after{content:"⇅"}
+.tag{display:inline-block;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.tag-office{background:#dcfce7;color:#166534}.tag-wfh{background:#dbeafe;color:#1e40af}
+.tag-vacation{background:#ede9fe;color:#5b21b6}.tag-jiffy{background:#fef9c3;color:#854d0e}
+.tag-half{background:#fce7f3;color:#9d174d}.tag-parental{background:#ffedd5;color:#9a3412}
+.tag-dayoff{background:#f1f5f9;color:#94a3b8}.tag-departed{background:#fee2e2;color:#991b1b}
+.tag-active{background:#dcfce7;color:#166534}.tag-incoming{background:#e0e7ff;color:#3730a3}
+.tag-unpaid{background:#f1f5f9;color:#64748b}
+.tag-approved{background:#dcfce7;color:#166534}
+.tag-pending{background:#fef3c7;color:#92400e}
+.tag-rejected{background:#fee2e2;color:#991b1b}
+.tag-sup{background:#e0e7ff;color:#3730a3}
+.tag-level1{background:#f0fdf4;color:#166534}
+.tag-lead{background:#fef3c7;color:#92400e}
+.nav-tab{padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;color:#64748b;background:none;border-top:none;border-left:none;border-right:none;white-space:nowrap}
+.nav-tab.active{border-bottom-color:#4f46e5;color:#4f46e5}
+.card{background:#fff;border-radius:12px;border:1px solid #e2e8f0;padding:16px;box-shadow:0 1px 4px #0001}
+.skill-chip{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;background:#e0e7ff;color:#3730a3;margin:2px}
+.sync-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.sync-live{background:#10b981;animation:pulse 2s infinite}
+.sync-stale{background:#f59e0b}
+.sync-error{background:#ef4444}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:#f1f5f9}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+.lock-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:400px;text-align:center}
+.lock-icon{font-size:48px;margin-bottom:16px;opacity:.6}
+.lock-form{display:flex;gap:8px;margin-top:16px;align-items:center}
+.lock-form input{max-width:220px}
+.lock-error{color:#ef4444;font-size:12px;margin-top:8px;font-weight:600}
 </style>
 </head>
 <body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useMemo,useCallback,useRef} = React;
 
-<div class="header">
-  <div>
-    <div class="header-title">📅 Customer Solutions — Schedule View</div>
-    <div class="header-sub">Feb – Apr 2026 · Texas</div>
-  </div>
-</div>
-
-<div class="tabs">
-  <button class="tab active" onclick="switchTab('weekly')">Weekly Schedule</button>
-  <button class="tab" onclick="switchTab('capacity')">Office Capacity</button>
-</div>
-
-<div class="content">
-
-<!-- WEEKLY TAB -->
-<div id="tab-weekly">
-  <div class="controls">
-    <input class="search-input" type="text" placeholder="🔍  Search agent…" oninput="applyFilters()" id="srch"/>
-    <select class="filter-select" id="sup-f" onchange="applyFilters()">
-      <option value="">All Supervisors</option>
-      <option>Ainsley Reynolds</option>
-      <option>Alex Blair</option>
-      <option>Angy Chang</option>
-      <option>Lauren Montanye</option>
-      <option>Neyat Abraha</option>
-      <option>Shelby Coldiron</option>
-    </select>
-    <select class="filter-select" id="shift-f" onchange="applyFilters()">
-      <option value="">All Shifts</option>
-      <option>6:00–2:30</option>
-      <option>8:00–4:30</option>
-      <option>9:00–5:30</option>
-      <option>10:30–8:00</option>
-      <option>11:30–8:00</option>
-    </select>
-    <span class="count-badge" id="agent-count"></span>
-  </div>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr id="thead-row"></tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
-  </div>
-</div>
-
-<!-- CAPACITY TAB -->
-<div id="tab-capacity" class="hidden">
-  <div class="cap-wrap">
-    <div class="cap-head">
-      <span class="cap-head-title">Peak In-Office by Day</span>
-      <span class="limit-note">Seat limit: <span class="limit-chip">22</span></span>
-    </div>
-    <table class="cap-table">
-      <thead><tr>
-        <th>Day</th><th>Peak Time</th><th class="c">Peak Count</th><th>Status</th>
-      </tr></thead>
-      <tbody id="peak-body"></tbody>
-    </table>
-  </div>
-
-  <div class="cap-wrap">
-    <div class="cap-head">
-      <span class="cap-head-title">In-Office Count by 30-min Interval</span>
-      <span class="limit-note">🟡 ≥20 · 🔴 over <span class="limit-chip">22</span></span>
-    </div>
-    <table class="cap-table">
-      <thead><tr>
-        <th>Time</th>
-        <th class="c">Mon</th><th class="c">Tue</th><th class="c">Wed</th>
-        <th class="c">Thu</th><th class="c">Fri</th><th class="c">Sat</th>
-        <th style="min-width:120px">Mon bar</th>
-      </tr></thead>
-      <tbody id="interval-body"></tbody>
-    </table>
-  </div>
-</div>
-
-</div><!-- /content -->
-
-<script>
-const SUP_COLORS={
-  "Ainsley Reynolds":"#0ea5e9","Alex Blair":"#d97706","Angy Chang":"#0d9488",
-  "Lauren Montanye":"#059669","Neyat Abraha":"#7c3aed","Shelby Coldiron":"#db2777"
+// ── GOOGLE SHEETS CONFIG ──────────────────────────────────────────────────────
+const SHEET_ID = "1JpNg-JxsKDJNwQZl4mHuSlOYKbnbw_ZlEgpvOoALVhE";
+const SHEET_NAMES = {
+  schedules: "Cyrena Feb Schedules",
+  roster: "Roster",
+  summary: "Sheet17",
 };
-const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat"];
-const COLS=[
-  {key:"name",  label:"Agent"},
-  {key:"shift", label:"Shift"},
-  {key:"sup",   label:"Supervisor"},
-  ...DAYS.map(d=>({key:d,label:d,isDay:true}))
+const SHEET_LINK = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit`;
+const REFRESH_INTERVAL = 30000;
+
+// ── MANAGER PASSWORD ─────────────────────────────────────────────────────────
+const MANAGER_PASSWORD = "jiffymgr2026";
+
+// ── CONSTANTS ─────────────────────────────────────────────────────────────────
+const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const SUPERVISORS = ["Shelby Coldiron","Neyat Abraha","Alex Blair","Lauren Montanye","Ainsley Reynolds","Angy Chang","Chris Lee","Jason Bolton","Katie Lacour"];
+const SHIFTS = ["6:00–2:30","8:00–4:30","9:00–5:30","10:30–8:00","11:30–8:00"];
+const SUP_COLORS = {
+  "Shelby Coldiron":{bg:"#db2777",light:"#fdf2f8"},
+  "Neyat Abraha":   {bg:"#7c3aed",light:"#f5f3ff"},
+  "Alex Blair":     {bg:"#d97706",light:"#fffbeb"},
+  "Lauren Montanye":{bg:"#059669",light:"#ecfdf5"},
+  "Ainsley Reynolds":{bg:"#0ea5e9",light:"#f0f9ff"},
+  "Angy Chang":     {bg:"#0d9488",light:"#f0fdfa"},
+  "Chris Lee":      {bg:"#6366f1",light:"#eef2ff"},
+  "Jason Bolton":   {bg:"#ea580c",light:"#fff7ed"},
+  "Katie Lacour":   {bg:"#be185d",light:"#fdf2f8"},
+};
+const SHIFT_TIMES = {
+  "6:00-2:30":{start:360,end:870},"8:00-4:30":{start:480,end:990},
+  "9:00-5:30":{start:540,end:1050},"10:30-8:00":{start:630,end:1200},"11:30-8:00":{start:690,end:1200},
+};
+const INTERVALS=[];
+for(let m=360;m<1200;m+=30){const h=Math.floor(m/60),mn=m%60;INTERVALS.push({label:`${String(h).padStart(2,"0")}:${String(mn).padStart(2,"0")}`,minutes:m});}
+
+const WEEKS=[
+  {month:"February",label:"W1",display:"Feb 2-8",   dates:["2/2/26","2/3/26","2/4/26","2/5/26","2/6/26","2/7/26"]},
+  {month:"February",label:"W2",display:"Feb 9-15",  dates:["2/9/26","2/10/26","2/11/26","2/12/26","2/13/26","2/14/26"]},
+  {month:"February",label:"W3",display:"Feb 16-22", dates:["2/16/26","2/17/26","2/18/26","2/19/26","2/20/26","2/21/26"]},
+  {month:"February",label:"W4",display:"Feb 23-28", dates:["2/23/26","2/24/26","2/25/26","2/26/26","2/27/26","2/28/26"]},
+  {month:"March",   label:"W1",display:"Mar 2-7",   dates:["3/2/26","3/3/26","3/4/26","3/5/26","3/6/26","3/7/26"]},
+  {month:"March",   label:"W2",display:"Mar 9-14",  dates:["3/9/26","3/10/26","3/11/26","3/12/26","3/13/26","3/14/26"]},
+  {month:"March",   label:"W3",display:"Mar 16-21", dates:["3/16/26","3/17/26","3/18/26","3/19/26","3/20/26","3/21/26"]},
+  {month:"March",   label:"W4",display:"Mar 23-28", dates:["3/23/26","3/24/26","3/25/26","3/26/26","3/27/26","3/28/26"]},
+  {month:"March",   label:"W5",display:"Mar 30-31", dates:["3/30/26","3/31/26","3/31/26","3/31/26","3/31/26","3/31/26"]},
+  {month:"April",   label:"W1",display:"Apr 1-4",   dates:["4/1/26","4/2/26","4/3/26","4/4/26","4/4/26","4/4/26"]},
+  {month:"April",   label:"W2",display:"Apr 6-11",  dates:["4/6/26","4/7/26","4/8/26","4/9/26","4/10/26","4/11/26"]},
+  {month:"April",   label:"W3",display:"Apr 13-18", dates:["4/13/26","4/14/26","4/15/26","4/16/26","4/17/26","4/18/26"]},
+  {month:"April",   label:"W4",display:"Apr 20-25", dates:["4/20/26","4/21/26","4/22/26","4/23/26","4/24/26","4/25/26"]},
 ];
 
-const AGENTS=[
-  {name:"Asia Campbell",       sup:"Ainsley Reynolds",shift:"10:30–8:00",days:["Mon","Tue","Wed","Thu","Sat"],office:["Tue","Wed","Thu"],wfh:["Sat","Mon"]},
-  {name:"Michael Chavez",      sup:"Alex Blair",      shift:"6:00–2:30", days:["Mon","Tue","Wed","Thu","Fri"],office:["Mon","Thu"],      wfh:["Tue","Wed","Fri"]},
-  {name:"Sam De Castro",       sup:"Alex Blair",      shift:"6:00–2:30", days:["Mon","Tue","Wed","Thu","Fri"],office:["Wed","Thu"],      wfh:["Mon","Tue","Fri"]},
-  {name:"Damian Doubrava",     sup:"Alex Blair",      shift:"8:00–4:30", days:["Mon","Wed","Thu","Fri","Sat"],office:["Mon","Thu","Fri"],wfh:["Sat","Wed"]},
-  {name:"Eri Dotson",          sup:"Alex Blair",      shift:"8:00–4:30", days:["Mon","Tue","Wed","Fri","Sat"],office:["Mon","Tue","Wed"],wfh:["Sat","Fri"]},
-  {name:"Preston Panetti",     sup:"Alex Blair",      shift:"8:00–4:30", days:["Mon","Tue","Thu","Fri","Sat"],office:["Mon","Tue","Fri"],wfh:["Sat","Thu"]},
-  {name:"Andre Cordero",       sup:"Alex Blair",      shift:"8:00–4:30", days:["Mon","Wed","Thu","Fri","Sat"],office:["Wed","Thu","Fri"],wfh:["Mon","Sat"]},
-  {name:"Denia Bradley",       sup:"Alex Blair",      shift:"11:30–8:00",days:["Tue","Wed","Thu","Fri","Sat"],office:["Wed","Thu","Fri"],wfh:["Sat","Tue"]},
-  // Angy Chang — Erick Garcia Cardenas removed (never started), Rylie Walker removed (offboarded 3/9)
-  {name:"Brianna Miller",      sup:"Angy Chang",      shift:"9:00–5:30", days:["Mon","Tue","Wed","Thu","Fri"],office:["Mon","Tue","Wed","Thu","Fri"],wfh:[],isNew:true},
-  {name:"Salia Kibibi",        sup:"Angy Chang",      shift:"9:00–5:30", days:["Mon","Tue","Wed","Thu","Fri"],office:["Mon","Tue","Wed","Thu","Fri"],wfh:[],isNew:true},
-  {name:"Vitria Pinkston",     sup:"Angy Chang",      shift:"9:00–5:30", days:["Mon","Tue","Wed","Thu","Fri"],office:["Mon","Tue","Wed","Thu","Fri"],wfh:[],isNew:true},
-  {name:"Unaisa Aslam",        sup:"Lauren Montanye", shift:"8:00–4:30", days:["Mon","Tue","Wed","Fri","Sat"],office:["Mon","Tue","Wed"],wfh:["Sat","Fri"]},
-  {name:"Amber Bailey",        sup:"Lauren Montanye", shift:"8:00–4:30", days:["Tue","Wed","Thu","Fri","Sat"],office:["Wed","Thu","Fri"],wfh:["Tue","Sat"]},
-  {name:"Bo Repko",            sup:"Lauren Montanye", shift:"6:00–2:30", days:["Mon","Tue","Wed","Thu","Fri"],office:["Mon","Tue","Wed","Thu","Fri"],wfh:[]},
-  {name:"Enrico Davis",        sup:"Lauren Montanye", shift:"11:30–8:00",days:["Mon","Tue","Wed","Thu","Fri"],office:["Mon","Tue","Wed","Thu","Fri"],wfh:[]},
-  {name:"Ariashe Lowery",      sup:"Lauren Montanye", shift:"9:00–5:30", days:["Mon","Tue","Wed","Thu","Fri"],office:["Mon","Tue","Wed","Thu","Fri"],wfh:[]},
-  {name:"Rachel Dunlap",       sup:"Lauren Montanye", shift:"9:00–5:30", days:["Mon","Tue","Wed","Thu","Fri"],office:["Mon","Tue","Wed","Thu","Fri"],wfh:[]},
-  {name:"Taylor Amos",         sup:"Lauren Montanye", shift:"9:00–5:30", days:["Mon","Tue","Wed","Thu","Fri"],office:["Mon","Tue","Wed","Thu","Fri"],wfh:[]},
-  {name:"Rosa Nuno",           sup:"Neyat Abraha",    shift:"6:00–2:30", days:["Tue","Wed","Thu","Fri","Sat"],office:["Tue","Wed","Thu"],wfh:["Sat","Fri"]},
-  {name:"Ramila Chaulagain",   sup:"Neyat Abraha",    shift:"8:00–4:30", days:["Mon","Tue","Wed","Thu","Sat"],office:["Wed","Thu"],      wfh:["Mon","Tue","Fri","Sat"]},
-  {name:"Sarah Al-Obaidi",     sup:"Neyat Abraha",    shift:"8:00–4:30", days:["Mon","Tue","Wed","Thu","Fri"],office:["Mon","Thu","Fri"],wfh:["Tue","Wed"]},
-  {name:"Servando Morales",    sup:"Neyat Abraha",    shift:"8:00–4:30", days:["Mon","Tue","Wed","Thu","Fri"],office:["Mon","Thu","Fri"],wfh:["Tue","Wed"]},
-  {name:"Zhane Alexander",     sup:"Neyat Abraha",    shift:"9:00–5:30", days:["Mon","Tue","Wed","Thu","Fri"],office:["Mon","Tue","Wed"],wfh:["Thu","Fri"]},
-  {name:"Chisa Ordu",          sup:"Neyat Abraha",    shift:"11:30–8:00",days:["Mon","Tue","Wed","Thu","Fri"],office:["Mon","Tue","Fri"],wfh:["Wed","Thu"]},
-  {name:"Jeremy Carillo",      sup:"Neyat Abraha",    shift:"11:30–8:00",days:["Mon","Wed","Thu","Fri","Sat"],office:["Mon","Thu","Fri"],wfh:["Sat","Wed"]},
-  {name:"Jessie Gregory",      sup:"Neyat Abraha",    shift:"11:30–8:00",days:["Mon","Tue","Wed","Thu","Fri"],office:["Tue","Wed","Thu"],wfh:["Mon","Fri"]},
-  {name:"Ananya SenthilKumar", sup:"Shelby Coldiron", shift:"6:00–2:30", days:["Mon","Tue","Wed","Fri","Sat"],office:["Mon","Tue","Wed"],wfh:["Sat","Fri"]},
-  {name:"Bianca Vernando",     sup:"Shelby Coldiron", shift:"6:00–2:30", days:["Mon","Tue","Thu","Fri","Sat"],office:["Mon","Tue","Fri"],wfh:["Sat","Thu"]},
-  {name:"Chassidy Williams",   sup:"Shelby Coldiron", shift:"6:00–2:30", days:["Mon","Tue","Wed","Thu","Fri"],office:["Mon","Tue","Fri"],wfh:["Wed","Thu"]},
-  {name:"Michael Nguyen",      sup:"Shelby Coldiron", shift:"6:00–2:30", days:["Tue","Wed","Thu","Fri","Sat"],office:["Tue","Wed","Fri"],wfh:["Sat","Thu"]},
-  {name:"Morgan Lankford",     sup:"Shelby Coldiron", shift:"6:00–2:30", days:["Mon","Wed","Thu","Fri","Sat"],office:["Mon","Wed","Thu"],wfh:["Sat","Fri"]},
-  {name:"Cristie Avant",       sup:"Shelby Coldiron", shift:"8:00–4:30", days:["Mon","Tue","Wed","Thu","Fri"],office:["Wed","Thu","Fri"],wfh:["Mon","Tue"]},
-  {name:"Sarah Hajali",        sup:"Shelby Coldiron", shift:"6:00–2:30", days:["Mon","Tue","Wed","Thu","Sat"],office:["Mon","Tue","Wed"],wfh:["Thu","Sat"]},
-  {name:"Balrupe Purewal",     sup:"Shelby Coldiron", shift:"11:30–8:00",days:["Mon","Tue","Wed","Thu","Fri"],office:["Wed","Thu","Fri"],wfh:["Mon","Tue"]},
-  {name:"Blanca Berumen",      sup:"Shelby Coldiron", shift:"11:30–8:00",days:["Mon","Tue","Thu","Fri","Sat"],office:["Mon","Tue","Fri"],wfh:["Sat","Thu"]},
+const SCHEDULE_CHANGES={
+  "Rachel Dunlap":  {effectiveDate:"3/30/26",shift:"11:30-8:00",workDays:["Monday","Tuesday","Wednesday","Thursday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Saturday"]},
+  "Ariashe Lowery": {effectiveDate:"3/30/26",shift:"6:00-2:30", workDays:["Monday","Tuesday","Wednesday","Thursday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Saturday"]},
+  "Taylor Amos":    {effectiveDate:"3/30/26",shift:"8:00-4:30", workDays:["Monday","Tuesday","Wednesday","Thursday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Saturday"]},
+};
+const EARLY_OFFICE_AGENTS=new Set(["Amber Bailey","Bo Repko","Andre Cordero","Sarah Hajali"]);
+const EARLY_PERM={
+  "Amber Bailey":  {shift:"8:00-4:30", workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Wednesday","Thursday","Friday"],wfhDays:["Tuesday","Saturday"]},
+  "Bo Repko":      {shift:"6:00-2:30", workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Tuesday","Wednesday","Thursday"],wfhDays:["Friday","Saturday"]},
+  "Andre Cordero": {shift:"8:00-4:30", workDays:["Monday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Monday","Wednesday","Thursday"],wfhDays:["Friday","Saturday"]},
+  "Sarah Hajali":  {shift:"6:00-2:30", workDays:["Monday","Tuesday","Wednesday","Thursday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Saturday"]},
+};
+const MAR9=new Date(2026,2,9);
+const MAR30=new Date(2026,2,30);
+
+// ── DEFAULT AGENTS (from spreadsheet + roster PDF) ───────────────────────────
+const defaultAgents=[
+  {id:1,   name:"Rosa Nuno",              shift:"6:00-2:30", supervisor:"Neyat Abraha",   workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Tuesday","Wednesday","Thursday"],wfhDays:["Friday","Saturday"],startDate:"7/14/25",skills:"Email, Outbound, Chat"},
+  {id:5,   name:"Cristie Avant",          shift:"8:00-4:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Wednesday","Thursday","Friday"],wfhDays:["Monday","Tuesday"],startDate:"8/11/25",skills:"Email, Outbound, Chat, Bad Sat Revert, Site Jabber"},
+  {id:21,  name:"Sam De Castro",          shift:"6:00-2:30", supervisor:"Alex Blair",     workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Wednesday","Thursday"],wfhDays:["Monday","Tuesday","Friday"],startDate:"8/28/25",skills:"Email, Outbound, Chat, Fraud, Chargebacks, Site Jabber"},
+  {id:12,  name:"Ramila Chaulagain",      shift:"8:00-4:30", supervisor:"Neyat Abraha",   workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Wednesday","Thursday"],wfhDays:["Tuesday","Friday","Saturday"],startDate:"9/29/25",skills:"Email, Outbound, Chat, Fraud, Chargebacks, Site Jabber"},
+  {id:9,   name:"Chisa Ordu",             shift:"11:30-8:00",supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Friday"],wfhDays:["Wednesday","Thursday"],startDate:"9/29/25",skills:"Email, Outbound, Chat, Fraud, Chargebacks"},
+  {id:16,  name:"Zhane Alexander",        shift:"9:00-5:30", supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],startDate:"9/29/25",skills:"Email, Outbound, Chat"},
+  {id:10,  name:"Jessie Gregory",         shift:"11:30-8:00",supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Tuesday","Wednesday","Thursday"],wfhDays:["Monday","Friday"],startDate:"10/13/25",skills:"Email, Outbound, Chat, Fraud, Chargebacks"},
+  {id:31,  name:"Balrupe Purewal",        shift:"11:30-8:00",supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Tuesday","Wednesday","Thursday"],wfhDays:["Monday","Friday"],startDate:"10/27/25",skills:"Email, Outbound, Chat"},
+  {id:4,   name:"Chassidy Williams",      shift:"6:00-2:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Friday"],wfhDays:["Wednesday","Thursday"],startDate:"10/13/25",skills:"Email, Outbound, Chat"},
+  {id:7,   name:"Morgan Lankford",        shift:"6:00-2:30", supervisor:"Shelby Coldiron",workDays:["Monday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Monday","Wednesday","Thursday"],wfhDays:["Friday","Saturday"],startDate:"10/13/25",skills:"Email, Outbound, Chat"},
+  {id:20,  name:"Preston Panetti",        shift:"8:00-4:30", supervisor:"Alex Blair",     workDays:["Monday","Tuesday","Thursday","Friday","Saturday"],officeDays:["Monday","Tuesday","Friday"],wfhDays:["Thursday","Saturday"],startDate:"10/27/25",skills:"Email, Outbound, Chat"},
+  {id:22,  name:"Michael Chavez",         shift:"6:00-2:30", supervisor:"Alex Blair",     workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Thursday"],wfhDays:["Tuesday","Wednesday","Friday"],startDate:"10/27/25",skills:"Email, Outbound, Chat"},
+  {id:6,   name:"Michael Nguyen",         shift:"6:00-2:30", supervisor:"Shelby Coldiron",workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Tuesday","Wednesday","Friday"],wfhDays:["Thursday","Saturday"],startDate:"10/27/25",skills:"Email, Outbound, Chat"},
+  {id:1001,name:"Ananya SenthilKumar",    shift:"6:00-2:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Wednesday","Friday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Friday","Saturday"],lastDay:"3/13/26",startDate:"11/10/25",skills:"Email, Outbound, Chat"},
+  {id:2,   name:"Bianca Vernando",        shift:"6:00-2:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Thursday","Friday","Saturday"],officeDays:["Monday","Tuesday","Friday"],wfhDays:["Thursday","Saturday"],startDate:"11/10/25",skills:"Email, Outbound, Chat"},
+  {id:17,  name:"Damian Doubrava",        shift:"8:00-4:30", supervisor:"Alex Blair",     workDays:["Monday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Monday","Thursday","Friday"],wfhDays:["Wednesday","Saturday"],startDate:"11/10/25",skills:"Email, Outbound, Chat, Bad Sat Revert, Site Jabber"},
+  {id:19,  name:"Eri Dotson",             shift:"8:00-4:30", supervisor:"Alex Blair",     workDays:["Monday","Tuesday","Wednesday","Friday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Friday","Saturday"],startDate:"11/10/25",skills:"Email, Outbound, Chat"},
+  {id:11,  name:"Jeremy Carillo",         shift:"11:30-8:00",supervisor:"Neyat Abraha",   workDays:["Monday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Monday","Thursday","Friday"],wfhDays:["Wednesday","Saturday"],startDate:"12/1/25",skills:"Email, Outbound, Chat"},
+  {id:15,  name:"Servando Morales",       shift:"8:00-4:30", supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Thursday","Friday"],wfhDays:["Tuesday","Wednesday"],startDate:"12/1/25",lastDay:"3/11/26",skills:"Email, Outbound, Chat"},
+  {id:3,   name:"Blanca Berumen",         shift:"11:30-8:00",supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Thursday","Friday","Saturday"],officeDays:["Monday","Tuesday","Friday"],wfhDays:["Thursday","Saturday"],startDate:"12/1/25",skills:"Email, Outbound, Chat"},
+  {id:14,  name:"Sarah Al-Obaidi",        shift:"8:00-4:30", supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Thursday","Friday"],wfhDays:["Tuesday","Wednesday"],startDate:"12/1/25",skills:"Email, Outbound, Chat"},
+  {id:18,  name:"Denia Bradley",          shift:"11:30-8:00",supervisor:"Alex Blair",     workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Wednesday","Thursday","Friday"],wfhDays:["Tuesday","Saturday"],startDate:"12/1/25",skills:"Email, Outbound, Chat"},
+  {id:25,  name:"Asia Campbell",          shift:"10:30-8:00",supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Saturday"],officeDays:["Tuesday","Wednesday","Thursday"],wfhDays:["Monday","Saturday"],startDate:"1/5/26",skills:"Email, Outbound, Chat"},
+  {id:27,  name:"Unaisa Aslam",           shift:"8:00-4:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Friday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Friday","Saturday"],startDate:"1/5/26",skills:"Email, Outbound, Chat"},
+  {id:28,  name:"Bo Repko",               shift:"6:00-2:30", supervisor:"Lauren Montanye",workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Tuesday","Wednesday","Thursday"],wfhDays:["Friday","Saturday"],startDate:"1/20/26",skills:"Email, Outbound, Chat"},
+  {id:23,  name:"Andre Cordero",          shift:"8:00-4:30", supervisor:"Alex Blair",     workDays:["Monday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Monday","Wednesday","Thursday"],wfhDays:["Friday","Saturday"],startDate:"1/20/26",skills:"Email, Outbound, Chat"},
+  {id:29,  name:"Amber Bailey",           shift:"8:00-4:30", supervisor:"Lauren Montanye",workDays:["Tuesday","Wednesday","Thursday","Friday","Saturday"],officeDays:["Wednesday","Thursday","Friday"],wfhDays:["Tuesday","Saturday"],startDate:"1/20/26",skills:"Email, Outbound, Chat"},
+  {id:8,   name:"Sarah Hajali",           shift:"6:00-2:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Wednesday","Thursday","Saturday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Saturday"],startDate:"1/20/26",skills:"Email, Outbound, Chat"},
+
+  {id:52,  name:"Abiodun Awe",              shift:"",          supervisor:"",               workDays:[],officeDays:[],wfhDays:[],startDate:"12/1/25",lastDay:"12/12/25",skills:""},
+  {id:2001,name:"Alec MacLaughlin",        shift:"",          supervisor:"",               workDays:[],officeDays:[],wfhDays:[],startDate:"2/2/26",lastDay:"2/20/26",skills:""},
+  {id:50,  name:"Allen Good",              shift:"",          supervisor:"",               workDays:[],officeDays:[],wfhDays:[],startDate:"10/27/25",lastDay:"11/3/25",skills:""},
+  {id:51,  name:"Clarissa Watson",         shift:"",          supervisor:"",               workDays:[],officeDays:[],wfhDays:[],startDate:"11/10/25",lastDay:"11/21/25",skills:""},
+  {id:54,  name:"Davion Mayfield-Peterson", shift:"",          supervisor:"",               workDays:[],officeDays:[],wfhDays:[],startDate:"1/20/26",lastDay:"1/28/26",skills:""},
+  {id:2002,name:"Lysette Salinas",         shift:"",          supervisor:"",               workDays:[],officeDays:[],wfhDays:[],startDate:"2/2/26",lastDay:"2/20/26",skills:""},
+  {id:46,  name:"Shaheer Kanji",           shift:"",          supervisor:"",               workDays:[],officeDays:[],wfhDays:[],role:"Supervisor",location:"Canada",skills:""},
+  {id:53,  name:"Shalvi Dalal",            shift:"",          supervisor:"",               workDays:[],officeDays:[],wfhDays:[],startDate:"8/11/25",lastDay:"12/30/25",skills:""},
+  {id:32,  name:"Rachel Dunlap",          shift:"9:00-5:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],startDate:"2/2/26",skills:"Email, Outbound"},
+  {id:33,  name:"Taylor Amos",            shift:"9:00-5:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],startDate:"2/2/26",skills:"Email, Outbound"},
+  {id:34,  name:"Ariashe Lowery",         shift:"9:00-5:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],startDate:"2/2/26",skills:"Email, Outbound"},
+  {id:30,  name:"Enrico Davis",           shift:"11:30-8:00",supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Thursday"],wfhDays:["Wednesday","Friday"],startDate:"1/20/26",skills:"Email, Outbound, Chat"},
+  {id:1003,name:"Rylie Walker",           shift:"9:00-5:30", supervisor:"Lauren Montanye",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],startDate:"2/25/26",lastDay:"3/5/26",skills:"Email, Outbound"},
+  {id:1004,name:"Jada Brown",             shift:"9:00-5:30", supervisor:"Alex Blair",     workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"2/23/26",skills:"Email, Outbound"},
+  {id:1005,name:"Lybah Nawaz",            shift:"9:00-5:30", supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"2/23/26",skills:"Email, Outbound"},
+  {id:1006,name:"Vitria Pinkston",        shift:"9:00-5:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"3/9/26",skills:"Email, Outbound, Chat"},
+  {id:1007,name:"Brianna Miller",         shift:"9:00-5:30", supervisor:"Shelby Coldiron",workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"3/9/26",skills:"Email, Outbound, Chat"},
+  {id:1009,name:"Salia Kibibi",           shift:"9:00-5:30", supervisor:"Neyat Abraha",   workDays:["Monday","Tuesday","Wednesday","Thursday","Friday"],officeDays:["Monday","Tuesday","Wednesday"],wfhDays:["Thursday","Friday"],isNew:true,startDate:"3/9/26",skills:"Email, Outbound, Chat"},
 ];
 
-const OFFICE_DATA=[
-  ["06:00",5,3,3,4,3,2],["06:30",5,3,3,4,3,2],
-  ["07:00",5,3,3,4,3,2],["07:30",5,3,3,4,3,2],
-  ["08:00",9,7,7,8,7,3],["08:30",9,7,7,8,7,3],
-  ["09:00",23,18,18,20,19,4],["09:30",23,18,18,20,19,4],
-  ["10:00",23,18,18,20,19,4],["10:30",23,19,19,21,19,5],
-  ["11:00",23,19,19,21,19,5],["11:30",27,23,23,26,25,6],
-  ["12:00",27,23,23,26,25,6],["12:30",27,23,23,26,25,6],
-  ["13:00",27,23,23,26,25,6],["13:30",27,23,23,26,25,6],
-  ["14:00",27,23,23,26,25,6],["14:30",22,19,19,22,22,4],
-  ["15:00",22,19,19,22,22,4],["15:30",22,19,19,22,22,4],
-  ["16:00",22,19,19,22,22,4],["16:30",18,15,15,18,18,2],
-  ["17:00",18,15,15,18,18,2],["17:30",4,5,5,6,6,1],
-  ["18:00",4,5,5,6,6,1],["18:30",4,5,5,6,6,1],
-  ["19:00",4,5,5,6,6,1],["19:30",4,5,5,6,6,1],
+// ── TIME OFF DATA (from PDF - Approved & Pending only) ────────────────────────
+const defaultTimeOff=[
+  {name:"Zhane Alexander",    type:"Jiffy Day",     start:"2/2/26",  end:"2/2/26",  duration:1,   half:false,status:"Approved"},
+  {name:"Jeremy Carillo",     type:"Jiffy Day",     start:"2/3/26",  end:"2/3/26",  duration:1,   half:false,status:"Approved"},
+  {name:"Ananya SenthilKumar",type:"Jiffy Day",     start:"2/4/26",  end:"2/4/26",  duration:1,   half:false,status:"Approved"},
+  {name:"Jeremy Carillo",     type:"Jiffy Day",     start:"2/4/26",  end:"2/4/26",  duration:0.5, half:true,status:"Approved"},
+  {name:"Ananya SenthilKumar",type:"Vacation",      start:"2/5/26",  end:"2/7/26",  duration:2,   half:false,status:"Approved"},
+  {name:"Ananya SenthilKumar",type:"Jiffy Day",     start:"2/9/26",  end:"2/10/26", duration:2,   half:false,status:"Approved"},
+  {name:"Bianca Vernando",    type:"Jiffy Day",     start:"2/9/26",  end:"2/9/26",  duration:0.5, half:true,status:"Approved"},
+  {name:"Jeremy Carillo",     type:"Jiffy Day",     start:"2/9/26",  end:"2/11/26", duration:3,   half:false,status:"Approved"},
+  {name:"Unaisa Aslam",       type:"Jiffy Day",     start:"2/9/26",  end:"2/9/26",  duration:0.5, half:true,status:"Approved"},
+  {name:"Rosa Nuno",          type:"Vacation",      start:"2/12/26", end:"2/12/26", duration:1,   half:false,status:"Approved"},
+  {name:"Sarah Hajali",       type:"Jiffy Day",     start:"2/12/26", end:"2/12/26", duration:1,   half:false,status:"Approved"},
+  {name:"Cristie Avant",      type:"Jiffy Day",     start:"2/13/26", end:"2/13/26", duration:1,   half:false,status:"Approved"},
+  {name:"Denia Bradley",      type:"Jiffy Day",     start:"2/13/26", end:"2/13/26", duration:0.5, half:true,status:"Approved"},
+  {name:"Rosa Nuno",          type:"Vacation",      start:"2/14/26", end:"2/14/26", duration:1,   half:false,status:"Approved"},
+  {name:"Eri Dotson",         type:"Vacation",      start:"2/14/26", end:"2/14/26", duration:1,   half:false,status:"Approved"},
+  {name:"Denia Bradley",      type:"Jiffy Day",     start:"2/14/26", end:"2/14/26", duration:0.5, half:true,status:"Approved"},
+  {name:"Chisa Ordu",         type:"Jiffy Day",     start:"2/17/26", end:"2/18/26", duration:2,   half:false,status:"Approved"},
+  {name:"Eri Dotson",         type:"Jiffy Day",     start:"2/18/26", end:"2/18/26", duration:1,   half:false,status:"Approved"},
+  {name:"Sam De Castro",      type:"Jiffy Day",     start:"2/19/26", end:"2/19/26", duration:1,   half:false,status:"Approved"},
+  {name:"Cristie Avant",      type:"Jiffy Day",     start:"2/19/26", end:"2/20/26", duration:2,   half:false,status:"Approved"},
+  {name:"Michael Chavez",     type:"Jiffy Day",     start:"2/19/26", end:"2/19/26", duration:1,   half:false,status:"Approved"},
+  {name:"Sam De Castro",      type:"Jiffy Day",     start:"2/20/26", end:"2/20/26", duration:1,   half:false,status:"Approved"},
+  {name:"Jessie Gregory",     type:"Jiffy Day",     start:"2/20/26", end:"2/20/26", duration:0.5, half:true,status:"Approved"},
+  {name:"Jessie Gregory",     type:"Jiffy Day",     start:"2/23/26", end:"2/23/26", duration:0.5, half:true,status:"Approved"},
+  {name:"Denia Bradley",      type:"Jiffy Day",     start:"2/23/26", end:"2/24/26", duration:2,   half:false,status:"Approved"},
+  {name:"Michael Chavez",     type:"Jiffy Day",     start:"2/25/26", end:"2/25/26", duration:0.5, half:true,status:"Approved"},
+  {name:"Rachel Dunlap",      type:"Jiffy Day",     start:"2/25/26", end:"2/25/26", duration:1,   half:false,status:"Approved"},
+  {name:"Jeremy Carillo",     type:"Vacation",      start:"2/26/26", end:"2/26/26", duration:1,   half:false,status:"Approved"},
+  {name:"Damian Doubrava",    type:"Vacation",      start:"2/28/26", end:"2/28/26", duration:1,   half:false,status:"Approved"},
+  {name:"Eri Dotson",         type:"Vacation",      start:"2/28/26", end:"2/28/26", duration:1,   half:false,status:"Approved"},
+  {name:"Damian Doubrava",    type:"Vacation",      start:"3/2/26",  end:"3/2/26",  duration:1,   half:false,status:"Approved"},
+  {name:"Shondi Gougeon",     type:"Jiffy Day",     start:"3/9/26",  end:"3/9/26",  duration:1,   half:false,status:"Approved"},
+  {name:"Cristie Avant",      type:"Jiffy Day",     start:"3/10/26", end:"3/10/26", duration:1,   half:false,status:"Approved"},
+  {name:"Ramila Chaulagain",  type:"Vacation",      start:"3/10/26", end:"3/11/26", duration:2,   half:false,status:"Approved"},
+  {name:"Chassidy Williams",  type:"Jiffy Day",     start:"3/10/26", end:"3/10/26", duration:0.5, half:true,status:"Pending"},
+  {name:"Amber Bailey",       type:"Jiffy Day",     start:"3/10/26", end:"3/10/26", duration:1,   half:false,status:"Approved"},
+  {name:"Rosa Nuno",          type:"Jiffy Day",     start:"3/11/26", end:"3/11/26", duration:1,   half:false,status:"Pending"},
+  {name:"Ariashe Lowery",     type:"Jiffy Day",     start:"3/11/26", end:"3/11/26", duration:0.5, half:true,status:"Pending"},
+  {name:"Ramila Chaulagain",  type:"Vacation",      start:"3/12/26", end:"3/13/26", duration:2,   half:false,status:"Approved"},
+  {name:"Ramila Chaulagain",  type:"Vacation",      start:"3/14/26", end:"3/14/26", duration:1,   half:false,status:"Approved"},
+  {name:"Andre Cordero",      type:"Jiffy Day",     start:"3/14/26", end:"3/16/26", duration:1,   half:false,status:"Approved"},
+  {name:"Jeremy Carillo",     type:"Parental Leave",start:"3/16/26", end:"3/31/26", duration:11,  half:false,status:"Approved"},
+  {name:"Asia Campbell",      type:"Jiffy Day",     start:"3/16/26", end:"3/16/26", duration:1,   half:false,status:"Pending"},
+  {name:"Unaisa Aslam",       type:"Vacation",      start:"3/18/26", end:"3/29/26", duration:8,   half:false,status:"Approved"},
+  {name:"Denia Bradley",      type:"Jiffy Day",     start:"3/19/26", end:"3/20/26", duration:2,   half:false,status:"Pending"},
+  {name:"Lauren Montanye",    type:"Jiffy Day",     start:"3/20/26", end:"3/20/26", duration:1,   half:false,status:"Approved"},
+  {name:"Bo Repko",           type:"Jiffy Day",     start:"3/21/26", end:"3/22/26", duration:1,   half:false,status:"Pending"},
+  {name:"Chassidy Williams",  type:"Vacation",      start:"3/27/26", end:"3/31/26", duration:3,   half:false,status:"Pending"},
+  {name:"Bo Repko",           type:"Jiffy Day",     start:"3/28/26", end:"3/29/26", duration:1,   half:false,status:"Pending"},
+  {name:"Unaisa Aslam",       type:"Unpaid Leave",  start:"3/30/26", end:"4/4/26",  duration:4,   half:false,status:"Approved"},
+  {name:"Erin Kearns",        type:"Unpaid Leave",  start:"3/3/26",  end:"5/4/26",  duration:45,  half:false,status:"Approved"},
+  {name:"Ariashe Lowery",     type:"Vacation",      start:"4/2/26",  end:"4/2/26",  duration:1,   half:false,status:"Pending"},
+  {name:"Unaisa Aslam",       type:"Unpaid Leave",  start:"4/6/26",  end:"4/9/26",  duration:3,   half:false,status:"Approved"},
+  {name:"Cyrena Perez",       type:"Vacation",      start:"4/9/26",  end:"4/10/26", duration:2,   half:false,status:"Approved"},
+  {name:"Unaisa Aslam",       type:"Unpaid Leave",  start:"4/10/26", end:"4/10/26", duration:1,   half:false,status:"Approved"},
+  {name:"Unaisa Aslam",       type:"Unpaid Leave",  start:"4/11/26", end:"4/11/26", duration:1,   half:false,status:"Approved"},
+  {name:"Cyrena Perez",       type:"Vacation",      start:"4/13/26", end:"4/13/26", duration:1,   half:false,status:"Approved"},
+  {name:"Cyrena Perez",       type:"Vacation",      start:"4/16/26", end:"4/20/26", duration:3,   half:false,status:"Pending"},
+  {name:"Michael Chavez",     type:"Vacation",      start:"4/17/26", end:"4/20/26", duration:2,   half:false,status:"Pending"},
+  {name:"Sarah Hajali",       type:"Jiffy Day",     start:"4/17/26", end:"4/18/26", duration:1,   half:false,status:"Pending"},
 ];
-const LIMIT=22;
 
-// ── schedule table ─────────────────────────────────────────────────────────
-
-let sortCol="name", sortDir="asc", filtered=[...AGENTS];
-
-function dayVal(a,d){
-  if(!a.days.includes(d))return 0;
-  if(a.isNew)return 4;
-  if(a.office.includes(d))return 3;
-  if(a.wfh.includes(d))return 2;
-  return 1;
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function parseDate(s){if(!s)return null;const p=s.split("/");if(p.length<3)return null;const yr=parseInt(p[2])<100?2000+parseInt(p[2]):parseInt(p[2]);return new Date(yr,parseInt(p[0])-1,parseInt(p[1]));}
+function dateStr(d){return`${d.getMonth()+1}/${d.getDate()}/${String(d.getFullYear()).slice(-2)}`;}
+function fmtShort(s){const d=parseDate(s);return d?d.toLocaleDateString("en-US",{month:"short",day:"numeric"}):s;}
+function fmtFull(s){const d=parseDate(s);return d?d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):s;}
+function dateRange(start,end){const dates=[];let d=new Date(parseDate(start));const e=parseDate(end);while(d<=e){dates.push(dateStr(new Date(d)));d.setDate(d.getDate()+1);}return dates;}
+function getTimeOff(name,dateS,toData){return(toData||defaultTimeOff).find(r=>r.name===name&&dateRange(r.start,r.end).includes(dateS))||null;}
+function hasDeparted(agent,dateS){if(!agent.lastDay)return false;const last=parseDate(agent.lastDay),d=parseDate(dateS);return last&&d&&d>last;}
+function hasNotStarted(agent,dateS){if(!agent.startDate)return false;const start=parseDate(agent.startDate),d=parseDate(dateS);return start&&d&&d<start;}
+function tenure(sd){if(!sd)return"—";const d=parseDate(sd);if(!d)return"—";const now=new Date();const diff=(now-d)/(1000*60*60*24*365);if(diff<0)return"Not started";if(diff<1)return`${Math.floor(diff*12)}mo`;return`${diff.toFixed(1)}yr`;}
+function getStatus(a){const now=new Date();if(a.lastDay){const d=parseDate(a.lastDay);if(d&&d<now)return"departed";}if(a.startDate){const d=parseDate(a.startDate);if(d&&d>now)return"incoming";}return"active";}
+function getActiveAgents(agents){return agents.filter(a=>{const st=getStatus(a);return st==="active"||st==="incoming";});}
+function getAgentForDate(agent,dateS){
+  const d=parseDate(dateS);if(!d) return agent;let a={...agent};
+  if(a.name==="Unaisa Aslam"&&d>=new Date(2026,2,18))a.shift="11:30-8:00";
+  if(EARLY_OFFICE_AGENTS.has(a.name)){if(d>=MAR9){const perm=EARLY_PERM[a.name];if(perm)a={...a,...perm};}}
+  const chg=SCHEDULE_CHANGES[a.name];if(chg&&d>=MAR30)a={...a,shift:chg.shift,workDays:chg.workDays,officeDays:chg.officeDays,wfhDays:chg.wfhDays};
+  return a;
 }
-function dayBadge(a,d){
-  if(!a.days.includes(d))return'<span class="badge b-off">Off</span>';
-  if(a.isNew)            return'<span class="badge b-train">Training</span>';
-  if(a.office.includes(d))return'<span class="badge b-office">🏢 Office</span>';
-  if(a.wfh.includes(d))  return'<span class="badge b-wfh">🏠 WFH</span>';
-  return'<span class="badge b-off">Off</span>';
+function getCellStatus(agent,day,weekDates,toData){
+  const dateS=weekDates[DAYS.indexOf(day)];
+  const ea=getAgentForDate(agent,dateS);
+  if(hasDeparted(agent,dateS))return{type:"departed"};
+  if(hasNotStarted(agent,dateS))return{type:"notstarted"};
+  if(!ea.workDays.includes(day))return{type:"dayoff"};
+  const to=getTimeOff(agent.name,dateS,toData);
+  if(to)return{type:to.half?"half":"pto",label:to.type,to};
+  return{type:ea.officeDays.includes(day)?"office":"wfh"};
 }
-
-function buildHeader(){
-  const tr=document.getElementById('thead-row');
-  COLS.forEach(c=>{
-    const th=document.createElement('th');
-    if(c.isDay)th.classList.add('day-cell');
-    th.id='th-'+c.key;
-    th.innerHTML=c.label+'<span class="sort-icon"></span>';
-    th.onclick=()=>doSort(c.key);
-    tr.appendChild(th);
+function getWeekAgents(agents,week){
+  const ws=parseDate(week.dates[0]),we=parseDate(week.dates[5]);
+  return agents.filter(a=>{
+    if(a.lastDay){const d=parseDate(a.lastDay);if(d&&d<ws)return false;}
+    if(a.startDate){const d=parseDate(a.startDate);if(d&&d>we)return false;}
+    return true;
   });
 }
 
-function doSort(col){
-  if(sortCol===col) sortDir=sortDir==='asc'?'desc':'asc';
-  else{sortCol=col;sortDir='asc';}
-  render();
+function useSortableData(data,initialKey=null,initialDir="asc"){
+  const[sortKey,setSortKey]=useState(initialKey);
+  const[sortDir,setSortDir]=useState(initialDir);
+  const sorted=useMemo(()=>{
+    if(!sortKey)return data;
+    return[...data].sort((a,b)=>{
+      let av=a[sortKey],bv=b[sortKey];
+      if(av instanceof Date){av=av.getTime();bv=(bv instanceof Date?bv:new Date(0)).getTime();}
+      if(av==null)av="";if(bv==null)bv="";
+      if(av<bv)return sortDir==="asc"?-1:1;if(av>bv)return sortDir==="asc"?1:-1;return 0;
+    });
+  },[data,sortKey,sortDir]);
+  function requestSort(key){setSortDir(s=>sortKey===key?(s==="asc"?"desc":"asc"):"asc");setSortKey(key);}
+  function SortTh({colKey,children,style={}}){
+    const active=sortKey===colKey;
+    return<th className={`sortable${active?" "+sortDir:""}`} onClick={()=>requestSort(colKey)} style={style}>{children}<span className="sort-icon"/></th>;
+  }
+  return{sorted,SortTh};
 }
 
-function applyFilters(){
-  const s=document.getElementById('srch').value.toLowerCase();
-  const sup=document.getElementById('sup-f').value;
-  const shift=document.getElementById('shift-f').value;
-  filtered=AGENTS.filter(a=>
-    (!s||a.name.toLowerCase().includes(s))&&
-    (!sup||a.sup===sup)&&
-    (!shift||a.shift===shift)
+// ── CELL TAG ──────────────────────────────────────────────────────────────────
+function CellTag({status}){
+  if(status.type==="departed")   return<span className="tag tag-departed">--</span>;
+  if(status.type==="notstarted") return<span className="tag tag-incoming">N/A</span>;
+  if(status.type==="dayoff")     return<span className="tag tag-dayoff">—</span>;
+  if(status.type==="office")     return<span className="tag tag-office">Office</span>;
+  if(status.type==="wfh")        return<span className="tag tag-wfh">WFH</span>;
+  if(status.type==="half")       return<span className="tag tag-half">Half</span>;
+  if(status.type==="pto"){
+    if(status.to?.type==="Vacation")      return<span className="tag tag-vacation">Vacation</span>;
+    if(status.to?.type==="Parental Leave")return<span className="tag tag-parental">Parental</span>;
+    if(status.to?.type==="Unpaid Leave")  return<span className="tag tag-unpaid">Unpaid</span>;
+    return<span className="tag tag-jiffy">Jiffy</span>;
+  }
+  return<span className="tag tag-dayoff">—</span>;
+}
+
+// ── SCHEDULE TAB ──────────────────────────────────────────────────────────────
+function ScheduleTab({agents,timeOffData}){
+  const[weekIdx,setWeekIdx]=useState(5);const[filterSup,setFilterSup]=useState("All");const[search,setSearch]=useState("");
+  const week=WEEKS[weekIdx];
+  const weekAgents=getWeekAgents(agents,week);
+  const base=weekAgents.filter(a=>(filterSup==="All"||a.supervisor===filterSup)&&(!search||a.name.toLowerCase().includes(search.toLowerCase())));
+  const{sorted,SortTh}=useSortableData(base,"name");
+  const supCounts=SUPERVISORS.map(sup=>({sup,count:weekAgents.filter(a=>a.supervisor===sup).length})).filter(s=>s.count>0);
+  const daySummary=DAYS.map((day,di)=>{let w=0,p=0,h=0;weekAgents.forEach(a=>{const s=getCellStatus(a,day,week.dates,timeOffData);if(s.type==="pto")p++;else if(s.type==="half")h++;else if(s.type==="office"||s.type==="wfh")w++;});return{day,date:week.dates[di],working:w,pto:p,half:h};});
+  return(
+    <div>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:8}}>
+        <div style={{fontWeight:700,fontSize:16}}>Team Schedule</div>
+        <a href={SHEET_LINK+"#gid=1641302402"} target="_blank" rel="noopener" className="btn btn-sheets">Open in Google Sheets</a>
+      </div>
+      <div style={{marginBottom:16}}>{["February","March","April"].map(month=>{const mw=WEEKS.filter(w=>w.month===month);if(!mw.length)return null;return(<div key={month} style={{marginBottom:8}}><div style={{fontSize:11,fontWeight:700,color:"#94a3b8",marginBottom:5,textTransform:"uppercase",letterSpacing:1}}>{month}</div><div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{mw.map(w=>{const gi=WEEKS.indexOf(w);return(<button key={gi} onClick={()=>setWeekIdx(gi)} className="btn" style={{background:weekIdx===gi?"#4f46e5":"#fff",color:weekIdx===gi?"#fff":"#475569",border:`1px solid ${weekIdx===gi?"#4f46e5":"#e2e8f0"}`}}>{w.label} <span style={{opacity:.7,fontSize:11}}>({w.display})</span></button>);})}</div></div>);})}</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:8,marginBottom:20}}>
+        {daySummary.map(d=>(<div key={d.day} style={{background:"#fff",borderRadius:10,border:"1px solid #e2e8f0",padding:"10px 8px",textAlign:"center"}}>
+          <div style={{fontWeight:700,fontSize:12,color:"#475569"}}>{d.day.slice(0,3)}</div>
+          <div style={{fontSize:10,color:"#94a3b8",marginBottom:4}}>{fmtShort(d.date)}</div>
+          <div style={{fontSize:22,fontWeight:800}}>{d.working+d.half}</div>
+          {d.pto>0&&<div style={{marginTop:2}}><span className="tag tag-vacation" style={{fontSize:10}}>{d.pto} out</span></div>}
+        </div>))}
+      </div>
+      <div style={{fontSize:12,fontWeight:700,color:"#64748b",marginBottom:8,textTransform:"uppercase",letterSpacing:.5}}>Filter by Supervisor</div>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:12}}>
+        <div onClick={()=>setFilterSup("All")} style={{background:filterSup==="All"?"#4f46e5":"#fff",color:filterSup==="All"?"#fff":"#475569",border:`2px solid ${filterSup==="All"?"#4f46e5":"#e2e8f0"}`,borderRadius:10,padding:"8px 14px",cursor:"pointer",fontSize:12,fontWeight:700,display:"flex",gap:8,alignItems:"center"}}><span>All</span><span style={{background:filterSup==="All"?"#ffffff33":"#f1f5f9",padding:"1px 7px",borderRadius:10,fontWeight:800}}>{weekAgents.length}</span></div>
+        {supCounts.map(({sup,count})=>{const c=SUP_COLORS[sup]||{bg:"#64748b",light:"#f8fafc"};const sel=filterSup===sup;return(<div key={sup} onClick={()=>setFilterSup(sel?"All":sup)} style={{background:sel?c.bg:c.light,color:sel?"#fff":c.bg,border:`2px solid ${sel?c.bg:"#e2e8f0"}`,borderRadius:10,padding:"8px 14px",cursor:"pointer",fontSize:12,fontWeight:700,display:"flex",gap:8,alignItems:"center"}}><span>{sup}</span><span style={{background:sel?"#ffffff33":c.bg+"22",padding:"1px 7px",borderRadius:10,fontWeight:800}}>{count}</span></div>);})}
+      </div>
+      <div style={{marginBottom:14}}><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search agent..." style={{maxWidth:220}}/></div>
+      <div style={{borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0"}}><div style={{overflowX:"auto"}}>
+        <table>
+          <thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}>
+            <SortTh colKey="name" style={{minWidth:160,position:"sticky",left:0,background:"#f8fafc",zIndex:2}}>Agent</SortTh>
+            <SortTh colKey="shift" style={{minWidth:90}}>Shift</SortTh>
+            <SortTh colKey="supervisor" style={{minWidth:120}}>Supervisor</SortTh>
+            {DAYS.map((d,di)=><th key={d} style={{textAlign:"center",minWidth:75}}><div>{d.slice(0,3)}</div><div style={{fontWeight:400,color:"#94a3b8",fontSize:10}}>{fmtShort(week.dates[di])}</div></th>)}
+          </tr></thead>
+          <tbody>
+            {sorted.length===0&&<tr><td colSpan={9} style={{textAlign:"center",color:"#94a3b8",padding:24}}>No agents found</td></tr>}
+            {sorted.map(agent=>{
+              const ea=getAgentForDate(agent,week.dates[0]);
+              const c=SUP_COLORS[agent.supervisor]||{bg:"#64748b"};
+              return(<tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",background:agent.isNew?"#f0fdf4":"#fff"}}>
+                <td style={{fontWeight:600,position:"sticky",left:0,background:"inherit",zIndex:1}}>{agent.isNew&&<span style={{marginRight:4,fontSize:10,color:"#059669"}}>NEW</span>}{agent.name}</td>
+                <td style={{fontSize:11,color:"#64748b"}}>{ea.shift}</td>
+                <td><span style={{fontSize:11,fontWeight:600,color:c.bg}}>{agent.supervisor}</span></td>
+                {DAYS.map(day=>{const st=getCellStatus(agent,day,week.dates,timeOffData);return<td key={day} style={{textAlign:"center",padding:"6px 4px"}}><CellTag status={st}/></td>;})}
+              </tr>);
+            })}
+          </tbody>
+        </table>
+      </div></div>
+      <p style={{fontSize:11,color:"#94a3b8",marginTop:6}}>{sorted.length} agents shown</p>
+    </div>
   );
-  render();
 }
 
-function render(){
-  // header sort classes
-  COLS.forEach(c=>{
-    const th=document.getElementById('th-'+c.key);
-    if(!th)return;
-    th.className=(c.isDay?'day-cell ':'')+(sortCol===c.key?(sortDir==='asc'?'sort-asc':'sort-desc'):'');
-  });
-
-  const rows=[...filtered].sort((a,b)=>{
-    let av,bv;
-    if(DAYS.includes(sortCol)){av=dayVal(a,sortCol);bv=dayVal(b,sortCol);}
-    else if(sortCol==='name'){av=a.name.toLowerCase();bv=b.name.toLowerCase();}
-    else if(sortCol==='sup') {av=a.sup.toLowerCase();bv=b.sup.toLowerCase();}
-    else if(sortCol==='shift'){av=a.shift;bv=b.shift;}
-    if(av<bv)return sortDir==='asc'?-1:1;
-    if(av>bv)return sortDir==='asc'?1:-1;
-    return 0;
-  });
-
-  const tbody=document.getElementById('tbody');
-  tbody.innerHTML='';
-  rows.forEach(a=>{
-    const c=SUP_COLORS[a.sup]||'#64748b';
-    const tr=document.createElement('tr');
-    tr.innerHTML=`
-      <td><span class="agent-name">${a.name}</span></td>
-      <td><span class="shift-mono">${a.shift}</span></td>
-      <td><span class="sup-name" style="color:${c}">${a.sup}</span></td>
-      ${DAYS.map(d=>`<td class="day-cell">${dayBadge(a,d)}</td>`).join('')}
-    `;
-    tbody.appendChild(tr);
-  });
-  document.getElementById('agent-count').textContent=`${rows.length} agent${rows.length!==1?'s':''}`;
+// ── SUMMARY TAB (Overview) ────────────────────────────────────────────────────
+function SummaryTab({agents,timeOffData}){
+  const[weekIdx,setWeekIdx]=useState(5);const[view,setView]=useState("all");const[dayFilter,setDayFilter]=useState("Monday");
+  const week=WEEKS[weekIdx];const wAgents=getWeekAgents(agents,week);
+  const OFFICE_SEAT_LIMIT=22;
+  function buildData(agents,week){return INTERVALS.map(({label,minutes})=>{const row={label};DAYS.forEach(day=>{let total=0,office=0;agents.forEach(a=>{const dateS=week.dates[DAYS.indexOf(day)];const ea=getAgentForDate(a,dateS);const st=getCellStatus(a,day,week.dates,timeOffData);if(st.type==="dayoff"||st.type==="pto"||st.type==="departed"||st.type==="notstarted")return;const sh=SHIFT_TIMES[ea.shift];if(!sh)return;if(minutes>=sh.start&&minutes<sh.end){total++;if(st.type==="office")office++;}});row[day]={total,office};});return row;});}
+  const data=buildData(wAgents,week);
+  const maxT=Math.max(...data.map(r=>DAYS.reduce((m,d)=>Math.max(m,r[d].total),0)));
+  const tBg=(n,max)=>{if(!n)return"#f8fafc";const p=n/max;return p<0.3?"#dbeafe":p<0.6?"#93c5fd":p<0.85?"#3b82f6":"#1d4ed8";};
+  const oBg=(n)=>{if(!n)return"#f8fafc";if(n>OFFICE_SEAT_LIMIT)return"#fee2e2";if(n>OFFICE_SEAT_LIMIT-3)return"#fef3c7";const p=n/OFFICE_SEAT_LIMIT;return p<0.5?"#dcfce7":p<0.8?"#86efac":"#22c55e";};
+  const oTc=(n)=>{if(!n)return"#1e293b";if(n>OFFICE_SEAT_LIMIT)return"#991b1b";if(n>OFFICE_SEAT_LIMIT-3)return"#92400e";return n/OFFICE_SEAT_LIMIT>0.7?"#fff":"#1e293b";};
+  const tc=bg=>["#3b82f6","#1d4ed8","#22c55e","#15803d"].includes(bg)?"#fff":"#1e293b";
+  return(
+    <div>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:8}}>
+        <div style={{fontWeight:700,fontSize:16}}>Staffing Summary</div>
+        <a href={SHEET_LINK+"#gid=797932787"} target="_blank" rel="noopener" className="btn btn-sheets">Open in Google Sheets</a>
+      </div>
+      <div style={{marginBottom:16}}>{["February","March","April"].map(month=>{const mw=WEEKS.filter(w=>w.month===month);if(!mw.length)return null;return(<div key={month} style={{marginBottom:8}}><div style={{fontSize:11,fontWeight:700,color:"#94a3b8",marginBottom:5,textTransform:"uppercase",letterSpacing:1}}>{month}</div><div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{mw.map(w=>{const gi=WEEKS.indexOf(w);return(<button key={gi} onClick={()=>setWeekIdx(gi)} className="btn" style={{background:weekIdx===gi?"#4f46e5":"#fff",color:weekIdx===gi?"#fff":"#475569",border:`1px solid ${weekIdx===gi?"#4f46e5":"#e2e8f0"}`}}>{w.label} <span style={{opacity:.7,fontSize:11}}>({w.display})</span></button>);})}</div></div>);})}</div>
+      <div style={{display:"flex",gap:8,marginBottom:16,alignItems:"center",flexWrap:"wrap"}}>
+        {[["all","All Days"],["single","Single Day"]].map(([v,l])=><button key={v} onClick={()=>setView(v)} className="btn" style={{background:view===v?"#4f46e5":"#fff",color:view===v?"#fff":"#475569",border:`1px solid ${view===v?"#4f46e5":"#e2e8f0"}`}}>{l}</button>)}
+        {view==="single"&&<select value={dayFilter} onChange={e=>setDayFilter(e.target.value)} style={{width:"auto",minWidth:120}}>{DAYS.map(d=><option key={d}>{d}</option>)}</select>}
+      </div>
+      {view==="all"&&(<>
+        <div style={{marginBottom:20}}><div style={{fontWeight:700,fontSize:14,marginBottom:8}}>Total Staffed</div><div style={{overflowX:"auto",borderRadius:12,border:"1px solid #e2e8f0"}}><table style={{minWidth:600}}><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th style={{minWidth:70,position:"sticky",left:0,background:"#f8fafc",zIndex:2}}>Time</th>{DAYS.map((d,i)=><th key={d} style={{textAlign:"center",minWidth:80}}><div>{d.slice(0,3)}</div><div style={{fontWeight:400,fontSize:10,color:"#94a3b8"}}>{fmtShort(week.dates[i])}</div></th>)}</tr></thead><tbody>{data.map((row,ri)=><tr key={ri} style={{borderBottom:"1px solid #f1f5f9"}}><td style={{fontWeight:600,fontSize:11,color:"#475569",position:"sticky",left:0,background:"#fff",zIndex:1}}>{row.label}</td>{DAYS.map(day=>{const n=row[day].total,bg=tBg(n,maxT);return<td key={day} style={{textAlign:"center",background:bg,color:tc(bg),fontWeight:700,fontSize:13,padding:"5px 4px"}}>{n>0?n:"–"}</td>;})}</tr>)}</tbody></table></div></div>
+        <div><div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}><div style={{fontWeight:700,fontSize:14}}>In Office</div><span style={{fontSize:11,background:"#fee2e2",color:"#991b1b",padding:"2px 8px",borderRadius:8,fontWeight:600}}>Over {OFFICE_SEAT_LIMIT}</span><span style={{fontSize:11,background:"#fef3c7",color:"#92400e",padding:"2px 8px",borderRadius:8,fontWeight:600}}>Within 3</span></div><div style={{overflowX:"auto",borderRadius:12,border:"1px solid #e2e8f0"}}><table style={{minWidth:600}}><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th style={{minWidth:70,position:"sticky",left:0,background:"#f8fafc",zIndex:2}}>Time</th>{DAYS.map((d,i)=><th key={d} style={{textAlign:"center",minWidth:80}}><div>{d.slice(0,3)}</div><div style={{fontWeight:400,fontSize:10,color:"#94a3b8"}}>{fmtShort(week.dates[i])}</div></th>)}</tr></thead><tbody>{data.map((row,ri)=><tr key={ri} style={{borderBottom:"1px solid #f1f5f9"}}><td style={{fontWeight:600,fontSize:11,color:"#475569",position:"sticky",left:0,background:"#fff",zIndex:1}}>{row.label}</td>{DAYS.map(day=>{const n=row[day].office,bg=oBg(n),color=oTc(n);return<td key={day} style={{textAlign:"center",background:bg,color,fontWeight:700,fontSize:13,padding:"5px 4px"}}>{n>0?n:"–"}</td>;})}</tr>)}</tbody></table></div></div>
+      </>)}
+      {view==="single"&&(()=>{const sd=data.map(r=>({label:r.label,total:r[dayFilter].total,office:r[dayFilter].office}));const ms=Math.max(...sd.map(r=>r.total));return(<div style={{borderRadius:12,border:"1px solid #e2e8f0",overflow:"hidden",background:"#fff"}}><table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}><th>Time</th><th>Staffed</th><th style={{width:80,textAlign:"center"}}>Total</th><th style={{width:80,textAlign:"center"}}>Office</th></tr></thead><tbody>{sd.map((row,i)=>{const pT=ms>0?row.total/ms:0,pO=row.total>0?row.office/row.total:0;const overLimit=row.office>OFFICE_SEAT_LIMIT;return(<tr key={i} style={{borderBottom:"1px solid #f8fafc",background:overLimit?"#fff5f5":""}}><td style={{fontWeight:600,fontSize:11,color:"#475569"}}>{row.label}</td><td style={{padding:"4px 8px"}}><div style={{position:"relative",height:18,background:"#f1f5f9",borderRadius:3,overflow:"hidden"}}><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pT*100}%`,background:"#93c5fd",borderRadius:3}}/><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${pT*pO*100}%`,background:overLimit?"#ef4444":"#22c55e",borderRadius:3}}/></div></td><td style={{textAlign:"center",fontWeight:700,color:row.total>0?"#1d4ed8":"#cbd5e1"}}>{row.total||"–"}</td><td style={{textAlign:"center",fontWeight:700,color:overLimit?"#991b1b":row.office>0?"#15803d":"#cbd5e1"}}>{row.office||"–"}</td></tr>);})}</tbody></table></div>);})()}
+    </div>
+  );
 }
 
-// ── capacity ───────────────────────────────────────────────────────────────
+// ── ROSTER TAB (Manager-locked) ──────────────────────────────────────────────
+function RosterTab({agents}){
+  const[unlocked,setUnlocked]=useState(false);
+  const[pw,setPw]=useState("");
+  const[pwError,setPwError]=useState(false);
+  const[search,setSearch]=useState("");const[filterSup,setFilterSup]=useState("All");const[filterStatus,setFilterStatus]=useState("active");
 
-function buildCapacity(){
-  const dayFull=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  // All hooks must be called before any conditional return
+  const enriched=useMemo(()=>agents.map(a=>({...a,_status:getStatus(a),_tenure:tenure(a.startDate)})),[agents]);
+  const filtered=enriched.filter(a=>(filterSup==="All"||a.supervisor===filterSup)&&(filterStatus==="All"||a._status===filterStatus)&&(!search||a.name.toLowerCase().includes(search.toLowerCase())||(a.skills||"").toLowerCase().includes(search.toLowerCase())));
+  const{sorted,SortTh}=useSortableData(filtered,"name");
+  const counts={active:0,incoming:0,departed:0};enriched.forEach(a=>{if(counts[a._status]!==undefined)counts[a._status]++;});
+  const rosterTotal=counts.active+counts.incoming;
 
-  // peak table
-  const peakBody=document.getElementById('peak-body');
-  DAYS.forEach((d,di)=>{
-    const vals=OFFICE_DATA.map(r=>r[di+1]);
-    const peak=Math.max(...vals);
-    const time=OFFICE_DATA[vals.indexOf(peak)][0];
-    const over=peak>LIMIT, warn=peak>LIMIT-3&&!over;
-    const chip=over?'chip-over':warn?'chip-warn':'chip-ok';
-    const status=over?'🔴 Over limit':warn?'🟡 Near limit':'🟢 OK';
-    peakBody.innerHTML+=`<tr>
-      <td style="font-weight:600;color:#f1f5f9">${dayFull[di]}</td>
-      <td class="mono" style="color:#94a3b8">${time}</td>
-      <td class="c"><span class="peak-chip ${chip}">${peak}</span></td>
-      <td style="font-size:11px;font-weight:600;color:${over?'#f87171':warn?'#fbbf24':'#4ade80'}">${status}</td>
-    </tr>`;
-  });
+  function handleUnlock(){
+    if(pw===MANAGER_PASSWORD){setUnlocked(true);setPwError(false);}
+    else{setPwError(true);}
+  }
+  function handleKeyDown(e){if(e.key==="Enter")handleUnlock();}
 
-  // interval table
-  const maxVal=Math.max(...OFFICE_DATA.flatMap(r=>r.slice(1)));
-  const iBody=document.getElementById('interval-body');
-  OFFICE_DATA.forEach(row=>{
-    const nums=row.slice(1);
-    const cells=nums.map(v=>{
-      if(v===0)return`<td class="c num-dim">—</td>`;
-      const over=v>LIMIT,warn=v>LIMIT-3&&!over;
-      return`<td class="c ${over?'num-over':warn?'num-warn':'num-ok'}">${v}</td>`;
-    }).join('');
-    const monV=nums[0];
-    const pct=(monV/maxVal)*100;
-    const over=monV>LIMIT,warn=monV>LIMIT-3&&!over;
-    const fill=over?'fill-over':warn?'fill-warn':'fill-ok';
-    iBody.innerHTML+=`<tr>
-      <td class="mono" style="color:#64748b;font-size:11px">${row[0]}</td>
-      ${cells}
-      <td style="padding:6px 12px"><div class="bar-wrap"><div class="bar-fill ${fill}" style="width:${pct}%"></div></div></td>
-    </tr>`;
-  });
+  if(!unlocked){
+    return(
+      <div className="lock-screen">
+        <div className="lock-icon">&#128274;</div>
+        <div style={{fontWeight:700,fontSize:18,marginBottom:4}}>Roster Locked</div>
+        <div style={{color:"#64748b",fontSize:13,marginBottom:16,maxWidth:340}}>The roster is restricted to managers. Enter the manager password to view and edit agent details.</div>
+        <div className="lock-form">
+          <input type="password" value={pw} onChange={e=>{setPw(e.target.value);setPwError(false);}} onKeyDown={handleKeyDown} placeholder="Manager password" style={{maxWidth:220}}/>
+          <button type="button" onClick={handleUnlock} className="btn btn-primary">Unlock</button>
+        </div>
+        {pwError&&<div className="lock-error">Incorrect password. Please try again.</div>}
+      </div>
+    );
+  }
+  return(
+    <div>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:8}}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <div style={{fontWeight:700,fontSize:16}}>Team Roster</div>
+          <span style={{fontSize:11,background:"#dcfce7",color:"#166534",padding:"2px 8px",borderRadius:8,fontWeight:600}}>&#128275; Unlocked</span>
+        </div>
+        <div style={{display:"flex",gap:8}}>
+          <button onClick={()=>{setUnlocked(false);setPw("");}} className="btn btn-ghost" style={{fontSize:11}}>&#128274; Lock</button>
+          <a href={SHEET_LINK+"#gid=636880921"} target="_blank" rel="noopener" className="btn btn-sheets">Open in Google Sheets</a>
+        </div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
+        {[["Total Roster","All","#4f46e5",rosterTotal],["Active","active","#059669",counts.active],["Incoming","incoming","#7c3aed",counts.incoming],["Departed","departed","#ef4444",counts.departed]].map(([label,val,color,count])=>(
+          <div key={label} onClick={()=>setFilterStatus(val)} style={{background:filterStatus===val?color+"15":"#fff",border:`2px solid ${filterStatus===val?color:"#e2e8f0"}`,borderRadius:12,padding:"14px",cursor:"pointer"}}>
+            <div style={{fontSize:11,fontWeight:700,color,marginBottom:2,textTransform:"uppercase"}}>{label}</div>
+            <div style={{fontSize:28,fontWeight:800}}>{count}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search name or skill..." style={{maxWidth:240}}/>
+        <select value={filterSup} onChange={e=>setFilterSup(e.target.value)} style={{width:"auto",minWidth:160}}><option value="All">All Supervisors</option>{SUPERVISORS.map(s=><option key={s}>{s}</option>)}</select>
+      </div>
+      <div style={{borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0"}}><div style={{overflowX:"auto"}}>
+        <table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}>
+          <SortTh colKey="name" style={{minWidth:170}}>Agent</SortTh>
+          <SortTh colKey="_status" style={{minWidth:90}}>Status</SortTh>
+          <SortTh colKey="supervisor" style={{minWidth:140}}>Supervisor</SortTh>
+          <SortTh colKey="shift" style={{minWidth:90}}>Shift</SortTh>
+          <SortTh colKey="startDate" style={{minWidth:90}}>Start Date</SortTh>
+          <SortTh colKey="_tenure" style={{minWidth:70}}>Tenure</SortTh>
+          <th style={{minWidth:100}}>Work Days</th>
+          <th style={{minWidth:100}}>Office Days</th>
+          <th style={{minWidth:100}}>WFH Days</th>
+          <th style={{minWidth:200}}>Skills</th>
+        </tr></thead>
+        <tbody>
+          {sorted.length===0&&<tr><td colSpan={10} style={{textAlign:"center",color:"#94a3b8",padding:24}}>No agents found</td></tr>}
+          {sorted.map(a=>{
+            const c=SUP_COLORS[a.supervisor]||{bg:"#64748b"};
+            const skills=(a.skills||"").split(",").map(s=>s.trim()).filter(Boolean);
+            return(<tr key={a.id} style={{borderBottom:"1px solid #f1f5f9",background:a._status==="departed"?"#fff5f5":a._status==="incoming"?"#f5f3ff":a.isNew?"#f0fdf4":"#fff"}}>
+              <td style={{fontWeight:600}}>{a.isNew&&<span style={{marginRight:4,fontSize:10,color:"#059669"}}>NEW</span>}{a.name}</td>
+              <td>{a._status==="active"&&<span className="tag tag-active">Active</span>}{a._status==="incoming"&&<span className="tag tag-incoming">Incoming</span>}{a._status==="departed"&&<span className="tag tag-departed">Departed</span>}</td>
+              <td><span style={{fontSize:11,fontWeight:600,color:c.bg}}>{a.supervisor}</span></td>
+              <td style={{fontSize:11,color:"#64748b"}}>{a.shift}</td>
+              <td style={{fontSize:11,color:"#475569"}}>{a.startDate?fmtShort(a.startDate):"—"}</td>
+              <td style={{fontSize:11,color:"#64748b"}}>{a._tenure}</td>
+              <td style={{fontSize:10,color:"#475569"}}>{(a.workDays||[]).map(d=>d.slice(0,3)).join(", ")}</td>
+              <td style={{fontSize:10,color:"#166534"}}>{(a.officeDays||[]).map(d=>d.slice(0,3)).join(", ")}</td>
+              <td style={{fontSize:10,color:"#1e40af"}}>{(a.wfhDays||[]).map(d=>d.slice(0,3)).join(", ")}</td>
+              <td>{skills.length>0?skills.map((sk,i)=><span key={i} className="skill-chip">{sk}</span>):<span style={{fontSize:11,color:"#94a3b8"}}>—</span>}</td>
+            </tr>);
+          })}
+        </tbody></table>
+      </div></div>
+      <p style={{fontSize:11,color:"#94a3b8",marginTop:8}}>{sorted.length} of {agents.length} shown.</p>
+    </div>
+  );
 }
 
-function switchTab(id){
-  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['weekly','capacity'][i]===id));
-  document.getElementById('tab-weekly').classList.toggle('hidden',id!=='weekly');
-  document.getElementById('tab-capacity').classList.toggle('hidden',id!=='capacity');
+// ── TIME OFF TAB ──────────────────────────────────────────────────────────────
+function TimeOffTab({agents,timeOffData}){
+  const[mf,setMf]=useState("All");const[nf,setNf]=useState("All");const[sf,setSf]=useState("All");const[search,setSearch]=useState("");
+  const names=["All",...[...new Set(timeOffData.map(r=>r.name))].sort()];
+  const rm=r=>{const d=parseDate(r.start);if(!d)return"Other";const m=d.getMonth();return m===1?"February":m===2?"March":m===3?"April":"Other";};
+  const enriched=timeOffData.map(r=>{const sup=agents.find(a=>a.name===r.name)?.supervisor||"—";return{...r,_sup:sup,_month:rm(r),_startDate:parseDate(r.start)||new Date(0)};});
+  const filtered=enriched.filter(r=>(mf==="All"||r._month===mf)&&(nf==="All"||r.name===nf)&&(sf==="All"||r.status===sf)&&(!search||r.name.toLowerCase().includes(search.toLowerCase())||r.type.toLowerCase().includes(search.toLowerCase())));
+  const{sorted,SortTh}=useSortableData(filtered,"_startDate");
+  const approvedCount=timeOffData.filter(r=>r.status==="Approved").length;
+  const pendingCount=timeOffData.filter(r=>r.status==="Pending").length;
+  return(
+    <div>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:8}}>
+        <div style={{fontWeight:700,fontSize:16}}>Time Off Requests</div>
+        <div style={{display:"flex",gap:8}}><span className="tag tag-approved" style={{fontSize:12,padding:"4px 12px"}}>Approved: {approvedCount}</span><span className="tag tag-pending" style={{fontSize:12,padding:"4px 12px"}}>Pending: {pendingCount}</span></div>
+      </div>
+      <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search..." style={{maxWidth:200}}/>
+        <select value={mf} onChange={e=>setMf(e.target.value)} style={{width:"auto",minWidth:120}}><option value="All">All months</option><option>February</option><option>March</option><option>April</option></select>
+        <select value={sf} onChange={e=>setSf(e.target.value)} style={{width:"auto",minWidth:120}}><option value="All">All statuses</option><option>Approved</option><option>Pending</option></select>
+        <select value={nf} onChange={e=>setNf(e.target.value)} style={{width:"auto",minWidth:160}}>{names.map(n=><option key={n}>{n}</option>)}</select>
+        <button className="btn btn-ghost" onClick={()=>{setMf("All");setNf("All");setSf("All");setSearch("");}}>Clear</button>
+      </div>
+      <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}><span className="tag tag-vacation">Vacation</span><span className="tag tag-jiffy">Jiffy Day</span><span className="tag tag-half">Half Day</span><span className="tag tag-parental">Parental Leave</span><span className="tag tag-unpaid">Unpaid Leave</span></div>
+      <div style={{borderRadius:12,overflow:"hidden",border:"1px solid #e2e8f0"}}>
+        <table><thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #e2e8f0"}}>
+          <SortTh colKey="name" style={{minWidth:160}}>Agent</SortTh>
+          <SortTh colKey="type">Type</SortTh>
+          <SortTh colKey="_startDate">Dates</SortTh>
+          <SortTh colKey="duration" style={{textAlign:"center"}}>Days</SortTh>
+          <th>Status</th>
+          <SortTh colKey="_sup">Supervisor</SortTh>
+        </tr></thead>
+        <tbody>
+          {sorted.length===0&&<tr><td colSpan={6} style={{textAlign:"center",color:"#94a3b8",padding:24}}>No records</td></tr>}
+          {sorted.map((r,i)=>{const c=SUP_COLORS[r._sup]||{bg:"#64748b"};return(
+            <tr key={i} style={{borderBottom:"1px solid #f1f5f9",background:r.status==="Pending"?"#fffbeb":"#fff"}}>
+              <td style={{fontWeight:600}}>{r.name}</td>
+              <td>{r.half?<span className="tag tag-half">Half {r.type}</span>:r.type==="Vacation"?<span className="tag tag-vacation">Vacation</span>:r.type==="Parental Leave"?<span className="tag tag-parental">Parental</span>:r.type==="Unpaid Leave"?<span className="tag tag-unpaid">Unpaid</span>:<span className="tag tag-jiffy">Jiffy</span>}</td>
+              <td style={{color:"#475569",whiteSpace:"nowrap"}}>{r.start===r.end?fmtShort(r.start):`${fmtShort(r.start)} – ${fmtShort(r.end)}`}</td>
+              <td style={{textAlign:"center",color:"#64748b"}}>{r.duration}</td>
+              <td>{r.status==="Approved"?<span className="tag tag-approved">Approved</span>:<span className="tag tag-pending">Pending</span>}</td>
+              <td><span style={{fontSize:11,fontWeight:600,color:c.bg}}>{r._sup}</span></td>
+            </tr>);})}
+        </tbody></table>
+      </div>
+      <p style={{fontSize:11,color:"#94a3b8",marginTop:6}}>{sorted.length} records shown.</p>
+    </div>
+  );
 }
 
-buildHeader();
-render();
-buildCapacity();
+// ── LIVE SYNC INDICATOR ───────────────────────────────────────────────────────
+function SyncStatus({status,lastSync}){
+  const dotClass=status==="live"?"sync-live":status==="stale"?"sync-stale":"sync-error";
+  const label=status==="live"?"Live":status==="stale"?"Syncing...":"Offline";
+  const timeLabel=lastSync?`Last sync: ${lastSync.toLocaleTimeString()}`:"";
+  return(<div style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#94a3b8"}}><span className={`sync-dot ${dotClass}`}/><span>{label}</span>{timeLabel&&<span style={{marginLeft:4}}>({timeLabel})</span>}</div>);
+}
+
+// ── APP ───────────────────────────────────────────────────────────────────────
+function App(){
+  const[agents]=useState(defaultAgents);
+  const[timeOffData]=useState(defaultTimeOff);
+  const[tab,setTab]=useState("schedule");
+  const[syncStatus,setSyncStatus]=useState("live");
+  const[lastSync,setLastSync]=useState(new Date());
+  const activeCount=useMemo(()=>getActiveAgents(agents).length,[agents]);
+  const pendingTO=useMemo(()=>timeOffData.filter(t=>t.status==="Pending").length,[timeOffData]);
+
+  useEffect(()=>{
+    const interval=setInterval(()=>{
+      setLastSync(new Date());
+      setSyncStatus("live");
+    },REFRESH_INTERVAL);
+    return()=>clearInterval(interval);
+  },[]);
+
+  const TABS=[
+    {id:"schedule",label:"Schedule"},
+    {id:"summary",label:"Summary"},
+    {id:"roster",label:"Roster"},
+    {id:"timeoff",label:"Time Off"},
+  ];
+  return(
+    <div style={{minHeight:"100vh",background:"#f8fafc"}}>
+      <div style={{background:"#1e293b",color:"#fff",padding:"14px 24px",display:"flex",alignItems:"center",justifyContent:"space-between",boxShadow:"0 2px 8px #0003"}}>
+        <div>
+          <div style={{fontWeight:700,fontSize:18}}>Customer Solutions — Team Schedules</div>
+          <div style={{fontSize:11,color:"#94a3b8",marginTop:2}}>{activeCount} active agents · Synced with Google Sheets</div>
+        </div>
+        <div style={{display:"flex",gap:12,alignItems:"center"}}>
+          <SyncStatus status={syncStatus} lastSync={lastSync}/>
+          <a href={SHEET_LINK} target="_blank" rel="noopener" className="btn btn-sheets" style={{fontSize:12}}>Open Spreadsheet</a>
+        </div>
+      </div>
+      <div style={{background:"#fff",borderBottom:"1px solid #e2e8f0",padding:"0 24px",display:"flex",gap:4,overflowX:"auto"}}>
+        {TABS.map(t=><button key={t.id} className={`nav-tab${tab===t.id?" active":""}`} onClick={()=>setTab(t.id)} style={{position:"relative"}}>
+          {t.label}
+          {t.id==="timeoff"&&pendingTO>0&&<span style={{position:"absolute",top:4,right:2,background:"#f59e0b",color:"#fff",borderRadius:10,fontSize:9,padding:"1px 5px",fontWeight:800}}>{pendingTO}</span>}
+          {t.id==="roster"&&<span style={{marginLeft:4,fontSize:9,color:"#94a3b8"}}>&#128274;</span>}
+        </button>)}
+      </div>
+      <div style={{padding:"20px 24px",maxWidth:1300,margin:"0 auto"}}>
+        {tab==="schedule"&&<ScheduleTab agents={agents} timeOffData={timeOffData}/>}
+        {tab==="summary" &&<SummaryTab agents={agents} timeOffData={timeOffData}/>}
+        {tab==="roster"  &&<RosterTab agents={agents}/>}
+        {tab==="timeoff" &&<TimeOffTab agents={agents} timeOffData={timeOffData}/>}
+      </div>
+      <div style={{textAlign:"center",padding:"16px 24px",fontSize:11,color:"#94a3b8",borderTop:"1px solid #e2e8f0",background:"#fff"}}>
+        To edit data, click "Open in Google Sheets" on any tab. Changes sync automatically every 30 seconds.
+      </div>
+    </div>
+  );
+}
+ReactDOM.render(<App/>,document.getElementById("root"));
 </script>
 </body>
 </html>
