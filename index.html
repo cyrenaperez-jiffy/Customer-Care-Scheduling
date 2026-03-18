@@ -1222,14 +1222,11 @@ function App(){
   const[showExport,setShowExport]=useState(false);
   const onChangeLogged=useCallback(entry=>{setChangeLog(prev=>[...prev,entry]);},[]);
   const activeCount=useMemo(()=>getActiveAgents(agents).length,[agents]);
-  const pendingFlexCount=useMemo(()=>flexData.filter(f=>f.status==="Pending").length,[flexData]);
+  
   const TABS=[
     {id:"overview",label:"📊 Overview"},
     {id:"today",label:"🌅 Today"},
     {id:"schedule",label:"📅 Schedule"},
-    {id:"chat",label:"💬 Chat"},
-    {id:"scenario",label:"🎯 Chat Scenario"},
-    {id:"flex",label:"⚡ Shift Flex"},
     {id:"timeoff",label:"🏖️ Time Off"},
     {id:"roster",label:"👥 Roster",locked:true},
     {id:"guide",label:"📖 GitHub Guide"},
@@ -1250,7 +1247,6 @@ function App(){
       <div style={{background:"#fff",borderBottom:"1px solid #e2e8f0",padding:"0 24px",display:"flex",gap:4,overflowX:"auto"}}>
         {TABS.map(t=><button key={t.id} className={`nav-tab${tab===t.id?" active":""}`} onClick={()=>handleTabClick(t.id)} style={{position:"relative"}}>
           {t.label}{t.locked&&!rosterUnlocked&&<span style={{fontSize:10,marginLeft:4,opacity:.6}}>🔒</span>}
-          {t.id==="flex"&&pendingFlexCount>0&&<span style={{position:"absolute",top:4,right:2,background:"#f59e0b",color:"#fff",borderRadius:10,fontSize:9,padding:"1px 4px",fontWeight:800}}>{pendingFlexCount}</span>}
         </button>)}
       </div>
       {isManager&&changeLog.length>0&&(<div className="export-banner" style={{margin:"12px 24px 0"}}><div><span style={{fontWeight:700,fontSize:13}}>📋 {changeLog.length} unsaved change{changeLog.length!==1?"s":""} this session</span><span style={{fontSize:12,color:"#92400e",marginLeft:8}}>Export and commit to GitHub to make permanent.</span></div><button className="btn btn-export" onClick={()=>setShowExport(true)}>View Export Code →</button></div>)}
@@ -1259,9 +1255,7 @@ function App(){
         {tab==="roster"  &&rosterUnlocked&&<RosterTab agents={agents} setAgents={setAgents} onChangeLogged={onChangeLogged}/>}
         {tab==="overview"&&<OverviewTab agents={agents} timeOffData={timeOffData} flexData={flexData}/>}
         {tab==="schedule"&&<ScheduleTab agents={agents} setAgents={setAgents} isManager={isManager} timeOffData={timeOffData} flexData={flexData} onChangeLogged={onChangeLogged}/>}
-        {tab==="chat"    &&<ChatScheduleTab/>}
-        {tab==="scenario"&&<ChatStaffingScenarioTab/>}
-        {tab==="flex"    &&<ShiftFlexTab agents={agents} flexData={flexData} setFlexData={setFlexData} isManager={isManager}/>}
+
         {tab==="timeoff" &&<TimeOffTab agents={agents} timeOffData={timeOffData} setTimeOffData={setTimeOffData} isManager={isManager} onChangeLogged={onChangeLogged}/>}
         {tab==="guide"   &&<GitHubGuideTab/>}
       </div>
