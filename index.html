@@ -60,7 +60,7 @@ th.sortable:not(.asc):not(.desc) .sort-icon::after{content:"⇅"}
 <script type="text/babel">
 const {useState,useMemo,useCallback} = React;
 const MANAGER_PASSWORD = "jiffymgr2026";
-const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const SUPERVISORS = ["Shelby Coldiron","Neyat Abraha","Alex Blair","Lauren Montanye","Ainsley Reynolds","Angy Chang"];
 const SHIFTS = ["6:00–2:30","8:00–4:30","9:00–5:30","10:30–8:00","10:30 PM–7:00 AM","11:30–8:00"];
 const SHIFT_START_MIN = {"6:00–2:30":360,"8:00–4:30":480,"9:00–5:30":540,"10:30–8:00":630,"10:30 PM–7:00 AM":1350,"11:30–8:00":690};
@@ -80,15 +80,15 @@ const SHIFT_TIMES = {
 const INTERVALS=[];
 for(let m=360;m<1200;m+=30){const h=Math.floor(m/60),mn=m%60;INTERVALS.push({label:`${String(h).padStart(2,"0")}:${String(mn).padStart(2,"0")}`,minutes:m});}
 const WEEKS=[
-  {month:"February",label:"W1",display:"Feb 1–7",dates:["2/1/26","2/2/26","2/3/26","2/4/26","2/5/26","2/6/26","2/7/26"]},
-  {month:"February",label:"W2",display:"Feb 8–14",dates:["2/8/26","2/9/26","2/10/26","2/11/26","2/12/26","2/13/26","2/14/26"]},
-  {month:"February",label:"W3",display:"Feb 15–21",dates:["2/15/26","2/16/26","2/17/26","2/18/26","2/19/26","2/20/26","2/21/26"]},
-  {month:"February",label:"W4",display:"Feb 22–28",dates:["2/22/26","2/23/26","2/24/26","2/25/26","2/26/26","2/27/26","2/28/26"]},
-  {month:"March",label:"W1",display:"Mar 1–7",dates:["3/1/26","3/2/26","3/3/26","3/4/26","3/5/26","3/6/26","3/7/26"]},
-  {month:"March",label:"W2",display:"Mar 8–14",dates:["3/8/26","3/9/26","3/10/26","3/11/26","3/12/26","3/13/26","3/14/26"]},
-  {month:"March",label:"W3",display:"Mar 15–21",dates:["3/15/26","3/16/26","3/17/26","3/18/26","3/19/26","3/20/26","3/21/26"]},
-  {month:"March",label:"W4",display:"Mar 22–28",dates:["3/22/26","3/23/26","3/24/26","3/25/26","3/26/26","3/27/26","3/28/26"]},
-  {month:"March",label:"W5",display:"Mar 29–31",dates:["3/29/26","3/30/26","3/31/26","3/31/26","3/31/26","3/31/26","3/31/26"]},
+  {month:"February",label:"W1",display:"Feb 2–8",dates:["2/2/26","2/3/26","2/4/26","2/5/26","2/6/26","2/7/26"]},
+  {month:"February",label:"W2",display:"Feb 9–15",dates:["2/9/26","2/10/26","2/11/26","2/12/26","2/13/26","2/14/26"]},
+  {month:"February",label:"W3",display:"Feb 16–22",dates:["2/16/26","2/17/26","2/18/26","2/19/26","2/20/26","2/21/26"]},
+  {month:"February",label:"W4",display:"Feb 23–28",dates:["2/23/26","2/24/26","2/25/26","2/26/26","2/27/26","2/28/26"]},
+  {month:"March",label:"W1",display:"Mar 2–7",dates:["3/2/26","3/3/26","3/4/26","3/5/26","3/6/26","3/7/26"]},
+  {month:"March",label:"W2",display:"Mar 9–14",dates:["3/9/26","3/10/26","3/11/26","3/12/26","3/13/26","3/14/26"]},
+  {month:"March",label:"W3",display:"Mar 16–21",dates:["3/16/26","3/17/26","3/18/26","3/19/26","3/20/26","3/21/26"]},
+  {month:"March",label:"W4",display:"Mar 23–28",dates:["3/23/26","3/24/26","3/25/26","3/26/26","3/27/26","3/28/26"]},
+  {month:"March",label:"W5",display:"Mar 30",dates:["3/30/26","3/31/26","3/31/26","3/31/26","3/31/26","3/31/26"]},
 ];
 const OFFICE_SEAT_LIMIT=22;
 const REAL_TODAY=(()=>{const d=new Date();d.setHours(0,0,0,0);return d;})();
